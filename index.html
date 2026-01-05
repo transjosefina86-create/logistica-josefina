@@ -7,16 +7,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { background: white; padding: 30px; border-radius: 15px; max-width: 450px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid #ff6600; text-align: center; }
         .logo-container { margin-bottom: 20px; }
-        .logo-container img { width: 180px; }
-        h2 { color: #333; margin-bottom: 25px; font-size: 22px; }
-        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #ff6600; outline: none; box-shadow: 0 0 5px rgba(255,102,0,0.2); }
-        button { background-color: #ff6600; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.3s; margin-top: 15px; }
+        .logo-container img { width: 220px; height: auto; }
+        h2 { color: #333; margin-bottom: 20px; font-size: 20px; text-transform: uppercase; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
+        input { text-transform: uppercase; } /* Fuerza mayúsculas visuales */
+        button { background-color: #ff6600; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #e65c00; }
-        .label-foto { text-align: left; display: block; margin-top: 15px; font-weight: bold; color: #555; font-size: 14px; }
+        .label-input { text-align: left; display: block; font-weight: bold; color: #555; font-size: 13px; margin-top: 5px; }
         #status { margin-top: 15px; font-weight: bold; color: #007bff; }
         .seccion-oculta { display: none; }
     </style>
@@ -24,39 +24,59 @@
 <body>
     <div class="container">
         <div class="logo-container">
-            <img src="https://logistics-josefina.web.app/logo.png" alt="Logo">
+            <img src="https://logistics-josefina.web.app/logo.png" alt="Transporte La Josefina">
         </div>
-        <h2>Control de Logística</h2>
         
         <div id="pantalla-clave">
-            <input type="password" id="clave" placeholder="Ingrese N° de Camión (Clave)">
-            <button onclick="verificarClave()">INGRESAR AL SISTEMA</button>
+            <input type="password" id="clave" placeholder="N° DE CAMIÓN (CLAVE)">
+            <button onclick="verificarClave()">INGRESAR</button>
         </div>
 
         <div id="formulario" class="seccion-oculta">
-            <input type="text" id="transporte" placeholder="Nombre del Transporte">
-            <input type="text" id="chofer" placeholder="Nombre del Chofer">
-            <input type="text" id="cuit" placeholder="Número de CUIT">
+            <label class="label-input">TRANSPORTE:</label>
+            <input type="text" id="transporte" placeholder="NOMBRE DEL TRANSPORTE">
             
-            <select id="estado">
-                <option value="" disabled selected>Seleccione Estado</option>
-                <option value="VACÍO">VACÍO</option>
-                <option value="CARGADO">CARGADO</option>
+            <label class="label-input">CHOFER:</label>
+            <input type="text" id="chofer" placeholder="NOMBRE DEL CHOFER">
+            
+            <label class="label-input">CUIT:</label>
+            <input type="text" id="cuit" placeholder="NÚMERO DE CUIT">
+            
+            <label class="label-input">CHASIS PATENTE:</label>
+            <input type="text" id="chasis" placeholder="MAYÚSCULAS">
+            
+            <label class="label-input">ACOPLADO PATENTE:</label>
+            <input type="text" id="acoplado" placeholder="MAYÚSCULAS">
+            
+            <label class="label-input">TIPO DE UNIDAD:</label>
+            <select id="tipo">
+                <option value="COMÚN">COMÚN</option>
+                <option value="ESCALABLE">ESCALABLE</option>
             </select>
             
-            <input type="text" id="destino" placeholder="Destino / Cliente">
+            <label class="label-input">KILOS:</label>
+            <input type="number" id="kilos" placeholder="CANTIDAD DE KILOS">
+
+            <label class="label-input">ESTADO:</label>
+            <select id="estado" onchange="checkEstado()">
+                <option value="CARGADO">CARGADO</option>
+                <option value="VACÍO">VACÍO</option>
+            </select>
             
-            <label class="label-foto">Foto de Descarga / Remito:</label>
-            <input type="file" id="foto" accept="image/*" capture="camera">
+            <input type="text" id="destino" placeholder="DESTINO / CLIENTE">
             
-            <button onclick="enviarReporte()">ENVIAR REPORTE FINAL</button>
+            <div id="seccion-foto">
+                <label class="label-input">FOTO DEL REMITO (OPCIONAL EN VACÍO):</label>
+                <input type="file" id="foto" accept="image/*" capture="camera">
+            </div>
+            
+            <button onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
         
         <p id="status"></p>
     </div>
 
     <script>
-        // Tu configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC...", 
             authDomain: "control-logistica-2026.firebaseapp.com",
@@ -66,7 +86,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Función para verificar clave y autocompletar
+        function checkEstado() {
+            const estado = document.getElementById('estado').value;
+            // Si está vacío, la foto no es obligatoria visualmente, pero dejamos el campo por si quieren sacarla igual
+        }
+
         function verificarClave() {
             const clave = document.getElementById('clave').value;
             if(clave.trim() !== "") {
@@ -76,64 +100,66 @@
                     document.getElementById('transporte').value = data.transporte || '';
                     document.getElementById('chofer').value = data.chofer || '';
                     document.getElementById('cuit').value = data.cuit || '';
+                    document.getElementById('chasis').value = data.chasis || '';
+                    document.getElementById('acoplado').value = data.acoplado || '';
                 }
                 document.getElementById('pantalla-clave').classList.add('seccion-oculta');
                 document.getElementById('formulario').classList.remove('seccion-oculta');
-            } else {
-                alert("Por favor, escriba el número de camión.");
             }
         }
 
-        // Función para enviar reporte usando ImgBB
         async function enviarReporte() {
             const status = document.getElementById('status');
             const fileInput = document.getElementById('foto');
+            const estado = document.getElementById('estado').value;
             const clave = document.getElementById('clave').value;
 
-            if (fileInput.files.length === 0) {
-                alert("Debe sacar una foto para continuar.");
+            // Lógica: Si está CARGADO, la foto es obligatoria. Si está VACÍO, puede ir sin foto.
+            if (estado === "CARGADO" && fileInput.files.length === 0) {
+                alert("Para camiones CARGADOS es obligatorio subir la foto del remito.");
                 return;
             }
 
-            status.innerText = "Subiendo imagen... por favor espere";
+            status.innerText = "Procesando envío...";
             let urlImagen = "";
 
-            // Subida a ImgBB
-            const formData = new FormData();
-            formData.append("image", fileInput.files[0]);
-
-            try {
-                const respuesta = await fetch("https://api.imgbb.com/1/upload?key=9caa1af89f65dc79bbae40616bdd0b78", {
-                    method: "POST",
-                    body: formData
-                });
-                const resultado = await respuesta.json();
-                urlImagen = resultado.data.url;
-            } catch (error) {
-                alert("Error de conexión al subir la foto.");
-                status.innerText = "";
-                return;
+            if (fileInput.files.length > 0) {
+                status.innerText = "Subiendo imagen...";
+                const formData = new FormData();
+                formData.append("image", fileInput.files[0]);
+                try {
+                    const respuesta = await fetch("https://api.imgbb.com/1/upload?key=9caa1af89f65dc79bbae40616bdd0b78", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const resultado = await respuesta.json();
+                    urlImagen = resultado.data.url;
+                } catch (error) {
+                    alert("Error al subir la foto.");
+                    status.innerText = "";
+                    return;
+                }
             }
 
-            status.innerText = "Registrando reporte...";
-            const datosParaGuardar = {
+            const datos = {
                 camion: clave,
-                transporte: document.getElementById('transporte').value,
-                chofer: document.getElementById('chofer').value,
+                transporte: document.getElementById('transporte').value.toUpperCase(),
+                chofer: document.getElementById('chofer').value.toUpperCase(),
                 cuit: document.getElementById('cuit').value,
-                estado: document.getElementById('estado').value,
-                destino: document.getElementById('destino').value,
+                chasis: document.getElementById('chasis').value.toUpperCase(),
+                acoplado: document.getElementById('acoplado').value.toUpperCase(),
+                tipo: document.getElementById('tipo').value,
+                kilos: document.getElementById('kilos').value,
+                estado: estado,
+                destino: document.getElementById('destino').value.toUpperCase(),
                 foto: urlImagen,
                 fecha: new Date().toLocaleString()
             };
 
-            // Guardar localmente para la próxima vez
-            localStorage.setItem('datos_camion_' + clave, JSON.stringify(datosParaGuardar));
+            localStorage.setItem('datos_camion_' + clave, JSON.stringify(datos));
 
-            // Guardar en Firebase
-            db.collection("reportes").add(datosParaGuardar).then(() => {
-                status.innerText = "¡ENVIADO CORRECTAMENTE!";
-                status.style.color = "green";
+            db.collection("reportes").add(datos).then(() => {
+                status.innerText = "¡ENVIADO CON ÉXITO!";
                 setTimeout(() => location.reload(), 3000);
             }).catch(() => {
                 status.innerText = "Error al conectar con Google.";
