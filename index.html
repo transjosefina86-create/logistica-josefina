@@ -7,19 +7,25 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: Arial; background: #f4f4f4; padding: 20px; text-align: center; }
-        .container { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; border-top: 5px solid #ff6600; }
-        img { width: 150px; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: #ff6600; color: white; font-weight: bold; border: none; cursor: pointer; }
-        #status { color: blue; font-weight: bold; }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; text-align: center; }
+        .container { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; border-top: 5px solid #ff6600; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        img.logo { width: 150px; margin-bottom: 10px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #ff6600; color: white; font-weight: bold; border: none; cursor: pointer; }
+        button:active { background-color: #e65c00; }
+        #status { color: #007bff; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://logistics-josefina.web.app/logo.png" alt="Logo">
+        <img src="https://logistics-josefina.web.app/logo.png" alt="Logo" class="logo">
         <h2>Reporte de Chofer</h2>
-        <input type="password" id="clave" placeholder="Clave del Camión (Ej: 01)">
+        
+        <div id="seccion-clave">
+            <input type="password" id="clave" placeholder="Ingrese Clave del Camión">
+            <button onclick="verificarClave()">INGRESAR</button>
+        </div>
+
         <div id="formulario" style="display:none;">
             <input type="text" id="transporte" placeholder="Transporte">
             <input type="text" id="chofer" placeholder="Nombre del Chofer">
@@ -29,11 +35,10 @@
                 <option value="CARGADO">CARGADO</option>
             </select>
             <input type="text" id="destino" placeholder="Destino / Cliente">
-            <p>Foto del Remito / Descarga:</p>
+            <p style="text-align: left; font-size: 14px; margin-bottom: 5px;">Foto del Remito:</p>
             <input type="file" id="foto" accept="image/*" capture="camera">
             <button onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
-        <button id="btnVerificar" onclick="verificarClave()">INGRESAR</button>
         <p id="status"></p>
     </div>
 
@@ -42,8 +47,6 @@
             apiKey: "AIzaSyC...", 
             authDomain: "control-logistica-2026.firebaseapp.com",
             projectId: "control-logistica-2026",
-            storageBucket: "control-logistica-2026.appspot.com",
-            messagingSenderId: "389274295324",
             appId: "1:389274295324:web:04467597157833633e467d"
         };
         firebase.initializeApp(firebaseConfig);
@@ -51,16 +54,18 @@
 
         function verificarClave() {
             const clave = document.getElementById('clave').value;
-            if(clave) {
-                const savedData = localStorage.getItem('camion_' + clave);
-                if(savedData) {
-                    const data = JSON.parse(savedData);
+            if(clave.trim() !== "") {
+                const saved = localStorage.getItem('camion_' + clave);
+                if(saved) {
+                    const data = JSON.parse(saved);
                     document.getElementById('transporte').value = data.transporte || '';
                     document.getElementById('chofer').value = data.chofer || '';
                     document.getElementById('cuit').value = data.cuit || '';
                 }
+                document.getElementById('seccion-clave').style.display = 'none';
                 document.getElementById('formulario').style.display = 'block';
-                document.getElementById('btnVerificar').style.display = 'none';
+            } else {
+                alert("Por favor, ingrese una clave válida.");
             }
         }
 
@@ -68,26 +73,32 @@
             const status = document.getElementById('status');
             const fileInput = document.getElementById('foto');
             const clave = document.getElementById('clave').value;
-            status.innerText = "Enviando... por favor espere";
 
-            let fotoUrl = "";
-
-            if (fileInput.files.length > 0) {
-                const formData = new FormData();
-                formData.append("image", fileInput.files[0]);
-                try {
-                    const res = await fetch("https://api.imgbb.com/1/upload?key=9caa1af89f65dc79bbae40616bdd0b78", {
-                        method: "POST",
-                        body: formData
-                    });
-                    const data = await res.json();
-                    fotoUrl = data.data.url;
-                } catch (err) {
-                    alert("Error al subir la foto. Intente de nuevo.");
-                    return;
-                }
+            if (fileInput.files.length === 0) {
+                alert("Por favor, saque una foto del remito antes de enviar.");
+                return;
             }
 
+            status.innerText = "Subiendo imagen... espere";
+            let fotoUrl = "";
+
+            const formData = new FormData();
+            formData.append("image", fileInput.files[0]);
+
+            try {
+                const res = await fetch("https://api.imgbb.com/1/upload?key=9caa1af89f65dc79bbae40616bdd0b78", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                fotoUrl = data.data.url;
+            } catch (err) {
+                alert("Error al subir la foto. Revise su conexión.");
+                status.innerText = "";
+                return;
+            }
+
+            status.innerText = "Guardando reporte...";
             const reporte = {
                 camion: clave,
                 transporte: document.getElementById('transporte').value,
@@ -105,7 +116,7 @@
                 status.innerText = "¡REPORTE ENVIADO CON ÉXITO!";
                 setTimeout(() => location.reload(), 3000);
             }).catch(() => {
-                status.innerText = "Error de conexión con Google.";
+                status.innerText = "Error al conectar con la base de datos.";
             });
         }
     </script>
