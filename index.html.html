@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transporte La Josefina - Choferes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyChAJwzI-U7fzaTBM_CvtMuiI7W6qNMjiA",
+            authDomain: "control-logistica-2026.firebaseapp.com",
+            projectId: "control-logistica-2026",
+            appId: "1:54025746892:web:a93f09b73cce755f694569"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let claveActual = "";
+
+        window.ingresar = async () => {
+            const pass = document.getElementById('pass').value;
+            const btn = document.querySelector("#login button");
+            btn.innerText = "Verificando...";
+            
+            const q = query(collection(db, "usuarios"), where("clave", "==", pass));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                claveActual = pass;
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('formulario').style.display = 'block';
+                cargarMemoria(pass);
+            } else {
+                alert("Clave incorrecta.");
+                btn.innerText = "ENTRAR";
+            }
+        };
+
+        const cargarMemoria = (clave) => {
+            const datos = JSON.parse(localStorage.getItem('datos_' + clave)) || {};
+            document.getElementById('trans').value = datos.transporte || "";
+            document.getElementById('cuit_t').value = datos.cuit_trans || "";
+            document.getElementById('chof').value = datos.chofer || "";
+            document.getElementById('cuit_c').value = datos.cuit_chof || "";
+            document.getElementById('chas').value = datos.chasis || "";
+            document.getElementById('acop').value = datos.acoplado || "";
+        };
+
+        window.salir = () => location.reload();
+
+        window.enviarReporte = async () => {
+            const btn = document.getElementById('btn-env');
+            const foto = document.getElementById('foto').files[0];
+            const estado = document.getElementById('est').value;
+
+            if(!foto && estado !== "VACIO") return alert("Por favor, subí la hoja de ruta");
+
+            btn.disabled = true; btn.innerText = "Enviando...";
+
+            const misDatos = {
+                transporte: document.getElementById('trans').value,
+                cuit_trans: document.getElementById('cuit_t').value,
+                chofer: document.getElementById('chof').value,
+                cuit_chof: document.getElementById('cuit_c').value,
+                chasis: document.getElementById('chas').value.toUpperCase(),
+                acoplado: document.getElementById('acop').value.toUpperCase(),
+                equipo: document.getElementById('equipo').value,
+                kilos: document.getElementById('kilos').value || "0",
+                estado: estado,
+                procesado: false
+            };
+            
+            localStorage.setItem('datos_' + claveActual, JSON.stringify(misDatos));
+
+            const enviarBase = async (docData = null) => {
+                try {
+                    await addDoc(collection(db, "viajes"), { ...misDatos, pdfData: docData, fecha: serverTimestamp() });
+                    alert("✅ Enviado con éxito");
+                    document.getElementById('foto').value = "";
+                    btn.disabled = false; btn.innerText = "ENVIAR REPORTE";
+                } catch (e) { alert("Error"); btn.disabled = false; }
+            };
+
+            if (foto) {
+                const reader = new FileReader();
+                reader.readAsDataURL(foto);
+                reader.onload = async () => {
+                    let docData = reader.result;
+                    if (foto.type.includes("image")) {
+                        const pdf = new jspdf.jsPDF();
+                        pdf.addImage(docData, 'JPEG', 10, 10, 190, 250);
+                        docData = pdf.output('datauristring');
+                    }
+                    await enviarBase(docData);
+                };
+            } else { await enviarBase(); }
+        };
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #ff9800 0%, #e65100 100%); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 10px; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 100%; max-width: 400px; box-sizing: border-box; }
+        .logo-text { color: #e65100; text-align: center; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.15); font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+        .sub-text { color: #ff9800; text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
+        button { background: linear-gradient(to right, #ff9800, #e65100); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
+        label { font-size: 11px; font-weight: bold; color: #e65100; display: block; margin-top: 10px; margin-left: 5px; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div id="login" class="card">
+        <h1 class="logo-text">La Josefina</h1>
+        <p class="sub-text">Acceso Choferes</p>
+        <input type="password" id="pass" placeholder="Ingresá tu clave de camión">
+        <button onclick="ingresar()">ENTRAR</button>
+    </div>
+
+    <div id="formulario" class="card" style="display:none;">
+        <h1 class="logo-text">La Josefina</h1>
+        <p class="sub-text">Datos de Carga</p>
+        
+        <label>ESTADO DEL TRABAJO:</label>
+        <select id="est" style="border: 2px solid #ff9800; font-weight: bold;">
+            <option value="CARGADO">🚚 CARGADO</option>
+            <option value="VACIO">✅ VACÍO</option>
+        </select>
+
+        <hr>
+
+        <input type="text" id="trans" placeholder="Empresa de Transporte">
+        <input type="number" id="cuit_t" placeholder="CUIT Empresa">
+        <input type="text" id="chof" placeholder="Nombre del Chofer">
+        <input type="number" id="cuit_c" placeholder="CUIT Chofer">
+        <input type="text" id="chas" style="text-transform:uppercase" placeholder="Patente Chasis">
+        <input type="text" id="acop" style="text-transform:uppercase" placeholder="Patente Acoplado">
+        
+        <label>TIPO DE EQUIPO:</label>
+        <select id="equipo" onchange="document.getElementById('div-kilos').style.display=(this.value=='ESCALABLE')?'block':'none'">
+            <option value="COMUN">EQUIPO COMÚN</option>
+            <option value="ESCALABLE">ESCALABLE</option>
+        </select>
+        
+        <div id="div-kilos" style="display:none;">
+            <input type="number" id="kilos" placeholder="Kilos de carga">
+        </div>
+
+        <label>ADJUNTAR HOJA DE RUTA (FOTO O PDF):</label>
+        <input type="file" id="foto" accept="image/*,application/pdf">
+        
+        <button id="btn-env" onclick="enviarReporte()" style="height: 55px; margin-top: 15px; font-size: 16px;">
+            ENVIAR REPORTE
+        </button>
+        
+        <button onclick="salir()" style="background: #bbb; margin-top: 15px; font-size: 12px; height: 35px;">
+            CERRAR SESIÓN
+        </button>
+    </div>
+</body>
+</html>
