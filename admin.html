@@ -3,57 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Logística - La Josefina</title>
+    <title>Administrador - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 20px; max-width: 1200px; margin: auto; }
         
-        /* Logo Estético Naranja corregido */
-        .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 32px; color: #ff6600; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); text-decoration: none; font-weight: bold; }
+        /* PANTALLA DE LOGIN OBLIGATORIA */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff6600; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 320px; }
         
+        /* PANEL PRINCIPAL */
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 20px; max-width: 1200px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
-        .btn-top { padding: 10px 18px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 13px; margin-left: 10px; display: flex; align-items: center; }
-        .btn-limpiar { background: #d94343; }
-        .btn-claves { background: #4a4a4a; }
+        .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 32px; color: #ff6600; }
 
+        /* TABLA Y COLORES */
         table { width: 100%; border-collapse: collapse; }
         th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+
+        /* SELECTORES DE COLOR */
+        .estado-vacio { background: #27ae60 !important; color: white !important; } /* Verde */
+        .estado-cargado { background: #e67e22 !important; color: white !important; } /* Naranja/Rojo */
         
-        /* Alerta de cambio de datos */
-        .alerta-cambio { color: #d94343; font-weight: bold; text-decoration: underline; }
-
-        select.estado-select { background: #27ae60; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-icon { background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 16px; }
-
-        /* VENTANA EMERGENTE (MODAL) */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 2000; visibility: hidden; }
-        .modal.active { visibility: visible; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 400px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .modal-header { font-weight: bold; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; }
-        .detalles-texto { background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; white-space: pre-wrap; margin-bottom: 20px; height: 200px; overflow-y: auto; }
-        .btn-cerrar { background: #f39c12; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-
-        .oculto { display: none; }
+        select { padding: 8px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-icon { background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; padding: 6px; cursor: pointer; }
+        
+        .oculto { display: none !important; }
     </style>
 </head>
 <body>
 
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color: #ff6600;">La Josefina</h2>
+            <p>Acceso Administrador</p>
+            <input type="password" id="pass-input" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center;" placeholder="Clave">
+            <button onclick="acceder()" style="width: 100%; padding: 12px; background: #222; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">ENTRAR</button>
+        </div>
+    </div>
+
     <div id="admin-panel" class="main-card">
         <div class="header-flex">
             <div class="logo-josefina">🚚 Control Logística</div>
-            <div style="display: flex;">
-                <button class="btn-top btn-limpiar" onclick="limpiarProcesados()">🧹 LIMPIAR PROCESADOS</button>
-                <button class="btn-top btn-claves" onclick="abrirConfigClaves()">🔑 CLAVES</button>
-            </div>
+            <button onclick="borrarSeleccionados()" style="background: #d94343; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">LIMPIAR PROCESADOS</button>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th style="width:30px;"><input type="checkbox" id="check-all"></th>
+                    <th><input type="checkbox" id="check-all"></th>
                     <th>Fecha</th>
                     <th>Estado</th>
                     <th>Chofer</th>
@@ -67,14 +67,6 @@
         </table>
     </div>
 
-    <div id="modal-datos" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">📋 Datos del Viaje</div>
-            <div id="contenido-detalles" class="detalles-texto"></div>
-            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR</button>
-        </div>
-    </div>
-
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyC...",
@@ -85,88 +77,80 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let flotaRegistrada = {};
+        // FUNCIÓN DE LOGIN
+        function acceder() {
+            const pass = document.getElementById('pass-input').value;
+            if (pass === "1234") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                escucharReportes();
+            } else {
+                alert("Clave incorrecta");
+            }
+        }
 
-        // 1. Cargar la configuración de la flota para comparar patentes
-        db.collection("flota").onSnapshot(snap => {
-            snap.forEach(doc => { flotaRegistrada[doc.id] = doc.data(); });
-            cargarReportes(); // Recargar reportes cuando cambia la flota
-        });
-
-        function cargarReportes() {
+        function escucharReportes() {
             db.collection("reportes").orderBy("fecha", "desc").onSnapshot((snapshot) => {
                 const tbody = document.getElementById('lista-reportes');
                 tbody.innerHTML = "";
                 snapshot.forEach((doc) => {
                     const r = doc.data();
                     const id = doc.id;
-                    const config = flotaRegistrada[r.camion] || {};
-
-                    // Comparar patentes para marcar en ROJO si son distintas
-                    const chasisClass = (config.patente_chasis && config.patente_chasis !== r.chasis) ? 'alerta-cambio' : '';
-                    const acopladoClass = (config.patente_acoplado && config.patente_acoplado !== r.acoplado) ? 'alerta-cambio' : '';
-
+                    
+                    // Lógica de color del botón según estado
+                    const claseColor = (r.estado === "VACÍO") ? "estado-vacio" : "estado-cargado";
+                    
                     tbody.innerHTML += `
                         <tr>
-                            <td><input type="checkbox" class="report-check" data-id="${id}"></td>
+                            <td><input type="checkbox" class="check-item" data-id="${id}"></td>
                             <td><small>${r.fecha}</small></td>
                             <td>
-                                <select class="estado-select" onchange="cambiarEstado('${id}', this.value)">
+                                <select class="${claseColor}" onchange="actualizarEstado('${id}', this.value)">
                                     <option value="VACÍO" ${r.estado === 'VACÍO' ? 'selected' : ''}>VACÍO</option>
                                     <option value="CARGADO" ${r.estado === 'CARGADO' ? 'selected' : ''}>CARGADO</option>
                                 </select>
                             </td>
                             <td><b>${r.chofer}</b></td>
-                            <td class="${chasisClass}">${r.chasis}</td>
-                            <td class="${acopladoClass}">${r.acoplado}</td>
-                            <td><button class="btn-icon" onclick="abrirModal('${id}')">📋</button></td>
-                            <td>${r.foto ? `<button class="btn-icon" onclick="verPDF('${r.foto}')">📄</button>` : '-'}</td>
+                            <td>${r.chasis}</td>
+                            <td>${r.acoplado}</td>
+                            <td><button class="btn-icon" onclick="verDetalles('${id}')">📋</button></td>
+                            <td>
+                                ${r.foto ? `<button class="btn-icon" onclick="abrirPDF('${r.foto}')">📄</button>` : '-'}
+                            </td>
                         </tr>
                     `;
                 });
             });
         }
 
-        function abrirModal(id) {
-            db.collection("reportes").doc(id).get().then(doc => {
-                const d = doc.data();
-                const texto = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_transporte}\nCHOFER: ${d.chofer}\nCUIT: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nEQUIPO: ${d.tipo}\nKILOS: ${d.kilos || 0}`;
-                document.getElementById('contenido-detalles').innerText = texto;
-                document.getElementById('modal-datos').classList.add('active');
-            });
+        function actualizarEstado(id, nuevoValor) {
+            db.collection("reportes").doc(id).update({ estado: nuevoValor });
         }
 
-        function cerrarModal() { document.getElementById('modal-datos').classList.remove('active'); }
-
-        function verPDF(url) {
+        function abrirPDF(url) {
             const win = window.open("", "_blank");
             win.document.write(`<html><body style="margin:0;display:flex;justify-content:center;"><img src="${url}" style="max-width:100%;" onload="window.print();"></body></html>`);
             win.document.close();
         }
 
-        function cambiarEstado(id, valor) { db.collection("reportes").doc(id).update({ estado: valor }); }
-
-        function limpiarProcesados() {
-            const seleccionados = document.querySelectorAll('.report-check:checked');
-            if(seleccionados.length === 0) return alert("Seleccioná viajes para borrar");
-            if(confirm("¿Borrar seleccionados?")) {
-                seleccionados.forEach(cb => db.collection("reportes").doc(cb.dataset.id).delete());
+        function borrarSeleccionados() {
+            const items = document.querySelectorAll('.check-item:checked');
+            if (items.length === 0) return alert("Selecciona viajes");
+            if (confirm("¿Borrar seleccionados?")) {
+                items.forEach(i => db.collection("reportes").doc(i.dataset.id).delete());
             }
         }
-
-        function abrirConfigClaves() {
-            const cam = prompt("N° Camión:");
-            const ch = prompt("Patente Chasis fija:");
-            const ac = prompt("Patente Acoplado fija:");
-            const cl = prompt("Clave:");
-            if(cam && cl) {
-                db.collection("flota").doc(cam).set({ patente_chasis: ch, patente_acoplado: ac, clave: cl });
-                alert("Guardado. Ahora si el chofer manda otra patente, te avisará en rojo.");
-            }
+        
+        function verDetalles(id) {
+            db.collection("reportes").doc(id).get().then(doc => {
+                const d = doc.data();
+                alert(`DETALLES:\nTransporte: ${d.transporte}\nDestino: ${d.destino}\nUnidad: ${d.tipo}\nKilos: ${d.kilos}`);
+            });
         }
     </script>
 </body>
 </html>
+
 
 
 
