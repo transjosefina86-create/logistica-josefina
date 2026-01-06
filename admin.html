@@ -6,25 +6,29 @@
     <title>Admin - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff6600; display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 320px; }
-        .main-card { background: white; border-radius: 15px; padding: 25px; max-width: 1300px; margin: auto; display: none; }
+        .main-card { background: white; border-radius: 15px; padding: 25px; max-width: 1400px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
         .select-estado { padding: 6px; border-radius: 5px; color: white; font-weight: bold; border: none; cursor: pointer; }
         .bg-vacio { background: #27ae60 !important; }
         .bg-cargado { background: #e67e22 !important; }
-        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .btn-header { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
+        .btn-ver { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 5px; }
+
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 400px; }
-        /* OJITO PROLIJO: Renglones pegados */
-        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; white-space: pre-line; font-family: monospace; font-size: 15px; line-height: 1.2; margin-top: 10px; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 420px; }
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; white-space: pre-wrap; font-family: monospace; font-size: 15px; line-height: 1.1; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -41,8 +45,9 @@
         <div class="header-flex">
             <div class="logo-josefina">Control Logística</div>
             <div>
-                <button onclick="verClaves()" style="padding:10px; border-radius:8px; cursor:pointer; font-weight: bold;">🔑 CLAVES</button>
-                <button onclick="borrarVarios()" style="background:#d94343; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight: bold;">🧹 LIMPIAR</button>
+                <button class="btn-header" style="background:#222" onclick="verClaves()">📋 CLAVES</button>
+                <button class="btn-header" style="background:#4a4a4a" onclick="nuevaClave()">🔑 NUEVA</button>
+                <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR</button>
             </div>
         </div>
         <table>
@@ -52,7 +57,7 @@
                     <th>Fecha / Hora</th>
                     <th>Estado</th>
                     <th>Chofer</th>
-                    <th>Chasis / Acop.</th>
+                    <th>Patentes</th>
                     <th>Datos</th>
                     <th>Comprobante</th>
                 </tr>
@@ -87,7 +92,6 @@
                 let reportes = [];
                 snap.forEach(doc => reportes.push({ id: doc.id, ...doc.data() }));
                 
-                // ORDEN: Más temprano arriba (8:10 arriba de 8:20)
                 reportes.sort((a, b) => {
                     if (a.estado === "CARGADO" && b.estado !== "CARGADO") return 1;
                     if (a.estado !== "CARGADO" && b.estado === "CARGADO") return -1;
@@ -113,7 +117,8 @@
                             <td><button onclick="verInfo('${r.id}')" style="cursor:pointer; border:none; background:none; font-size:18px;">👁️</button></td>
                             <td>
                                 ${r.foto ? `
-                                    <button class="btn-pdf" onclick="generarPDFConFoto('${r.foto}', '${r.chofer}', '${r.fecha}')">PDF</button>
+                                    <button class="btn-ver" onclick="window.open('${r.foto}', '_blank')">VER</button>
+                                    <button class="btn-pdf" onclick="imprimirTicket('${r.foto}', '${r.chofer}', '${r.fecha}')">PDF</button>
                                 ` : '---'}
                             </td>
                         </tr>`;
@@ -121,7 +126,22 @@
             });
         }
 
-        function cambiarEstado(id, nuevo) { db.collection("reportes").doc(id).update({ estado: nuevo }); }
+        function imprimirTicket(url, chofer, fecha) {
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                <head><title>Ticket - ${chofer}</title></head>
+                <body style="margin:0; padding:20px; font-family:sans-serif; text-align:center;">
+                    <h2 style="color:#ff6600; margin-bottom:5px;">LA JOSEFINA - COMPROBANTE</h2>
+                    <p style="margin:0;"><b>Chofer:</b> ${chofer} | <b>Fecha:</b> ${fecha}</p>
+                    <hr style="margin:15px 0;">
+                    <img src="${url}" style="width:100%; max-width:750px; border:1px solid #ddd;" onload="window.print();">
+                    <p style="color:#888; font-size:12px; margin-top:15px;">Si la imagen no carga, cierre esta ventana y pruebe de nuevo.</p>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        }
 
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
@@ -138,44 +158,16 @@ ACOPLADO: ${d.acoplado}`;
             });
         }
 
-        // FUNCIÓN PDF MEJORADA: Usa un proxy para evitar imagen en blanco
-        async function generarPDFConFoto(url, chofer, fecha) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            alert("Generando PDF... espere un momento.");
-
-            // Usamos un proxy de imágenes para saltar el bloqueo de tmpfiles
-            const proxyUrl = "https://images.weserv.nl/?url=" + url.replace("https://", "");
-
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = proxyUrl;
-
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                const base64 = canvas.toDataURL('image/jpeg', 0.7);
-
-                doc.setFontSize(18);
-                doc.text("LA JOSEFINA - COMPROBANTE", 10, 15);
-                doc.setFontSize(12);
-                doc.text(`Chofer: ${chofer} | Fecha: ${fecha}`, 10, 25);
-                doc.addImage(base64, 'JPEG', 10, 35, 185, 240);
-                doc.save(`Ticket_${chofer}.pdf`);
-            };
-            img.onerror = function() {
-                alert("No se pudo cargar la imagen para el PDF. Intente abrirla primero con el botón VER.");
-            };
-        }
-
+        function cambiarEstado(id, nuevo) { db.collection("reportes").doc(id).update({ estado: nuevo }); }
         function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
         function seleccionarTodo(s) { document.querySelectorAll('.viaje-check').forEach(c => c.checked = s.checked); }
         function borrarVarios() {
             const sels = document.querySelectorAll('.viaje-check:checked');
             if(confirm("¿Borrar seleccionados?")) sels.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
+        }
+        function nuevaClave() {
+            const n = prompt("Nombre Chofer:"); const c = prompt("Clave:");
+            if(n && c) db.collection("accesos_choferes").doc(n).set({ clave: c });
         }
         function verClaves() {
             db.collection("accesos_choferes").get().then(snap => {
@@ -188,6 +180,7 @@ ACOPLADO: ${d.acoplado}`;
     </script>
 </body>
 </html>
+
 
 
 
