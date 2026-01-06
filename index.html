@@ -55,7 +55,7 @@
 
             <label>COMPROBANTE (OPCIONAL)</label>
             <button type="button" class="btn-foto" onclick="document.getElementById('fileInput').click()">📸 TOMAR FOTO / SUBIR</button>
-            <input type="file" id="fileInput" accept="image/*,application/pdf" capture="camera" class="oculto" onchange="subirAImgBB()">
+            <input type="file" id="fileInput" accept="image/*" capture="camera" class="oculto" onchange="subirAImgBB()">
             <div id="status" class="status-foto"></div>
 
             <button id="btn-envio" style="background:#27ae60; margin-top:20px;" onclick="enviarReporte()">ENVIAR REPORTE</button>
@@ -63,7 +63,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyC...", 
             authDomain: "control-logistica-2026.firebaseapp.com", 
@@ -75,7 +74,6 @@
         
         let urlImagenFinal = "";
 
-        // Recordar datos guardados
         window.onload = function() {
             if(localStorage.getItem('trans')) {
                 document.getElementById('trans').value = localStorage.getItem('trans');
@@ -95,24 +93,22 @@
                     document.getElementById('saludo').innerText = "Hola " + n;
                     document.getElementById('pantalla-login').classList.add('oculto');
                     document.getElementById('pantalla-reporte').classList.remove('oculto');
-                } else { alert("Datos incorrectos. Hablá con Gabriel."); }
+                } else { alert("Datos incorrectos."); }
             });
         }
 
-        // SUBIDA A IMGBB
         function subirAImgBB() {
             const fileInput = document.getElementById('fileInput');
             const status = document.getElementById('status');
-            
             if (fileInput.files.length === 0) return;
 
-            status.innerText = "⏳ SUBIENDO ARCHIVO...";
+            status.innerText = "⏳ SUBIENDO...";
             status.style.color = "#f39c12";
 
             const formData = new FormData();
             formData.append("image", fileInput.files[0]);
 
-            // USANDO TU CLAVE DE IMGBB: 37782b54d39999a805060851ec650117
+            // Clave: 37782b54d39999a805060851ec650117
             fetch("https://api.imgbb.com/1/upload?key=37782b54d39999a805060851ec650117", {
                 method: "POST",
                 body: formData
@@ -121,16 +117,16 @@
             .then(data => {
                 if (data.success) {
                     urlImagenFinal = data.data.url;
-                    status.innerText = "✅ ARCHIVO CARGADO";
+                    status.innerText = "✅ CARGADO";
                     status.style.color = "#27ae60";
                 } else {
-                    alert("Error al subir el archivo.");
-                    status.innerText = "❌ ERROR AL SUBIR";
+                    status.innerText = "❌ ERROR: " + data.error.message;
                     status.style.color = "red";
                 }
             })
             .catch(err => {
-                alert("Error de conexión con ImgBB");
+                status.innerText = "❌ ERROR DE RED";
+                status.style.color = "red";
             });
         }
 
@@ -138,7 +134,6 @@
             const btn = document.getElementById('btn-envio');
             btn.disabled = true; btn.innerText = "ENVIANDO...";
 
-            // Guardar fijos para la próxima vez
             localStorage.setItem('trans', document.getElementById('trans').value);
             localStorage.setItem('cuit_trans', document.getElementById('cuit_trans').value);
             localStorage.setItem('chofer_n', document.getElementById('chofer_n').value);
@@ -154,7 +149,7 @@
                 chasis: document.getElementById('chas').value.toUpperCase(),
                 acoplado: document.getElementById('acop').value.toUpperCase(),
                 lugar_descarga: document.getElementById('descarga').value,
-                estado: document.getElementById('estado_manual').value, // Estado manual
+                estado: document.getElementById('estado_manual').value,
                 fecha: new Date().toLocaleString(),
                 foto: urlImagenFinal 
             }).then(() => {
@@ -163,16 +158,16 @@
                 document.getElementById('status').innerText = "";
                 urlImagenFinal = "";
                 btn.innerText = "ENVIAR REPORTE";
-                btn.disabled = false; 
-            }).catch(err => {
-                alert("Error al enviar a Firebase");
                 btn.disabled = false;
-                btn.innerText = "ENVIAR REPORTE";
+            }).catch(err => {
+                alert("Error al enviar.");
+                btn.disabled = false;
             });
         }
     </script>
 </body>
 </html>
+
 
 
 
