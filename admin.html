@@ -8,41 +8,32 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --naranja: #ff6600; --naranja-soft: #fff5ed; --oscuro: #222; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        :root { --naranja: #ff6600; --oscuro: #222; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         
-        /* Pantalla de Login Admin */
         #login-admin { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--oscuro); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-card { background: white; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
-        /* Panel Principal */
-        .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; max-width: 1000px; margin: auto; }
-        
+        .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; max-width: 1100px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
         .logo-admin { font-family: 'Brush Script MT', cursive; font-size: 35px; color: var(--naranja); }
 
-        /* Tabla Estilizada */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 15px; overflow: hidden; }
-        th { background: var(--naranja); color: white; padding: 15px; text-align: left; font-size: 14px; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--naranja); color: white; padding: 15px; text-align: left; }
         td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
-        tr:hover { background-color: #fdfdfd; }
 
-        /* Botones Premium */
-        .btn-accion { background: var(--oscuro); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 2px; }
-        .btn-accion:hover { background: var(--naranja); transform: translateY(-2px); }
-        
+        .btn-accion { background: var(--oscuro); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-ver { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
 
-        .estado-chip { padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 11px; border: none; cursor: pointer; color: white; }
-        .vacio { background: #27ae60; box-shadow: 0 3px 8px rgba(39,174,96,0.3); }
-        .cargado { background: #e67e22; box-shadow: 0 3px 8px rgba(230,126,34,0.3); }
+        .estado-chip { padding: 6px 12px; border-radius: 20px; font-weight: bold; color: white; border: none; cursor: pointer; }
+        .vacio { background: #27ae60; }
+        .cargado { background: #e67e22; }
 
-        /* Modal Detalles */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; position: relative; }
-        .info-row { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
-        .info-label { color: var(--naranja); font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; }
+        .info-row { border-bottom: 1px solid #eee; padding: 8px 0; display: flex; justify-content: space-between; }
+        .info-label { color: var(--naranja); font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -50,42 +41,40 @@
     <div id="login-admin">
         <div class="login-card">
             <div class="logo-admin">La Josefina</div>
-            <h2 style="margin-bottom: 20px;">Panel de Control</h2>
-            <input type="password" id="pass-adm" placeholder="Clave Maestra" style="padding:15px; width: 80%; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px;">
-            <button class="btn-accion" onclick="loginAdm()" style="width: 100%; padding: 15px;">ACCEDER AL SISTEMA</button>
+            <input type="password" id="pass-adm" placeholder="Clave Admin" style="padding:15px; width: 80%; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px;">
+            <button class="btn-accion" onclick="loginAdm()" style="width: 100%; padding: 15px;">ENTRAR</button>
         </div>
     </div>
 
     <div class="main-card" id="panel">
         <div class="header">
-            <div class="logo-admin">La Josefina <span style="font-family: sans-serif; font-size: 14px; color: #666;">- Administración</span></div>
+            <div class="logo-admin">La Josefina <small style="font-family:sans-serif; font-size:12px; color:#666">Panel 24hs</small></div>
             <div>
                 <button class="btn-accion" onclick="nuevaClave()">+ CHOFER</button>
-                <button class="btn-accion" onclick="verClaves()">LISTADO</button>
-                <button class="btn-accion" onclick="borrarSeleccionados()" style="background: #c0392b;">BORRAR</button>
+                <button class="btn-accion" onclick="verClaves()">LISTA</button>
+                <button class="btn-accion" onclick="borrarSels()" style="background:#c0392b;">BORRAR</button>
             </div>
         </div>
-
         <table>
             <thead>
                 <tr>
-                    <th><input type="checkbox" onclick="seleccionarTodo(this)"></th>
+                    <th><input type="checkbox" onclick="selTodo(this)"></th>
                     <th>Hora</th>
                     <th>Estado</th>
                     <th>Chofer</th>
-                    <th>Camión</th>
+                    <th>Patentes</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="tabla-reportes"></tbody>
+            <tbody id="tabla"></tbody>
         </table>
     </div>
 
     <div id="modal" class="modal">
         <div class="modal-content">
-            <h3 style="color: var(--naranja); border-bottom: 2px solid var(--naranja); padding-bottom: 10px;">Detalles del Viaje</h3>
+            <h3 style="color: var(--naranja);">Detalles del Registro</h3>
             <div id="detalle-info"></div>
-            <button class="btn-accion" onclick="cerrarModal()" style="width: 100%; margin-top: 20px;">CERRAR VENTANA</button>
+            <button class="btn-accion" onclick="document.getElementById('modal').style.display='none'" style="width: 100%; margin-top: 20px;">CERRAR</button>
         </div>
     </div>
 
@@ -98,111 +87,73 @@
             if(document.getElementById('pass-adm').value === "1234") {
                 document.getElementById('login-admin').style.display='none';
                 document.getElementById('panel').style.display='block';
-                escucharReportes();
-            } else { alert("Clave Incorrecta"); }
+                cargar();
+            }
         }
 
-        function escucharReportes() {
-            db.collection("reportes").onSnapshot(snapshot => {
-                const tbody = document.getElementById('tabla-reportes');
-                tbody.innerHTML = "";
-                let reportes = [];
-                
-                snapshot.forEach(doc => { reportes.push({id: doc.id, ...doc.data()}); });
+        function cargar() {
+            db.collection("reportes").onSnapshot(snap => {
+                const t = document.getElementById('tabla'); t.innerHTML = "";
+                let reps = []; snap.forEach(doc => reps.push({id: doc.id, ...doc.data()}));
 
-                // ORDENAR: Primero por estado (VACIO/CARGADO) y luego por HORA 24hs
-                reportes.sort((a, b) => {
+                reps.sort((a, b) => {
                     if (a.estado === "VACÍO" && b.estado === "CARGADO") return -1;
                     if (a.estado === "CARGADO" && b.estado === "VACÍO") return 1;
-                    // Lógica para ordenar por fecha y hora real
                     const fA = a.fecha.split(', ')[0].split('/').reverse().join('-') + 'T' + a.fecha.split(', ')[1];
                     const fB = b.fecha.split(', ')[0].split('/').reverse().join('-') + 'T' + b.fecha.split(', ')[1];
                     return new Date(fA) - new Date(fB);
                 });
 
-                reportes.forEach(r => {
-                    const claseEstado = r.estado === "VACÍO" ? "vacio" : "cargado";
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><input type="checkbox" class="chk-borrar" data-id="${r.id}"></td>
-                            <td><b style="color:#666">${r.fecha} hs</b></td>
-                            <td><button class="estado-chip ${claseEstado}" onclick="cambiarEstado('${r.id}','${r.estado}')">${r.estado}</button></td>
-                            <td><b style="color:var(--naranja)">${r.chofer}</b></td>
-                            <td>${r.chasis} / ${r.acoplado}</td>
-                            <td>
-                                <button class="btn-ver" onclick="verDetalles('${r.id}')">👁️</button>
-                                ${r.foto ? `<button class="btn-pdf" onclick="generarPDF('${r.foto}','${r.chofer}','${r.fecha}')">PDF</button>` : ''}
-                            </td>
-                        </tr>`;
+                reps.forEach(r => {
+                    const c = r.estado === "VACÍO" ? "vacio" : "cargado";
+                    t.innerHTML += `<tr>
+                        <td><input type="checkbox" class="ck" data-id="${r.id}"></td>
+                        <td><b>${r.fecha}</b></td>
+                        <td><button class="estado-chip ${c}" onclick="cambiarEst('${r.id}','${r.estado}')">${r.estado}</button></td>
+                        <td><b style="color:var(--naranja)">${r.chofer}</b></td>
+                        <td>${r.chasis} / ${r.acoplado}</td>
+                        <td>
+                            <button class="btn-ver" onclick="ver('${r.id}')">👁️</button>
+                            ${r.foto ? `<button class="btn-pdf" onclick="pdf('${r.foto}','${r.chofer}','${r.fecha}')">PDF</button>` : ''}
+                        </td>
+                    </tr>`;
                 });
             });
         }
 
-        async function generarPDF(url, nombre, fecha) {
+        function pdf(base64, nom, fecha) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = url;
-            img.onload = function() {
-                doc.setFontSize(18); doc.setTextColor(255, 102, 0);
-                doc.text("LA JOSEFINA - REGISTRO DE CARGA", 10, 20);
-                doc.setFontSize(12); doc.setTextColor(0, 0, 0);
-                doc.text(`Chofer: ${nombre}`, 10, 30);
-                doc.text(`Fecha/Hora: ${fecha} hs`, 10, 38);
-                doc.addImage(img, 'JPEG', 10, 45, 180, 240);
-                doc.save(`Ticket_${nombre}_${fecha.replace(/[/, :]/g, '_')}.pdf`);
-            };
+            doc.setFontSize(20); doc.setTextColor(255,102,0);
+            doc.text("LA JOSEFINA - TICKET DE CARGA", 10, 20);
+            doc.setFontSize(12); doc.setTextColor(0);
+            doc.text(`Chofer: ${nom} | Fecha: ${fecha} hs`, 10, 30);
+            doc.addImage(base64, 'JPEG', 10, 40, 180, 240);
+            doc.save(`Ticket_${nom}.pdf`);
         }
 
-        function verDetalles(id) {
+        function ver(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                const html = `
-                    <div class="info-row"><span class="info-label">Transporte:</span> <span>${d.transporte}</span></div>
-                    <div class="info-row"><span class="info-label">CUIT Trans:</span> <span>${d.cuit_trans}</span></div>
-                    <div class="info-row"><span class="info-label">Chofer:</span> <span>${d.chofer}</span></div>
-                    <div class="info-row"><span class="info-label">CUIT Chof:</span> <span>${d.cuit_chofer}</span></div>
-                    <div class="info-row"><span class="info-label">Chasis:</span> <span>${d.chasis}</span></div>
-                    <div class="info-row"><span class="info-label">Acoplado:</span> <span>${d.acoplado}</span></div>
-                    <div class="info-row"><span class="info-label">Lugar:</span> <span>${d.lugar_descarga}</span></div>
-                `;
-                document.getElementById('detalle-info').innerHTML = html;
-                document.getElementById('modal').style.display = 'flex';
+                document.getElementById('detalle-info').innerHTML = `
+                    <div class="info-row"><span class="info-label">Transporte:</span><span>${d.transporte}</span></div>
+                    <div class="info-row"><span class="info-label">Chofer:</span><span>${d.chofer}</span></div>
+                    <div class="info-row"><span class="info-label">Chasis:</span><span>${d.chasis}</span></div>
+                    <div class="info-row"><span class="info-label">Acoplado:</span><span>${d.acoplado}</span></div>
+                    <div class="info-row"><span class="info-label">Destino:</span><span>${d.lugar_descarga}</span></div>`;
+                document.getElementById('modal').style.display='flex';
             });
         }
 
-        function cambiarEstado(id, actual) {
-            const nuevo = actual === "VACÍO" ? "CARGADO" : "VACÍO";
-            db.collection("reportes").doc(id).update({ estado: nuevo });
-        }
-
-        function nuevaClave() {
-            const nombre = prompt("Nombre del Chofer:");
-            const clave = prompt("Asignar Clave Numérica:");
-            if(nombre && clave) { db.collection("accesos_choferes").doc(nombre).set({ clave: clave }); alert("Chofer Guardado"); }
-        }
-
-        function verClaves() {
-            db.collection("accesos_choferes").get().then(snap => {
-                let lista = "CHOFERES REGISTRADOS:\n\n";
-                snap.forEach(doc => { lista += `• ${doc.id}: ${doc.data().clave}\n`; });
-                alert(lista);
-            });
-        }
-
-        function cerrarModal() { document.getElementById('modal').style.display = 'none'; }
-        function seleccionarTodo(fuente) { document.querySelectorAll('.chk-borrar').forEach(c => c.checked = fuente.checked); }
-        function borrarSeleccionados() {
-            if(confirm("¿Seguro que desea eliminar los registros seleccionados?")) {
-                document.querySelectorAll('.chk-borrar:checked').forEach(c => {
-                    db.collection("reportes").doc(c.dataset.id).delete();
-                });
-            }
-        }
+        function cambiarEst(id, est) { db.collection("reportes").doc(id).update({estado: est === "VACÍO" ? "CARGADO" : "VACÍO"}); }
+        function nuevaClave() { const n = prompt("Nombre:"); const c = prompt("Clave:"); if(n && c) db.collection("accesos_choferes").doc(n).set({clave:c}); }
+        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d=>l+=`${d.id}: ${d.data().clave}\n`); alert(l); }); }
+        function selTodo(s) { document.querySelectorAll('.ck').forEach(x => x.checked = s.checked); }
+        function borrarSels() { if(confirm("¿Borrar seleccionados?")) document.querySelectorAll('.ck:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); }
     </script>
 </body>
 </html>
+
 
 
 
