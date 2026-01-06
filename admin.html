@@ -13,17 +13,23 @@
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; max-width: 1400px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
+        
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
+        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; text-transform: uppercase; }
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
         .select-estado { padding: 8px 12px; border-radius: 6px; font-weight: bold; border: none; color: white; cursor: pointer; }
         .bg-vacio { background: #27ae60 !important; }
         .bg-cargado { background: #e67e22 !important; }
-        .btn-archivo { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        .btn-archivo { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
-        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; }
+        
         .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
+        .btn-cerrar { background: #ff6600; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -45,6 +51,7 @@
                 <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR TABLA</button>
             </div>
         </div>
+
         <table>
             <thead>
                 <tr>
@@ -67,12 +74,17 @@
         <div class="modal-content">
             <div id="titulo-modal" style="font-weight:bold; font-size:18px;">📋 Información</div>
             <div id="txt-detalles" class="modal-body"></div>
-            <button style="background: #ff6600; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;" onclick="cerrarModal()">CERRAR</button>
+            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR</button>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyC...", 
+            authDomain: "control-logistica-2026.firebaseapp.com", 
+            projectId: "control-logistica-2026", 
+            appId: "1:389274295324:web:04467597157833633e467d" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -90,17 +102,19 @@
                 let reportes = [];
                 snapshot.forEach(doc => { reportes.push({ id: doc.id, ...doc.data() }); });
 
-                // ORDEN: Vacíos arriba, y el más reciente primero
+                // ORDEN: Vacíos arriba (por hora de llegada), Cargados abajo
                 reportes.sort((a, b) => {
-                    if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
-                    if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
-                    return new Date(b.fecha) - new Date(a.fecha);
+                    if (a.estado === "CARGADO" && b.estado !== "CARGADO") return 1;
+                    if (a.estado !== "CARGADO" && b.estado === "CARGADO") return -1;
+                    
+                    // Orden cronológico: el que llegó primero (8:10) arriba del que llegó después (8:20)
+                    return new Date(a.fecha) - new Date(b.fecha);
                 });
 
                 tbody.innerHTML = "";
                 reportes.forEach(r => {
                     const claseEstado = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
-                    const btnArchivo = r.foto ? `<button class="btn-archivo" onclick="window.open('${r.foto}', '_blank')">📄 VER</button>` : '<span style="color:#ccc">Sin foto</span>';
+                    const botonFoto = r.foto ? `<button class="btn-archivo" onclick="window.open('${r.foto}', '_blank')">📄 VER FOTO</button>` : '<span style="color:#ccc">Sin foto</span>';
 
                     tbody.innerHTML += `
                         <tr>
@@ -117,7 +131,7 @@
                             <td>${r.chasis}</td>
                             <td>${r.acoplado}</td>
                             <td><button onclick="verInfo('${r.id}')">📋</button></td>
-                            <td>${btnArchivo}</td>
+                            <td>${botonFoto}</td>
                         </tr>
                     `;
                 });
@@ -127,7 +141,9 @@
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                document.getElementById('txt-detalles').innerText = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_trans}\nCHOFER: ${d.chofer}\nCUIT: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA: ${d.lugar_descarga}`;
+                const msg = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_trans}\nCHOFER: ${d.chofer}\nCUIT: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA: ${d.lugar_descarga}`;
+                document.getElementById('titulo-modal').innerText = "📋 Datos Administrativos";
+                document.getElementById('txt-detalles').innerText = msg;
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
@@ -135,32 +151,51 @@
         function cambiarEstado(id, val) { db.collection("reportes").doc(id).update({ estado: val }); }
         function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
         function seleccionarTodo(source) { document.querySelectorAll('.viaje-check').forEach(cb => cb.checked = source.checked); }
+        
         function borrarVarios() {
             const checks = document.querySelectorAll('.viaje-check:checked');
-            if(confirm("¿Borrar seleccionados?")) checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
+            if(checks.length > 0 && confirm("¿Borrar seleccionados?")) {
+                checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
+            }
         }
+
         function nuevaClaveChofer() {
             const nom = prompt("Nombre del Chofer:");
             const cla = prompt("Asignale una Clave:");
-            if(nom && cla) db.collection("accesos_choferes").doc(nom).set({ clave: cla });
+            if(nom && cla) {
+                db.collection("accesos_choferes").doc(nom).set({ clave: cla });
+                alert("Guardado.");
+            }
         }
+
         function verClavesAsignadas() {
             db.collection("accesos_choferes").get().then(snap => {
                 const contenedor = document.getElementById('txt-detalles');
                 contenedor.innerHTML = "";
+                document.getElementById('titulo-modal').innerText = "📋 Gestión de Claves";
                 snap.forEach(doc => {
-                    contenedor.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;">
-                        <span>👤 <b>${doc.id}</b> - Clave: ${doc.data().clave}</span>
-                        <button onclick="eliminarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✖</button>
-                    </div>`;
+                    contenedor.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;">
+                            <span>👤 <b>${doc.id}</b> - Clave: ${doc.data().clave}</span>
+                            <button onclick="eliminarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✖</button>
+                        </div>`;
                 });
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
-        function eliminarAcceso(id) { if(confirm("¿Eliminar?")) db.collection("accesos_choferes").doc(id).delete().then(() => verClavesAsignadas()); }
+
+        function eliminarAcceso(nombre) {
+            if(confirm("¿Eliminar a " + nombre + "?")) {
+                db.collection("accesos_choferes").doc(nombre).delete().then(() => {
+                    alert("Eliminado.");
+                    verClavesAsignadas();
+                });
+            }
+        }
     </script>
 </body>
 </html>
+
 
 
 
