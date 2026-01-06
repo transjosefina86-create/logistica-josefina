@@ -15,7 +15,10 @@
         input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
         button { background: #222; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 15px; }
         
+        /* Estilo para el botón de foto */
+        .btn-foto { background: #f39c12; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .oculto { display: none; }
+        .status-foto { font-size: 11px; color: green; text-align: center; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -26,19 +29,19 @@
         <div id="pantalla-login">
             <h3 style="text-align:center;">Ingreso Autorizado</h3>
             <input type="text" id="login-nombre" placeholder="Tu Nombre Completo">
-            <input type="password" id="login-clave" placeholder="Clave que te dio Gabriel">
+            <input type="password" id="login-clave" placeholder="Clave Asignada">
             <button onclick="validarYEntrar()">INGRESAR</button>
         </div>
 
         <div id="pantalla-reporte" class="oculto">
-            <h4 id="msj-bienvenida" style="margin:0; color:#333;"></h4>
+            <h4 id="msj-bienvenida" style="margin:0; color:#333; text-align: center;"></h4>
             
             <label>DATOS DEL TRANSPORTE</label>
             <input type="text" id="transporte" placeholder="Nombre de la Empresa">
-            <input type="text" id="cuit_transporte" placeholder="CUIT de la Empresa">
+            <input type="text" id="cuit_transporte" placeholder="CUIT del Transporte">
             
             <label>DATOS DEL CHOFER</label>
-            <input type="text" id="chofer_nombre" placeholder="Nombre y Apellido">
+            <input type="text" id="chofer_nombre" placeholder="Nombre y Apellido del Chofer">
             <input type="text" id="chofer_cuit" placeholder="CUIT del Chofer">
             
             <label>DATOS DEL CAMIÓN</label>
@@ -48,13 +51,18 @@
             <label>LUGAR DE DESCARGA</label>
             <input type="text" id="lugar_descarga" placeholder="¿Dónde descargaste? (Ej: Aceitera)">
             
-            <p style="font-size:11px; color:gray; text-align:center;">* La foto se adjunta automáticamente por la APK.</p>
+            <label>COMPROBANTE / REMITO</label>
+            <button type="button" class="btn-foto" onclick="document.getElementById('archivo-foto').click()">
+                📷 SACAR FOTO / SUBIR PDF
+            </button>
+            <input type="file" id="archivo-foto" accept="image/*,application/pdf" capture="camera" class="oculto" onchange="fotoLista()">
+            <div id="status-foto" class="status-foto"></div>
+            
             <button id="btn-enviar" style="background:#27ae60;" onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE (Copiá la tuya aquí)
         const firebaseConfig = {
             apiKey: "AIzaSyC...",
             authDomain: "control-logistica-2026.firebaseapp.com",
@@ -66,7 +74,6 @@
 
         let nombreValidado = "";
 
-        // Recordar datos para que el chofer no escriba siempre lo mismo
         window.onload = function() {
             if(localStorage.getItem('transporte')) {
                 document.getElementById('transporte').value = localStorage.getItem('transporte');
@@ -78,14 +85,10 @@
             }
         };
 
-        // ESTA ES LA PARTE QUE AGREGAMOS PARA LA SEGURIDAD
         function validarYEntrar() {
             const nom = document.getElementById('login-nombre').value.trim();
             const cla = document.getElementById('login-clave').value.trim();
 
-            if(!nom || !cla) return alert("Poné tu nombre y la clave.");
-
-            // Busca en la carpeta que creamos en el administrador
             db.collection("accesos_choferes").doc(nom).get().then(doc => {
                 if (doc.exists && doc.data().clave === cla) {
                     nombreValidado = nom;
@@ -93,16 +96,21 @@
                     document.getElementById('pantalla-login').classList.add('oculto');
                     document.getElementById('pantalla-reporte').classList.remove('oculto');
                 } else {
-                    alert("Nombre o Clave incorrectos. Hablá con el administrador.");
+                    alert("Nombre o Clave incorrectos.");
                 }
-            }).catch(e => alert("Error de conexión."));
+            });
         }
 
-        // ENVÍO DEL REPORTE
+        function fotoLista() {
+            const archivo = document.getElementById('archivo-foto').files[0];
+            if(archivo) {
+                document.getElementById('status-foto').innerText = "✅ DOCUMENTO CARGADO";
+            }
+        }
+
         function enviarReporte() {
             const btn = document.getElementById('btn-enviar');
             
-            // Guardar para la próxima
             localStorage.setItem('transporte', document.getElementById('transporte').value);
             localStorage.setItem('cuit_transporte', document.getElementById('cuit_transporte').value);
             localStorage.setItem('chofer_nombre', document.getElementById('chofer_nombre').value);
@@ -123,20 +131,19 @@
                 lugar_descarga: document.getElementById('lugar_descarga').value,
                 estado: "VACÍO",
                 fecha: new Date().toLocaleString(),
-                foto: "" // Vinculado por la APK
+                foto: "" // Aquí tu APK vincula la imagen
             }).then(() => {
                 alert("¡Reporte enviado!");
-                document.getElementById('lugar_descarga').value = ""; // Limpiar solo este campo
+                document.getElementById('lugar_descarga').value = "";
+                document.getElementById('status-foto').innerText = "";
                 btn.disabled = false;
                 btn.innerText = "ENVIAR REPORTE";
-            }).catch(e => {
-                alert("Error al enviar.");
-                btn.disabled = false;
             });
         }
     </script>
 </body>
 </html>
+
 
 
 
