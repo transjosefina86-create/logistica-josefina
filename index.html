@@ -12,138 +12,108 @@
             background: linear-gradient(135deg, #ff6600 0%, #ff9933 100%); 
             margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; 
         }
-        .login-box { 
-            background: white; padding: 40px 30px; border-radius: 25px; text-align: center; width: 90%; max-width: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
-        }
         .app-card { 
-            background: white; padding: 25px; border-radius: 25px; width: 95%; max-width: 500px; display: none; margin: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+            background: white; padding: 25px; border-radius: 25px; width: 90%; max-width: 450px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;
         }
-        .logo { font-family: 'Brush Script MT', cursive; font-size: 45px; color: #ff6600; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-bottom: 10px; text-align: center; }
-        h3 { color: #ff6600; text-align: center; text-transform: uppercase; font-size: 18px; margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-top: 12px; color: #ff6600; font-size: 13px; margin-left: 5px; text-align: left; }
-        input, select { 
-            width: 100%; padding: 14px; margin: 5px 0 12px 0; border-radius: 12px; border: 2px solid #eee; box-sizing: border-box; font-size: 16px; 
-        }
-        .btn-principal { 
-            background: #222; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .btn-enviar { background: #ff6600 !important; margin-top: 20px; }
-        .camera-box { 
-            background: #fff5ed; padding: 20px; border-radius: 15px; border: 2px dashed #ff6600; margin: 15px 0; text-align: center; 
-        }
-        #status { font-weight: bold; margin-top: 10px; font-size: 14px; color: #ff6600; }
-        #preview { width: 120px; height: 160px; object-fit: cover; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ff6600; }
+        .logo { font-family: 'Brush Script MT', cursive; font-size: 40px; color: #ff6600; margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-top: 10px; color: #ff6600; font-size: 13px; text-align: left; }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
+        
+        .btn-principal { background: #ff6600; color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 17px; margin-top: 15px; box-shadow: 0 4px 10px rgba(255,102,0,0.3); }
+        .btn-salir { background: #333; margin-top: 10px; padding: 10px; font-size: 14px; }
+        
+        .camera-box { background: #fff5ed; padding: 15px; border-radius: 15px; border: 2px dashed #ff6600; margin: 15px 0; }
+        #preview { width: 100%; max-width: 200px; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ff6600; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        #status { font-weight: bold; color: #ff6600; margin-top: 5px; font-size: 14px; }
     </style>
 </head>
 <body>
-
-    <div id="login-screen" class="login-box">
+    <div class="app-card" id="app">
         <div class="logo">La Josefina</div>
-        <input type="text" id="nombre-login" placeholder="USUARIO">
-        <input type="password" id="clave-login" placeholder="CLAVE">
-        <button class="btn-principal" onclick="ingresar()">INGRESAR</button>
-    </div>
+        <div id="form-container">
+            <label>LUGAR DE DESCARGA</label>
+            <input type="text" id="lugar_descarga" placeholder="Ej: Planta 1">
+            
+            <label>ESTADO DEL CAMIÓN</label>
+            <select id="estado_camion"><option value="VACÍO">VACÍO</option><option value="CARGADO">CARGADO</option></select>
 
-    <div id="app-screen" class="app-card">
-        <div class="logo" style="font-size: 30px;">La Josefina</div>
-        <h3>Registrar Ticket</h3>
-        
-        <label>NOMBRE DEL TRANSPORTE</label><input type="text" id="transporte">
-        <label>CUIT DEL TRANSPORTE</label><input type="text" id="cuit_trans">
-        <label>NOMBRE DEL CHOFER</label><input type="text" id="nombre_chof_input" readonly style="background:#f9f9f9;">
-        <label>CUIT DEL CHOFER</label><input type="text" id="cuit_chofer">
-        <label>PATENTE DEL CHASIS</label><input type="text" id="chasis">
-        <label>PATENTE DEL ACOPLADO</label><input type="text" id="acoplado">
-        <label>LUGAR DE DESCARGA</label><input type="text" id="lugar_descarga">
-        <label>ESTADO DEL CAMIÓN</label>
-        <select id="estado_camion"><option value="VACÍO">VACÍO</option><option value="CARGADO">CARGADO</option></select>
-        
-        <div class="camera-box">
-            <label style="color:#ff6600;">📸 FOTO DEL TICKET</label>
-            <input type="file" id="fileInput" accept="image/*" capture="camera">
-            <center><img id="preview"></center>
-            <div id="status">Esperando captura...</div>
+            <div class="camera-box">
+                <label style="text-align:center;">📸 ESCANEAR TICKET (NÍTIDO)</label>
+                <input type="file" id="fileInput" accept="image/*" capture="camera" style="font-size: 12px;">
+                <center><img id="preview"></center>
+                <div id="status">Esperando fotografía...</div>
+            </div>
+
+            <button class="btn-principal" id="btn-enviar" onclick="enviarReporte()">ENVIAR REPORTE</button>
+            <button class="btn-principal btn-salir" onclick="location.reload()">SALIR / CERRAR SESIÓN</button>
         </div>
-
-        <button class="btn-principal btn-enviar" id="btn-enviar" onclick="procesarYEnviar()">ENVIAR REPORTE</button>
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
+        const firebaseConfig = { apiKey: "TU_API_KEY", authDomain: "TU_DOMINIO", projectId: "TU_PROYECTO", appId: "TU_APP_ID" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let choferLogueado = "";
-        let fotoBase64 = "";
+        let fotoLimpia = "";
 
-        async function ingresar() {
-            const nom = document.getElementById('nombre-login').value.trim();
-            const cla = document.getElementById('clave-login').value.trim();
-            const snap = await db.collection("accesos_choferes").get();
-            let ok = false;
-            snap.forEach(doc => { if(doc.id.toLowerCase() === nom.toLowerCase() && doc.data().clave.toString() === cla) { ok = true; choferLogueado = doc.id; } });
-            if(ok) { document.getElementById('login-screen').style.display='none'; document.getElementById('app-screen').style.display='block'; document.getElementById('nombre_chof_input').value = choferLogueado; }
-            else { alert("Clave incorrecta"); }
-        }
-
-        // Previsualización y conversión automática
         document.getElementById('fileInput').onchange = function(e) {
             const file = e.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const maxW = 600; 
-                        const scale = maxW / img.width;
-                        canvas.width = maxW;
-                        canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        fotoBase64 = canvas.toDataURL('image/jpeg', 0.6); // Foto comprimida lista
-                        document.getElementById('preview').src = fotoBase64;
-                        document.getElementById('preview').style.display = 'block';
-                        document.getElementById('status').innerText = "✓ FOTO LISTA";
-                    }
+            if(!file) return;
+            document.getElementById('status').innerText = "⌛ PROCESANDO...";
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scale = 1200 / img.width; // Aumentamos resolución para que se lea mejor
+                    canvas.width = 1200;
+                    canvas.height = img.height * scale;
+                    
+                    // FILTRO DE ESCÁNER PROFESIONAL
+                    ctx.filter = 'grayscale(1) contrast(1.8) brightness(1.1)';
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    fotoLimpia = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById('preview').src = fotoLimpia;
+                    document.getElementById('preview').style.display = 'block';
+                    document.getElementById('status').innerText = "✅ TICKET LISTO Y CLARO";
                 }
-                reader.readAsDataURL(file);
             }
+            reader.readAsDataURL(file);
         }
 
-        async function procesarYEnviar() {
+        async function enviarReporte() {
+            if(!fotoLimpia) return alert("Debe escanear el ticket primero.");
             const btn = document.getElementById('btn-enviar');
-            if(!fotoBase64) return alert("Saca la foto primero");
-            
-            btn.disabled = true;
-            btn.innerText = "ENVIANDO...";
+            btn.disabled = true; btn.innerText = "ENVIANDO DATOS...";
             
             const ahora = new Date();
-            const fecha24 = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
+            const fecha = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
 
             db.collection("reportes").add({
-                transporte: document.getElementById('transporte').value.toUpperCase(),
-                cuit_trans: document.getElementById('cuit_trans').value,
-                chofer: choferLogueado,
-                cuit_chofer: document.getElementById('cuit_chofer').value,
-                chasis: document.getElementById('chasis').value.toUpperCase(),
-                acoplado: document.getElementById('acoplado').value.toUpperCase(),
+                chofer: "GABRIEL", // Aquí podés vincular tu login
                 lugar_descarga: document.getElementById('lugar_descarga').value.toUpperCase(),
                 estado: document.getElementById('estado_camion').value,
-                foto: fotoBase64, // Se guarda la imagen directo aquí
-                fecha: fecha24
-            }).then(() => {
-                alert("✅ ENVIADO");
-                location.reload();
-            }).catch(() => {
+                foto: fotoLimpia,
+                fecha: fecha
+            }).then(() => { 
+                alert("✅ REPORTE ENVIADO CON ÉXITO");
+                btn.innerText = "ENVIADO";
+                // No reiniciamos automáticamente para que el chofer vea el éxito
+            }).catch(e => {
                 alert("Error de conexión");
                 btn.disabled = false;
+                btn.innerText = "REINTENTAR ENVÍO";
             });
         }
     </script>
 </body>
 </html>
+
 
 
 
