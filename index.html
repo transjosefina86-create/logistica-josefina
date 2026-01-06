@@ -6,7 +6,6 @@
     <title>Chofer - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
     <style>
         body { 
             font-family: 'Segoe UI', sans-serif; 
@@ -33,7 +32,7 @@
             background: #fff5ed; padding: 20px; border-radius: 15px; border: 2px dashed #ff6600; margin: 15px 0; text-align: center; 
         }
         #status { font-weight: bold; margin-top: 10px; font-size: 14px; color: #ff6600; }
-        .preview-img { width: 100px; height: 130px; object-fit: cover; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ff6600; }
+        #preview { width: 120px; height: 160px; object-fit: cover; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ff6600; }
     </style>
 </head>
 <body>
@@ -47,36 +46,26 @@
 
     <div id="app-screen" class="app-card">
         <div class="logo" style="font-size: 30px;">La Josefina</div>
-        <h3>Escanear Ticket</h3>
+        <h3>Registrar Ticket</h3>
         
-        <label>NOMBRE DEL TRANSPORTE</label>
-        <input type="text" id="transporte" placeholder="Transporte">
-        <label>CUIT DEL TRANSPORTE</label>
-        <input type="text" id="cuit_trans" placeholder="CUIT">
-        <label>NOMBRE DEL CHOFER</label>
-        <input type="text" id="nombre_chof_input" readonly style="background:#f9f9f9;">
-        <label>CUIT DEL CHOFER</label>
-        <input type="text" id="cuit_chofer" placeholder="CUIT">
-        <label>PATENTE DEL CHASIS</label>
-        <input type="text" id="chasis" placeholder="Chasis">
-        <label>PATENTE DEL ACOPLADO</label>
-        <input type="text" id="acoplado" placeholder="Acoplado">
-        <label>LUGAR DE DESCARGA</label>
-        <input type="text" id="lugar_descarga" placeholder="Destino">
+        <label>NOMBRE DEL TRANSPORTE</label><input type="text" id="transporte">
+        <label>CUIT DEL TRANSPORTE</label><input type="text" id="cuit_trans">
+        <label>NOMBRE DEL CHOFER</label><input type="text" id="nombre_chof_input" readonly style="background:#f9f9f9;">
+        <label>CUIT DEL CHOFER</label><input type="text" id="cuit_chofer">
+        <label>PATENTE DEL CHASIS</label><input type="text" id="chasis">
+        <label>PATENTE DEL ACOPLADO</label><input type="text" id="acoplado">
+        <label>LUGAR DE DESCARGA</label><input type="text" id="lugar_descarga">
         <label>ESTADO DEL CAMIÓN</label>
-        <select id="estado_camion">
-            <option value="VACÍO">VACÍO</option>
-            <option value="CARGADO">CARGADO</option>
-        </select>
+        <select id="estado_camion"><option value="VACÍO">VACÍO</option><option value="CARGADO">CARGADO</option></select>
         
         <div class="camera-box">
-            <label style="text-align:center; color:#ff6600;">📸 ESCANEAR TICKET</label>
+            <label style="color:#ff6600;">📸 FOTO DEL TICKET</label>
             <input type="file" id="fileInput" accept="image/*" capture="camera">
-            <center><img id="preview" class="preview-img"></center>
-            <div id="status">Presione para capturar</div>
+            <center><img id="preview"></center>
+            <div id="status">Esperando captura...</div>
         </div>
 
-        <button class="btn-principal btn-enviar" id="btn-enviar" onclick="enviarReporte()">ENVIAR REPORTE</button>
+        <button class="btn-principal btn-enviar" id="btn-enviar" onclick="procesarYEnviar()">ENVIAR REPORTE</button>
     </div>
 
     <script>
@@ -85,90 +74,72 @@
         const db = firebase.firestore();
 
         let choferLogueado = "";
+        let fotoBase64 = "";
 
         async function ingresar() {
             const nom = document.getElementById('nombre-login').value.trim();
             const cla = document.getElementById('clave-login').value.trim();
-            const snapshot = await db.collection("accesos_choferes").get();
-            let encontrado = false;
-            snapshot.forEach(doc => {
-                if(doc.id.toLowerCase() === nom.toLowerCase() && doc.data().clave.toString() === cla) {
-                    encontrado = true; choferLogueado = doc.id;
+            const snap = await db.collection("accesos_choferes").get();
+            let ok = false;
+            snap.forEach(doc => { if(doc.id.toLowerCase() === nom.toLowerCase() && doc.data().clave.toString() === cla) { ok = true; choferLogueado = doc.id; } });
+            if(ok) { document.getElementById('login-screen').style.display='none'; document.getElementById('app-screen').style.display='block'; document.getElementById('nombre_chof_input').value = choferLogueado; }
+            else { alert("Clave incorrecta"); }
+        }
+
+        // Previsualización y conversión automática
+        document.getElementById('fileInput').onchange = function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxW = 600; 
+                        const scale = maxW / img.width;
+                        canvas.width = maxW;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        fotoBase64 = canvas.toDataURL('image/jpeg', 0.6); // Foto comprimida lista
+                        document.getElementById('preview').src = fotoBase64;
+                        document.getElementById('preview').style.display = 'block';
+                        document.getElementById('status').innerText = "✓ FOTO LISTA";
+                    }
                 }
-            });
-            if(encontrado) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('app-screen').style.display = 'block';
-                document.getElementById('nombre_chof_input').value = choferLogueado;
-            } else { alert("Clave incorrecta"); }
+                reader.readAsDataURL(file);
+            }
         }
 
-        async function enviarReporte() {
-            const file = document.getElementById('fileInput').files[0];
+        async function procesarYEnviar() {
             const btn = document.getElementById('btn-enviar');
-            const status = document.getElementById('status');
+            if(!fotoBase64) return alert("Saca la foto primero");
             
-            if (!file) return alert("Debe capturar la foto del ticket");
-
             btn.disabled = true;
-            btn.innerText = "ESCANEANDO...";
-            status.innerText = "⏳ PROCESANDO TICKET...";
+            btn.innerText = "ENVIANDO...";
+            
+            const ahora = new Date();
+            const fecha24 = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
 
-            try {
-                // 1. COMPRESIÓN (Tipo escáner)
-                const options = { maxSizeMB: 0.1, maxWidthOrHeight: 1024, useWebWorker: true };
-                const compressedFile = await imageCompression(file, options);
-                
-                // 2. SUBIDA DE IMAGEN
-                status.innerText = "📤 SUBIENDO A LA NUBE...";
-                const formData = new FormData();
-                formData.append("file", compressedFile);
-                formData.append("upload_preset", "josefina_preset");
-
-                const res = await fetch("https://api.cloudinary.com/v1_1/dw0v8vsn6/image/upload", {
-                    method: "POST",
-                    body: formData
-                });
-                const data = await res.json();
-                
-                if(!data.secure_url) throw new Error("Error en subida");
-
-                // 3. ENVÍO A FIREBASE (Solo si la imagen subió)
-                status.innerText = "💾 GUARDANDO DATOS...";
-                const ahora = new Date();
-                const fecha24 = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
-
-                await db.collection("reportes").add({
-                    transporte: document.getElementById('transporte').value.toUpperCase(),
-                    cuit_trans: document.getElementById('cuit_trans').value,
-                    chofer: choferLogueado,
-                    cuit_chofer: document.getElementById('cuit_chofer').value,
-                    chasis: document.getElementById('chasis').value.toUpperCase(),
-                    acoplado: document.getElementById('acoplado').value.toUpperCase(),
-                    lugar_descarga: document.getElementById('lugar_descarga').value.toUpperCase(),
-                    estado: document.getElementById('estado_camion').value,
-                    foto: data.secure_url,
-                    fecha: fecha24
-                });
-
-                alert("✅ ENVIADO CON ÉXITO");
+            db.collection("reportes").add({
+                transporte: document.getElementById('transporte').value.toUpperCase(),
+                cuit_trans: document.getElementById('cuit_trans').value,
+                chofer: choferLogueado,
+                cuit_chofer: document.getElementById('cuit_chofer').value,
+                chasis: document.getElementById('chasis').value.toUpperCase(),
+                acoplado: document.getElementById('acoplado').value.toUpperCase(),
+                lugar_descarga: document.getElementById('lugar_descarga').value.toUpperCase(),
+                estado: document.getElementById('estado_camion').value,
+                foto: fotoBase64, // Se guarda la imagen directo aquí
+                fecha: fecha24
+            }).then(() => {
+                alert("✅ ENVIADO");
                 location.reload();
-
-            } catch(e) {
-                alert("Ocurrió un error. Revise su conexión y reintente.");
+            }).catch(() => {
+                alert("Error de conexión");
                 btn.disabled = false;
-                btn.innerText = "ENVIAR REPORTE";
-                status.innerText = "Error en el proceso";
-            }
-        }
-
-        document.getElementById('fileInput').onchange = function(evt) {
-            const [file] = evt.target.files;
-            if (file) {
-                document.getElementById('preview').src = URL.createObjectURL(file);
-                document.getElementById('preview').style.display = 'block';
-                document.getElementById('status').innerText = "Ticket capturado ✓";
-            }
+            });
         }
     </script>
 </body>
