@@ -3,53 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - La Josefina</title>
+    <title>Panel Admin - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --naranja: #ff6600; --oscuro: #222; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        
         #login-admin { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--oscuro); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: white; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; max-width: 1100px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
+        .login-card { background: white; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 300px; }
+
+        .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; max-width: 1200px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .logo-admin { font-family: 'Brush Script MT', cursive; font-size: 35px; color: var(--naranja); }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: var(--naranja); color: white; padding: 15px; text-align: left; }
-        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .btn-accion { background: var(--oscuro); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .estado-chip { padding: 6px 12px; border-radius: 20px; font-weight: bold; color: white; border: none; cursor: pointer; }
+
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th { background: var(--naranja); color: white; padding: 15px; text-align: left; font-size: 14px; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #444; }
+        tr:hover { background: #fffcf9; }
+
+        .btn { border: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-negro { background: var(--oscuro); color: white; }
+        .btn-pdf { background: #e74c3c; color: white; }
+        .btn-rojo { background: #c0392b; color: white; }
+        
+        .chip { padding: 6px 12px; border-radius: 20px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; border: none; }
         .vacio { background: #27ae60; }
         .cargado { background: #e67e22; }
     </style>
 </head>
 <body>
+
     <div id="login-admin">
         <div class="login-card">
             <div class="logo-admin">La Josefina</div>
-            <input type="password" id="pass-adm" placeholder="Clave Admin" style="padding:15px; width: 80%; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px;">
-            <button class="btn-accion" onclick="loginAdm()" style="width: 100%; padding: 15px;">ENTRAR</button>
+            <input type="password" id="pass-adm" placeholder="Clave de Acceso" style="padding:15px; width: 85%; border-radius: 10px; border: 1px solid #ddd; margin: 20px 0;">
+            <button class="btn btn-negro" onclick="loginAdm()" style="width: 100%;">INGRESAR</button>
         </div>
     </div>
 
     <div class="main-card" id="panel">
         <div class="header">
-            <div class="logo-admin">La Josefina <small style="font-size:12px; color:#666">Admin</small></div>
+            <div class="logo-admin">La Josefina <span style="font-family:sans-serif; font-size:14px; color:#999;">Administración</span></div>
             <div>
-                <button class="btn-accion" onclick="nuevaClave()">+ CHOFER</button>
-                <button class="btn-accion" onclick="borrarSels()" style="background:#c0392b;">BORRAR</button>
+                <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO CHOFER</button>
+                <button class="btn btn-negro" onclick="verClaves()">LISTADO CHOFERES</button>
+                <button class="btn btn-rojo" onclick="borrarSels()">ELIMINAR SELECCIÓN</button>
             </div>
         </div>
+
         <table>
             <thead>
                 <tr>
                     <th><input type="checkbox" onclick="selTodo(this)"></th>
-                    <th>Hora</th>
-                    <th>Estado</th>
-                    <th>Chofer</th>
-                    <th>Acciones</th>
+                    <th>FECHA Y HORA</th>
+                    <th>ESTADO</th>
+                    <th>CHOFER</th>
+                    <th>DESTINO</th>
+                    <th>DOCUMENTO</th>
                 </tr>
             </thead>
             <tbody id="tabla"></tbody>
@@ -57,52 +69,107 @@
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
+        // CONFIGURACIÓN FIREBASE (Mantené la tuya original)
+        const firebaseConfig = { 
+            apiKey: "AIzaSyC...", 
+            authDomain: "control-logistica-2026.firebaseapp.com", 
+            projectId: "control-logistica-2026", 
+            appId: "1:389274295324:web:04467597157833633e467d" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function loginAdm() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('login-admin').style.display='none'; document.getElementById('panel').style.display='block'; cargar(); } }
+        function loginAdm() {
+            if(document.getElementById('pass-adm').value === "1234") {
+                document.getElementById('login-admin').style.display='none';
+                document.getElementById('panel').style.display='block';
+                cargarDatos();
+            } else { alert("Clave Incorrecta"); }
+        }
 
-        function cargar() {
+        function cargarDatos() {
             db.collection("reportes").onSnapshot(snap => {
-                const t = document.getElementById('tabla'); t.innerHTML = "";
-                let reps = []; snap.forEach(doc => reps.push({id: doc.id, ...doc.data()}));
-                reps.sort((a, b) => {
+                const t = document.getElementById('tabla');
+                t.innerHTML = "";
+                let reportes = [];
+                
+                snap.forEach(doc => { reportes.push({ id: doc.id, ...doc.data() }); });
+
+                // ORDEN CRONOLÓGICO: El más viejo arriba, el nuevo se suma abajo.
+                reportes.sort((a, b) => {
                     const fA = a.fecha.split(', ')[0].split('/').reverse().join('-') + 'T' + a.fecha.split(', ')[1];
                     const fB = b.fecha.split(', ')[0].split('/').reverse().join('-') + 'T' + b.fecha.split(', ')[1];
                     return new Date(fA) - new Date(fB);
                 });
-                reps.forEach(r => {
-                    const c = r.estado === "VACÍO" ? "vacio" : "cargado";
-                    t.innerHTML += `<tr>
-                        <td><input type="checkbox" class="ck" data-id="${r.id}"></td>
-                        <td><b>${r.fecha} hs</b></td>
-                        <td><button class="estado-chip ${c}">${r.estado}</button></td>
-                        <td><b>${r.chofer}</b></td>
-                        <td>${r.foto ? `<button class="btn-pdf" onclick="pdf('${r.foto}','${r.chofer}','${r.fecha}')">DESCARGAR PDF</button>` : ''}</td>
-                    </tr>`;
+
+                reportes.forEach(r => {
+                    const colorEst = r.estado === "VACÍO" ? "vacio" : "cargado";
+                    t.innerHTML += `
+                        <tr>
+                            <td><input type="checkbox" class="ck" data-id="${r.id}"></td>
+                            <td><b>${r.fecha} hs</b></td>
+                            <td><button class="chip ${colorEst}">${r.estado}</button></td>
+                            <td><b style="color:var(--naranja)">${r.chofer}</b></td>
+                            <td>${r.lugar_descarga || '-'}</td>
+                            <td>
+                                ${r.foto ? `<button class="btn btn-pdf" onclick="descargarPDF('${r.foto}','${r.chofer}','${r.fecha}')">PDF ESCÁNER</button>` : 'Sin foto'}
+                            </td>
+                        </tr>`;
                 });
             });
         }
 
-        function pdf(base64, nom, fecha) {
+        function descargarPDF(base64, nom, fecha) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            doc.setFillColor(255, 102, 0); doc.rect(0, 0, 210, 20, 'F'); 
+            
+            // Encabezado
+            doc.setFillColor(255, 102, 0);
+            doc.rect(0, 0, 210, 20, 'F');
             doc.setFontSize(16); doc.setTextColor(255, 255, 255);
-            doc.text("LA JOSEFINA - COMPROBANTE", 10, 13);
-            doc.setFontSize(12); doc.setTextColor(0, 0, 0);
-            doc.text(`CHOFER: ${nom} | FECHA: ${fecha} hs`, 10, 30);
-            doc.addImage(base64, 'JPEG', 10, 40, 190, 240); 
-            doc.save(`Ticket_${nom}.pdf`);
+            doc.text("LA JOSEFINA - REGISTRO DE CARGA", 15, 13);
+
+            // Info
+            doc.setFontSize(12); doc.setTextColor(40, 40, 40);
+            doc.text(`CHOFER: ${nom}`, 15, 30);
+            doc.text(`FECHA: ${fecha} hs`, 15, 37);
+            doc.setDrawColor(255, 102, 0); doc.line(15, 40, 195, 40);
+
+            // Foto modo CamScanner
+            doc.addImage(base64, 'JPEG', 10, 45, 190, 240);
+            doc.save(`Ticket_${nom}_${fecha.replace(/[/, :]/g, '_')}.pdf`);
         }
 
-        function nuevaClave() { const n = prompt("Nombre:"); const c = prompt("Clave:"); if(n && c) db.collection("accesos_choferes").doc(n).set({clave:c}); }
+        function nuevaClave() {
+            const n = prompt("Nombre del Chofer:");
+            const c = prompt("Asignar Clave:");
+            if(n && c) {
+                db.collection("accesos_choferes").doc(n.toUpperCase()).set({ clave: c });
+                alert("Chofer Registrado.");
+            }
+        }
+
+        function verClaves() {
+            db.collection("accesos_choferes").get().then(s => {
+                let lista = "LISTADO DE ACCESOS:\n\n";
+                s.forEach(d => { lista += `• ${d.id}: ${d.data().clave}\n`; });
+                alert(lista);
+            });
+        }
+
         function selTodo(s) { document.querySelectorAll('.ck').forEach(x => x.checked = s.checked); }
-        function borrarSels() { if(confirm("¿Borrar?")) document.querySelectorAll('.ck:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); }
+        
+        function borrarSels() {
+            if(confirm("¿Seguro que desea eliminar los registros seleccionados?")) {
+                document.querySelectorAll('.ck:checked').forEach(x => {
+                    db.collection("reportes").doc(x.dataset.id).delete();
+                });
+            }
+        }
     </script>
 </body>
 </html>
+
 
 
 
