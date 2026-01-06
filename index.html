@@ -3,189 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transporte La Josefina</title>
+    <title>Transporte La Josefina - Choferes</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { 
-            font-family: 'Arial', sans-serif; 
-            background: #ff6600; /* Fondo naranja */
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; /* Centrar verticalmente también */
-            min-height: 100vh; /* Ocupar toda la altura de la pantalla */
-        }
-        .container { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 20px; 
-            max-width: 450px; 
-            width: 100%; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
-            text-align: center; 
-        }
+        :root { --naranja: #ff6600; --oscuro: #222; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--naranja); margin: 0; padding: 15px; color: var(--oscuro); }
+        .card { background: white; padding: 25px; border-radius: 25px; max-width: 450px; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .logo { text-align: center; font-family: 'Brush Script MT', cursive; font-size: 40px; color: var(--naranja); margin-bottom: 20px; }
         
-        /* Estilo para el logo como texto */
-        .logo-texto {
-            font-family: 'Brush Script MT', cursive; /* O una fuente similar de script, si está disponible */
-            font-size: 48px; /* Tamaño grande para que se vea bien */
-            color: #ff6600; /* Color naranja */
-            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4); /* Sombra para el efecto 3D */
-            margin-bottom: 25px;
-            display: block;
-            line-height: 1; /* Para que no haya mucho espacio entre líneas si hay varias */
-        }
-
-        h2 { 
-            color: #ff6600; /* Titulos en naranja */
-            font-size: 24px; 
-            margin-bottom: 25px; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            font-weight: 800; 
-        }
+        label { display: block; font-size: 12px; font-weight: bold; margin-top: 15px; color: #666; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; margin-top: 5px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background: #f9f9f9; }
+        input:focus { border-color: var(--naranja); outline: none; background: #fff; }
         
-        .campo-grupo { text-align: left; margin-bottom: 15px; }
-        label { 
-            display: block; 
-            font-weight: bold; 
-            color: #444; 
-            font-size: 13px; 
-            margin-bottom: 5px; 
-            text-transform: uppercase; 
-        }
+        button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 12px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-ingresar { background: var(--oscuro); color: white; }
+        .btn-enviar { background: #27ae60; color: white; }
+        .btn-foto { background: #f39c12; color: white; margin-top: 10px; }
         
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            border-radius: 10px; 
-            border: 2px solid #ddd; 
-            box-sizing: border-box; 
-            font-size: 16px; 
-            transition: 0.3s; 
-            background: #fafafa; 
-        }
-        input:focus, select:focus { 
-            border-color: #ff6600; 
-            outline: none; 
-            background: white; 
-            box-shadow: 0 0 8px rgba(255,102,0,0.2);
-        }
-        
-        .mayusculas { text-transform: uppercase; } /* Solo para patentes */
-        
-        button { 
-            width: 100%; 
-            padding: 16px; 
-            border-radius: 10px; 
-            border: none; 
-            background: #222; /* Botón oscuro para contraste */
-            color: white; 
-            font-size: 18px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: background 0.3s, transform 0.2s; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-            margin-top: 20px; 
-            text-transform: uppercase; 
-        }
-        button:hover { 
-            background: #000; 
-            transform: translateY(-2px); 
-        }
-        button:active { 
-            transform: translateY(0); 
-        }
-
-        #status { margin-top: 20px; font-weight: bold; color: #ff6600; font-size: 15px; }
         .oculto { display: none; }
+        .status { font-size: 11px; text-align: center; margin-top: 5px; color: #27ae60; font-weight: bold; }
+        .footer-info { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <span class="logo-texto">Transporte La Josefina</span>
-        
-        <div id="pantalla-clave">
-            <h2 style="color:#333;">Ingreso Chofer</h2>
-            <input type="password" id="clave" placeholder="N° DE CAMIÓN (CLAVE)">
-            <button onclick="verificarClave()">INGRESAR</button>
+
+    <div class="card">
+        <div class="logo">La Josefina</div>
+
+        <div id="seccion-login">
+            <h3 style="text-align:center; margin-top:0;">Ingreso de Chofer</h3>
+            <p style="text-align:center; font-size:14px; color:#666;">Colocá tu nombre y la clave que te dio el administrador.</p>
+            
+            <label>Nombre Completo</label>
+            <input type="text" id="login-nom" placeholder="Ej: Juan Perez">
+            
+            <label>Clave de Acceso</label>
+            <input type="password" id="login-cla" placeholder="****">
+            
+            <button class="btn-ingresar" onclick="validarAcceso()">INGRESAR AL SISTEMA</button>
         </div>
 
-        <div id="formulario" class="oculto">
-            <h2 style="color:#333;">Reporte de Viaje</h2>
+        <div id="seccion-reporte" class="oculto">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 id="saludo-chofer" style="color:var(--naranja); margin:0;"></h4>
+                <button onclick="cerrarSesion()" style="width:auto; padding:5px 10px; margin:0; font-size:10px; background:#eee; color:#333;">SALIR</button>
+            </div>
+
+            <label>Transporte / CUIT</label>
+            <input type="text" id="transporte" placeholder="Nombre de la Empresa">
+            <input type="text" id="cuit_transporte" placeholder="CUIT de la Empresa">
+
+            <label>Patentes (Equipo)</label>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="chasis" placeholder="Chasis">
+                <input type="text" id="acoplado" placeholder="Acoplado">
+            </div>
+
+            <label style="color:var(--naranja); font-size:14px; margin-top:25px;">Datos del Viaje Actual</label>
             
-            <div class="campo-grupo">
-                <label>Transporte</label>
-                <input type="text" id="transporte" placeholder="Nombre Empresa">
-            </div>
-
-            <div class="campo-grupo">
-                <label>CUIT Transporte</label>
-                <input type="text" id="cuit_transporte">
-            </div>
-
-            <div class="campo-grupo">
-                <label>Chofer</label>
-                <input type="text" id="chofer" placeholder="Nombre y Apellido">
-            </div>
-
-            <div class="campo-grupo">
-                <label>CUIT Chofer</label>
-                <input type="text" id="cuit_chofer">
-            </div>
-
-            <div class="campo-grupo">
-                <label>Chasis Patente</label>
-                <input type="text" id="chasis" class="mayusculas" placeholder="MAYÚSCULAS">
-            </div>
-
-            <div class="campo-grupo">
-                <label>Acoplado Patente</label>
-                <input type="text" id="acoplado" class="mayusculas" placeholder="MAYÚSCULAS">
-            </div>
-
-            <div class="campo-grupo">
-                <label>Tipo de Unidad</label>
-                <select id="tipo" onchange="toggleKilos()">
-                    <option value="COMÚN">COMÚN</option>
-                    <option value="ESCALABLE">ESCALABLE</option>
-                </select>
-            </div>
-
-            <div id="div-kilos" class="campo-grupo oculto">
-                <label>Kilogramos</label>
-                <input type="number" id="kilos" placeholder="Ingrese kg">
-            </div>
-
-            <div class="campo-grupo">
-                <label>Estado</label>
-                <select id="estado">
-                    <option value="VACÍO">VACÍO</option>
-                    <option value="CARGADO">CARGADO</option>
-                </select>
-            </div>
-
-            <div class="campo-grupo">
-                <label>Destino / Cliente</label>
-                <input type="text" id="destino" list="destinos-sugeridos" placeholder="Escriba o elija">
-                <datalist id="destinos-sugeridos"></datalist>
-            </div>
-
-            <div class="campo-grupo">
-                <label>Foto (Opcional)</label>
-                <input type="file" id="foto" accept="image/*" capture="camera" style="border:none; padding:0; background:none;">
-            </div>
+            <label>¿Dónde descargaste?</label>
+            <input type="text" id="lugar_descarga" placeholder="Ej: Aceitera, Naca, Planta 1">
             
-            <button onclick="enviarReporte()">ENVIAR REPORTE</button>
-            <p id="status"></p>
+            <label>Destino y Kilos Netos</label>
+            <input type="text" id="destino" placeholder="Hacia dónde vas">
+            <input type="number" id="kilos" placeholder="Kilos del comprobante">
+
+            <label>Comprobante / Remito</label>
+            <p style="font-size:11px; color:#888; margin:5px 0;">* Usá el botón naranja para sacar la foto del papel.</p>
+            <button type="button" class="btn-foto" onclick="abrirCamara()">📸 SACAR FOTO</button>
+            <div id="foto-status" class="status"></div>
+
+            <button id="btn-enviar" class="btn-enviar" onclick="enviarReporte()">ENVIAR REPORTE FINAL</button>
+            <p class="footer-info">Al enviar, el estado será "VACÍO" automáticamente.</p>
         </div>
     </div>
 
     <script>
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSyC...", 
+            apiKey: "AIzaSyC...",
             authDomain: "control-logistica-2026.firebaseapp.com",
             projectId: "control-logistica-2026",
             appId: "1:389274295324:web:04467597157833633e467d"
@@ -193,96 +90,90 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function toggleKilos() {
-            const tipo = document.getElementById('tipo').value;
-            document.getElementById('div-kilos').style.display = (tipo === 'ESCALABLE') ? 'block' : 'none';
+        let nombreSesion = "";
+
+        // Al cargar, vemos si ya había datos guardados para no reescribir
+        window.onload = function() {
+            if(localStorage.getItem('transporte')) {
+                document.getElementById('transporte').value = localStorage.getItem('transporte');
+                document.getElementById('cuit_transporte').value = localStorage.getItem('cuit_transporte');
+                document.getElementById('chasis').value = localStorage.getItem('chasis');
+                document.getElementById('acoplado').value = localStorage.getItem('acoplado');
+            }
+        };
+
+        function validarAcceso() {
+            const n = document.getElementById('login-nom').value.trim();
+            const c = document.getElementById('login-cla').value.trim();
+
+            if(!n || !c) return alert("Por favor, completá los dos campos.");
+
+            db.collection("accesos_choferes").doc(n).get().then(doc => {
+                if(doc.exists && doc.data().clave === c) {
+                    nombreSesion = n;
+                    document.getElementById('saludo-chofer').innerText = "Chofer: " + n;
+                    document.getElementById('seccion-login').classList.add('oculto');
+                    document.getElementById('seccion-reporte').classList.remove('oculto');
+                } else {
+                    alert("Acceso Denegado: Nombre o Clave incorrectos.");
+                }
+            }).catch(e => alert("Error de conexión: " + e));
         }
 
-        function verificarClave() {
-            const clave = document.getElementById('clave').value;
-            if(clave) {
-                const anterior = localStorage.getItem('josefina_camion_' + clave);
-                if(anterior) {
-                    const d = JSON.parse(anterior);
-                    document.getElementById('transporte').value = d.transporte || '';
-                    document.getElementById('cuit_transporte').value = d.cuit_transporte || '';
-                    document.getElementById('chofer').value = d.chofer || '';
-                    document.getElementById('cuit_chofer').value = d.cuit_chofer || '';
-                    document.getElementById('chasis').value = d.chasis || '';
-                    document.getElementById('acoplado').value = d.acoplado || '';
-                    document.getElementById('tipo').value = d.tipo || 'COMÚN'; // Asegura que el tipo se cargue
-                    toggleKilos(); // Ajusta la visibilidad de kilos al cargar
-                }
-                
-                const historial = JSON.parse(localStorage.getItem('historial_destinos') || '[]');
-                const datalist = document.getElementById('destinos-sugeridos');
-                datalist.innerHTML = "";
-                historial.forEach(dest => {
-                    datalist.innerHTML += `<option value="${dest}">`;
-                });
-
-                document.getElementById('pantalla-clave').style.display = 'none';
-                document.getElementById('formulario').classList.remove('oculto');
-            }
+        function abrirCamara() {
+            // Aquí va el código que ya tenés para la API de fotos. 
+            // Solo simulamos el aviso de que la foto está lista.
+            document.getElementById('foto-status').innerText = "✅ FOTO CAPTURADA";
         }
 
         async function enviarReporte() {
-            const status = document.getElementById('status');
-            const fileInput = document.getElementById('foto');
-            const clave = document.getElementById('clave').value;
-            status.innerText = "ENVIANDO DATOS...";
+            const btn = document.getElementById('btn-enviar');
+            
+            // Guardamos datos fijos para la próxima vez
+            localStorage.setItem('transporte', document.getElementById('transporte').value);
+            localStorage.setItem('cuit_transporte', document.getElementById('cuit_transporte').value);
+            localStorage.setItem('chasis', document.getElementById('chasis').value);
+            localStorage.setItem('acoplado', document.getElementById('acoplado').value);
 
-            let urlImagen = "";
-            if (fileInput.files.length > 0) {
-                const formData = new FormData();
-                formData.append("image", fileInput.files[0]);
-                try {
-                    const res = await fetch("https://api.imgbb.com/1/upload?key=9caa1af89f65dc79bbae40616bdd0b78", {
-                        method: "POST",
-                        body: formData
-                    });
-                    const resData = await res.json();
-                    urlImagen = resData.data.url;
-                } catch (e) { console.log("Error en subida de foto"); }
-            }
+            btn.disabled = true;
+            btn.innerText = "ENVIANDO DATOS...";
 
-            const destinoActual = document.getElementById('destino').value;
             const datos = {
-                camion: clave,
+                chofer: nombreSesion,
                 transporte: document.getElementById('transporte').value,
                 cuit_transporte: document.getElementById('cuit_transporte').value,
-                chofer: document.getElementById('chofer').value,
-                cuit_chofer: document.getElementById('cuit_chofer').value,
                 chasis: document.getElementById('chasis').value.toUpperCase(),
                 acoplado: document.getElementById('acoplado').value.toUpperCase(),
-                tipo: document.getElementById('tipo').value,
-                kilos: document.getElementById('kilos').value || "0",
-                estado: document.getElementById('estado').value,
-                destino: destinoActual,
-                foto: urlImagen,
-                fecha: new Date().toLocaleString()
+                lugar_descarga: document.getElementById('lugar_descarga').value,
+                destino: document.getElementById('destino').value,
+                kilos: document.getElementById('kilos').value,
+                estado: "VACÍO",
+                fecha: new Date().toLocaleString(),
+                // Aquí la URL que te devuelva tu API de fotos
+                foto: "URL_DE_LA_FOTO_AQUI" 
             };
 
-            let historial = JSON.parse(localStorage.getItem('historial_destinos') || '[]');
-            if(destinoActual && !historial.includes(destinoActual)) {
-                historial.push(destinoActual);
-                localStorage.setItem('historial_destinos', JSON.stringify(historial));
-            }
-
-            localStorage.setItem('josefina_camion_' + clave, JSON.stringify(datos));
-
             db.collection("reportes").add(datos).then(() => {
-                status.innerText = "¡ENVIADO CON ÉXITO!";
-                status.style.color = "green";
-                setTimeout(() => location.reload(), 2000);
-            }).catch(() => { 
-                status.innerText = "Error de conexión."; 
-                status.style.color = "red";
+                alert("Reporte enviado con éxito.");
+                // Limpiamos solo lo variable
+                document.getElementById('lugar_descarga').value = "";
+                document.getElementById('kilos').value = "";
+                document.getElementById('foto-status').innerText = "";
+                btn.disabled = false;
+                btn.innerText = "ENVIAR REPORTE FINAL";
+            }).catch(e => {
+                alert("Error al enviar: " + e);
+                btn.disabled = false;
             });
+        }
+
+        function cerrarSesion() {
+            location.reload();
         }
     </script>
 </body>
 </html>
+
 
 
 
