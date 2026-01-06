@@ -3,57 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrador - La Josefina</title>
+    <title>Control Logística - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         
-        /* PANTALLA DE LOGIN OBLIGATORIA */
+        /* LOGIN OBLIGATORIO */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff6600; display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 320px; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        /* CONTENEDOR PRINCIPAL */
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; max-width: 1200px; margin: auto; display: none; }
         
-        /* PANEL PRINCIPAL */
-        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 20px; max-width: 1200px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
-        .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 32px; color: #ff6600; }
+        .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 
-        /* TABLA Y COLORES */
+        /* BOTONES SUPERIORES */
+        .btn-header { padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 10px; }
+        .btn-limpiar { background: #d94343; }
+        .btn-claves { background: #4a4a4a; }
+
+        /* TABLA */
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; text-transform: uppercase; }
+        td { padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        /* COLORES DE ESTADO */
+        .select-estado { padding: 8px 12px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; color: white; }
+        .bg-vacio { background: #27ae60 !important; }
+        .bg-cargado { background: #e67e22 !important; }
 
-        /* SELECTORES DE COLOR */
-        .estado-vacio { background: #27ae60 !important; color: white !important; } /* Verde */
-        .estado-cargado { background: #e67e22 !important; color: white !important; } /* Naranja/Rojo */
-        
-        select { padding: 8px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; }
-        .btn-icon { background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; padding: 6px; cursor: pointer; }
-        
-        .oculto { display: none !important; }
+        /* ALERTAS EN ROJO (Cuando cambian datos) */
+        .cambio-alerta { color: #d94343; font-weight: bold; text-decoration: underline; }
+
+        /* VENTANA MODAL DE DETALLES */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; margin: 15px 0; max-height: 300px; overflow-y: auto; }
+        .btn-cerrar { background: #ff6600; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        .btn-icon { background: #f0f0f0; border: 1px solid #ccc; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 18px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color: #ff6600;">La Josefina</h2>
-            <p>Acceso Administrador</p>
-            <input type="password" id="pass-input" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; text-align: center;" placeholder="Clave">
-            <button onclick="acceder()" style="width: 100%; padding: 12px; background: #222; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">ENTRAR</button>
+            <span class="logo-josefina" style="font-size: 45px;">La Josefina</span>
+            <p style="margin-top: 20px; font-weight: bold; color: #555;">INGRESO ADMINISTRADOR</p>
+            <input type="password" id="admin-pass" style="width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 18px;" placeholder="****">
+            <button onclick="checkLogin()" style="width: 80%; background: #222; color: white; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 20px;">ENTRAR</button>
         </div>
     </div>
 
     <div id="admin-panel" class="main-card">
         <div class="header-flex">
             <div class="logo-josefina">🚚 Control Logística</div>
-            <button onclick="borrarSeleccionados()" style="background: #d94343; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">LIMPIAR PROCESADOS</button>
+            <div>
+                <button class="btn-header btn-limpiar" onclick="borrarVarios()">🧹 LIMPIAR PROCESADOS</button>
+                <button class="btn-header btn-claves" onclick="configFlota()">🔑 CLAVES</button>
+            </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="check-all"></th>
+                    <th><input type="checkbox" id="master-check"></th>
                     <th>Fecha</th>
                     <th>Estado</th>
                     <th>Chofer</th>
@@ -63,8 +79,16 @@
                     <th>PDF</th>
                 </tr>
             </thead>
-            <tbody id="lista-reportes"></tbody>
+            <tbody id="lista-viajes"></tbody>
         </table>
+    </div>
+
+    <div id="modal-info" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; align-items:center; font-weight:bold; font-size:18px;">📋 Datos del Viaje</div>
+            <div id="txt-detalles" class="modal-body"></div>
+            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR</button>
+        </div>
     </div>
 
     <script>
@@ -76,80 +100,96 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        let datosOficiales = {};
 
-        // FUNCIÓN DE LOGIN
-        function acceder() {
-            const pass = document.getElementById('pass-input').value;
-            if (pass === "1234") {
+        function checkLogin() {
+            if(document.getElementById('admin-pass').value === "1234") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
+                cargarFlota();
+            } else { alert("Clave Incorrecta"); }
+        }
+
+        function cargarFlota() {
+            db.collection("flota").onSnapshot(snap => {
+                snap.forEach(doc => { datosOficiales[doc.id] = doc.data(); });
                 escucharReportes();
-            } else {
-                alert("Clave incorrecta");
-            }
+            });
         }
 
         function escucharReportes() {
-            db.collection("reportes").orderBy("fecha", "desc").onSnapshot((snapshot) => {
-                const tbody = document.getElementById('lista-reportes');
+            db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snapshot => {
+                const tbody = document.getElementById('lista-viajes');
                 tbody.innerHTML = "";
-                snapshot.forEach((doc) => {
+                snapshot.forEach(doc => {
                     const r = doc.data();
                     const id = doc.id;
+                    const oficial = datosOficiales[r.camion] || {};
                     
-                    // Lógica de color del botón según estado
-                    const claseColor = (r.estado === "VACÍO") ? "estado-vacio" : "estado-cargado";
-                    
+                    const claseEstado = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
+                    const alertaChasis = (oficial.chasis && oficial.chasis !== r.chasis) ? "cambio-alerta" : "";
+                    const alertaAcop = (oficial.acoplado && oficial.acoplado !== r.acoplado) ? "cambio-alerta" : "";
+
                     tbody.innerHTML += `
                         <tr>
-                            <td><input type="checkbox" class="check-item" data-id="${id}"></td>
+                            <td><input type="checkbox" class="viaje-check" data-id="${id}"></td>
                             <td><small>${r.fecha}</small></td>
                             <td>
-                                <select class="${claseColor}" onchange="actualizarEstado('${id}', this.value)">
+                                <select class="select-estado ${claseEstado}" onchange="cambiarEstado('${id}', this.value)">
                                     <option value="VACÍO" ${r.estado === 'VACÍO' ? 'selected' : ''}>VACÍO</option>
                                     <option value="CARGADO" ${r.estado === 'CARGADO' ? 'selected' : ''}>CARGADO</option>
                                 </select>
                             </td>
                             <td><b>${r.chofer}</b></td>
-                            <td>${r.chasis}</td>
-                            <td>${r.acoplado}</td>
-                            <td><button class="btn-icon" onclick="verDetalles('${id}')">📋</button></td>
-                            <td>
-                                ${r.foto ? `<button class="btn-icon" onclick="abrirPDF('${r.foto}')">📄</button>` : '-'}
-                            </td>
+                            <td class="${alertaChasis}">${r.chasis}</td>
+                            <td class="${alertaAcop}">${r.acoplado}</td>
+                            <td><button class="btn-icon" onclick="verInfo('${id}')">📋</button></td>
+                            <td>${r.foto ? `<button class="btn-icon" onclick="printPDF('${r.foto}')">📄</button>` : '-'}</td>
                         </tr>
                     `;
                 });
             });
         }
 
-        function actualizarEstado(id, nuevoValor) {
-            db.collection("reportes").doc(id).update({ estado: nuevoValor });
-        }
-
-        function abrirPDF(url) {
-            const win = window.open("", "_blank");
-            win.document.write(`<html><body style="margin:0;display:flex;justify-content:center;"><img src="${url}" style="max-width:100%;" onload="window.print();"></body></html>`);
-            win.document.close();
-        }
-
-        function borrarSeleccionados() {
-            const items = document.querySelectorAll('.check-item:checked');
-            if (items.length === 0) return alert("Selecciona viajes");
-            if (confirm("¿Borrar seleccionados?")) {
-                items.forEach(i => db.collection("reportes").doc(i.dataset.id).delete());
-            }
-        }
-        
-        function verDetalles(id) {
+        function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                alert(`DETALLES:\nTransporte: ${d.transporte}\nDestino: ${d.destino}\nUnidad: ${d.tipo}\nKilos: ${d.kilos}`);
+                // AQUÍ AGREGUÉ EL LUGAR DE DESCARGA
+                const msg = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_transporte}\nCHOFER: ${d.chofer}\nCUIT: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nEQUIPO: ${d.tipo}\nDESTINO: ${d.destino}\nLUGAR DE DESCARGA: ${d.lugar_descarga || 'No especificado'}\nKILOS: ${d.kilos || 0}`;
+                document.getElementById('txt-detalles').innerText = msg;
+                document.getElementById('modal-info').style.display = 'flex';
             });
+        }
+
+        function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
+
+        function printPDF(url) {
+            const w = window.open("", "_blank");
+            w.document.write(`<html><body style="margin:0;display:flex;justify-content:center;"><img src="${url}" style="max-width:100%;" onload="window.print();"></body></html>`);
+            w.document.close();
+        }
+
+        function cambiarEstado(id, val) { db.collection("reportes").doc(id).update({ estado: val }); }
+
+        function borrarVarios() {
+            const checks = document.querySelectorAll('.viaje-check:checked');
+            if(checks.length === 0) return alert("Seleccioná viajes");
+            if(confirm("¿Borrar seleccionados?")) {
+                checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
+            }
+        }
+
+        function configFlota() {
+            const n = prompt("N° Camión:");
+            const ch = prompt("Patente Chasis Oficial:");
+            const ac = prompt("Patente Acoplado Oficial:");
+            const cl = prompt("Clave:");
+            if(n && cl) db.collection("flota").doc(n).set({ chasis: ch, acoplado: ac, clave: cl });
         }
     </script>
 </body>
 </html>
+
 
 
 
