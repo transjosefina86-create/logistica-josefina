@@ -57,9 +57,9 @@
         <input type="text" id="nombre_chof_input" readonly style="background:#f9f9f9;">
         <label>CUIT DEL CHOFER</label>
         <input type="text" id="cuit_chofer" placeholder="CUIT">
-        <label>PATENTE EL CHASIS</label>
+        <label>PATENTE DEL CHASIS</label>
         <input type="text" id="chasis" placeholder="Chasis">
-        <label>PATENTE EL ACOPLADO</label>
+        <label>PATENTE DEL ACOPLADO</label>
         <input type="text" id="acoplado" placeholder="Acoplado">
         <label>LUGAR DE DESCARGA</label>
         <input type="text" id="lugar_descarga" placeholder="Destino">
@@ -103,74 +103,65 @@
             } else { alert("Clave incorrecta"); }
         }
 
-        // Esta función hace la "magia" del escáner
         async function enviarReporte() {
             const file = document.getElementById('fileInput').files[0];
             const btn = document.getElementById('btn-enviar');
             const status = document.getElementById('status');
             
+            if (!file) return alert("Debe capturar la foto del ticket");
+
             btn.disabled = true;
             btn.innerText = "ESCANEANDO...";
+            status.innerText = "⏳ PROCESANDO TICKET...";
 
-            let urlFinal = null;
-
-            if (file) {
-                status.innerText = "⏳ PROCESANDO TICKET...";
+            try {
+                // 1. COMPRESIÓN (Tipo escáner)
+                const options = { maxSizeMB: 0.1, maxWidthOrHeight: 1024, useWebWorker: true };
+                const compressedFile = await imageCompression(file, options);
                 
-                // OPCIONES DE ESCANEO (Comprime y mejora para que parezca PDF)
-                const options = {
-                    maxSizeMB: 0.1, // Lo hace ultra liviano (100kb)
-                    maxWidthOrHeight: 1024,
-                    useWebWorker: true
-                };
+                // 2. SUBIDA DE IMAGEN
+                status.innerText = "📤 SUBIENDO A LA NUBE...";
+                const formData = new FormData();
+                formData.append("file", compressedFile);
+                formData.append("upload_preset", "josefina_preset");
 
-                try {
-                    // Aquí se "escanea" y comprime
-                    const compressedFile = await imageCompression(file, options);
-                    
-                    const formData = new FormData();
-                    formData.append("file", compressedFile);
-                    formData.append("upload_preset", "josefina_preset");
+                const res = await fetch("https://api.cloudinary.com/v1_1/dw0v8vsn6/image/upload", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if(!data.secure_url) throw new Error("Error en subida");
 
-                    // Subida a Cloudinary (Nodo de auto-procesamiento)
-                    const res = await fetch("https://api.cloudinary.com/v1_1/dw0v8vsn6/image/upload", {
-                        method: "POST",
-                        body: formData
-                    });
-                    const data = await res.json();
-                    if(data.secure_url) {
-                        urlFinal = data.secure_url;
-                    }
-                } catch(e) {
-                    console.log("Error al procesar");
-                }
-            }
+                // 3. ENVÍO A FIREBASE (Solo si la imagen subió)
+                status.innerText = "💾 GUARDANDO DATOS...";
+                const ahora = new Date();
+                const fecha24 = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
 
-            const ahora = new Date();
-            const fecha24 = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
+                await db.collection("reportes").add({
+                    transporte: document.getElementById('transporte').value.toUpperCase(),
+                    cuit_trans: document.getElementById('cuit_trans').value,
+                    chofer: choferLogueado,
+                    cuit_chofer: document.getElementById('cuit_chofer').value,
+                    chasis: document.getElementById('chasis').value.toUpperCase(),
+                    acoplado: document.getElementById('acoplado').value.toUpperCase(),
+                    lugar_descarga: document.getElementById('lugar_descarga').value.toUpperCase(),
+                    estado: document.getElementById('estado_camion').value,
+                    foto: data.secure_url,
+                    fecha: fecha24
+                });
 
-            db.collection("reportes").add({
-                transporte: document.getElementById('transporte').value.toUpperCase(),
-                cuit_trans: document.getElementById('cuit_trans').value,
-                chofer: choferLogueado,
-                cuit_chofer: document.getElementById('cuit_chofer').value,
-                chasis: document.getElementById('chasis').value.toUpperCase(),
-                acoplado: document.getElementById('acoplado').value.toUpperCase(),
-                lugar_descarga: document.getElementById('lugar_descarga').value.toUpperCase(),
-                estado: document.getElementById('estado_camion').value,
-                foto: urlFinal,
-                fecha: fecha24
-            }).then(() => {
                 alert("✅ ENVIADO CON ÉXITO");
                 location.reload();
-            }).catch(() => {
-                alert("Error de red");
+
+            } catch(e) {
+                alert("Ocurrió un error. Revise su conexión y reintente.");
                 btn.disabled = false;
                 btn.innerText = "ENVIAR REPORTE";
-            });
+                status.innerText = "Error en el proceso";
+            }
         }
 
-        // Mostrar vista previa chiquita
         document.getElementById('fileInput').onchange = function(evt) {
             const [file] = evt.target.files;
             if (file) {
@@ -182,6 +173,7 @@
     </script>
 </body>
 </html>
+
 
 
 
