@@ -8,34 +8,48 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         body { font-family: sans-serif; background: #ff6600; margin: 0; padding: 15px; }
-        .card { background: white; padding: 25px; border-radius: 20px; max-width: 400px; margin: auto; }
-        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; }
+        .card { background: white; padding: 25px; border-radius: 20px; max-width: 400px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; font-size: 15px; }
         button { background: #222; color: white; font-weight: bold; border: none; cursor: pointer; }
         .oculto { display: none; }
-        label { font-size: 11px; font-weight: bold; color: #ff6600; display: block; }
+        label { font-size: 11px; font-weight: bold; color: #ff6600; margin-top: 10px; display: block; }
+        .status-foto { font-size: 13px; font-weight: bold; text-align: center; margin: 5px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 style="text-align:center; color:#ff6600;">La Josefina</h2>
+        <h2 style="text-align:center; color:#ff6600; font-family: cursive;">La Josefina</h2>
+        
         <div id="pantalla-login">
             <input type="text" id="user-nom" placeholder="Tu Nombre">
             <input type="password" id="user-cla" placeholder="Clave">
             <button onclick="validarIngreso()">INGRESAR</button>
         </div>
+
         <div id="pantalla-reporte" class="oculto">
+            <label>ESTADO</label>
             <select id="estado_manual"><option value="VACÍO">VACÍO</option><option value="CARGADO">CARGADO</option></select>
-            <input type="text" id="trans" placeholder="Transporte">
+            
+            <label>TRANSPORTE</label>
+            <input type="text" id="trans" placeholder="Nombre Transporte">
             <input type="text" id="cuit_trans" placeholder="CUIT Transporte">
+            
+            <label>CHOFER</label>
             <input type="text" id="chofer_n" placeholder="Nombre Chofer">
             <input type="text" id="cuit_chof" placeholder="CUIT Chofer">
+            
+            <label>PATENTES</label>
             <input type="text" id="chas" placeholder="Patente Chasis">
             <input type="text" id="acop" placeholder="Patente Acoplado">
+            
+            <label>DESCARGA</label>
             <input type="text" id="descarga" placeholder="Lugar de Descarga">
-            <button type="button" style="background:#f39c12" onclick="document.getElementById('fileInput').click()">📸 TOMAR FOTO</button>
+
+            <button type="button" style="background:#f39c12" onclick="document.getElementById('fileInput').click()">📸 SACAR FOTO COMPROBANTE</button>
             <input type="file" id="fileInput" accept="image/*" capture="camera" class="oculto" onchange="subirFoto()">
-            <div id="status" style="text-align:center; font-weight:bold; margin:5px;"></div>
-            <button id="btn-envio" style="background:#27ae60" onclick="enviarReporte()">ENVIAR REPORTE</button>
+            <div id="status" class="status-foto"></div>
+
+            <button id="btn-envio" style="background:#27ae60; margin-top:20px;" onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
     </div>
 
@@ -43,8 +57,9 @@
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let urlImagenFinal = "";
+        let urlFinal = "";
 
+        // Al cargar, recuperar datos guardados para no escribir todo de vuelta
         window.onload = function() {
             if(localStorage.getItem('trans')) {
                 document.getElementById('trans').value = localStorage.getItem('trans');
@@ -63,33 +78,39 @@
                 if(doc.exists && doc.data().clave === c) {
                     document.getElementById('pantalla-login').classList.add('oculto');
                     document.getElementById('pantalla-reporte').classList.remove('oculto');
-                } else { alert("Datos incorrectos."); }
+                } else { alert("Usuario o clave incorrecta"); }
             });
         }
 
         async function subirFoto() {
-            const fileInput = document.getElementById('fileInput');
+            const file = document.getElementById('fileInput').files[0];
             const status = document.getElementById('status');
-            if (fileInput.files.length === 0) return;
-            status.innerText = "⏳ CARGANDO...";
-            
-            const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
+            if(!file) return;
+            status.innerText = "⏳ SUBIENDO FOTO...";
+            status.style.color = "orange";
 
+            const fd = new FormData(); fd.append("file", file);
             try {
-                const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: formData });
+                const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: fd });
                 const data = await res.json();
-                if (data.status === 'success') {
-                    urlImagenFinal = data.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
-                    status.innerText = "✅ FOTO LISTA";
+                if(data.status === 'success') {
+                    // Generamos link directo para que el Admin pueda hacer el PDF
+                    urlFinal = data.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
+                    status.innerText = "✅ FOTO CARGADA";
+                    status.style.color = "green";
                 }
-            } catch (e) { status.innerText = "❌ ERROR AL SUBIR"; }
+            } catch(e) { status.innerText = "❌ ERROR AL SUBIR"; status.style.color = "red"; }
         }
 
         function enviarReporte() {
+            // Guardar datos en el celular para el próximo viaje
             localStorage.setItem('trans', document.getElementById('trans').value);
-            localStorage.setItem('chofer_n', document.getElementById('chofer_n').value); // etc...
-            
+            localStorage.setItem('cuit_trans', document.getElementById('cuit_trans').value);
+            localStorage.setItem('chofer_n', document.getElementById('chofer_n').value);
+            localStorage.setItem('cuit_chof', document.getElementById('cuit_chof').value);
+            localStorage.setItem('chas', document.getElementById('chas').value);
+            localStorage.setItem('acop', document.getElementById('acop').value);
+
             db.collection("reportes").add({
                 chofer: document.getElementById('chofer_n').value,
                 cuit_chofer: document.getElementById('cuit_chof').value,
@@ -100,8 +121,8 @@
                 lugar_descarga: document.getElementById('descarga').value,
                 estado: document.getElementById('estado_manual').value,
                 fecha: new Date().toLocaleString(),
-                foto: urlImagenFinal 
-            }).then(() => { alert("Enviado!"); location.reload(); });
+                foto: urlFinal
+            }).then(() => { alert("Reporte enviado con éxito!"); location.reload(); });
         }
     </script>
 </body>
