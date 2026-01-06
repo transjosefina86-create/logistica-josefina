@@ -7,30 +7,105 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Arial', sans-serif; background: #ff6600; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 25px; border-radius: 20px; max-width: 450px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: #ff6600; /* Fondo naranja */
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; /* Centrar verticalmente también */
+            min-height: 100vh; /* Ocupar toda la altura de la pantalla */
+        }
+        .container { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            max-width: 450px; 
+            width: 100%; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+            text-align: center; 
+        }
         
-        /* Ajuste del Logo para que se vea bien */
-        .logo-josefina { width: 100%; max-width: 280px; height: auto; margin-bottom: 20px; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1)); }
-        
-        .campo-grupo { text-align: left; margin-bottom: 12px; }
-        label { display: block; font-weight: bold; color: #444; font-size: 13px; margin-bottom: 4px; text-transform: uppercase; }
-        
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; box-sizing: border-box; font-size: 16px; background: #f9f9f9; }
-        input:focus { border-color: #ff6600; outline: none; background: white; }
-        
-        .mayusculas { text-transform: uppercase; }
-        
-        button { width: 100%; padding: 16px; border-radius: 10px; border: none; background: #222; color: white; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        button:active { transform: scale(0.97); }
+        /* Estilo para el logo como texto */
+        .logo-texto {
+            font-family: 'Brush Script MT', cursive; /* O una fuente similar de script, si está disponible */
+            font-size: 48px; /* Tamaño grande para que se vea bien */
+            color: #ff6600; /* Color naranja */
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4); /* Sombra para el efecto 3D */
+            margin-bottom: 25px;
+            display: block;
+            line-height: 1; /* Para que no haya mucho espacio entre líneas si hay varias */
+        }
 
-        #status { margin-top: 15px; font-weight: bold; color: #ff6600; }
+        h2 { 
+            color: #ff6600; /* Titulos en naranja */
+            font-size: 24px; 
+            margin-bottom: 25px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-weight: 800; 
+        }
+        
+        .campo-grupo { text-align: left; margin-bottom: 15px; }
+        label { 
+            display: block; 
+            font-weight: bold; 
+            color: #444; 
+            font-size: 13px; 
+            margin-bottom: 5px; 
+            text-transform: uppercase; 
+        }
+        
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 10px; 
+            border: 2px solid #ddd; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            transition: 0.3s; 
+            background: #fafafa; 
+        }
+        input:focus, select:focus { 
+            border-color: #ff6600; 
+            outline: none; 
+            background: white; 
+            box-shadow: 0 0 8px rgba(255,102,0,0.2);
+        }
+        
+        .mayusculas { text-transform: uppercase; } /* Solo para patentes */
+        
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 10px; 
+            border: none; 
+            background: #222; /* Botón oscuro para contraste */
+            color: white; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: background 0.3s, transform 0.2s; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            margin-top: 20px; 
+            text-transform: uppercase; 
+        }
+        button:hover { 
+            background: #000; 
+            transform: translateY(-2px); 
+        }
+        button:active { 
+            transform: translateY(0); 
+        }
+
+        #status { margin-top: 20px; font-weight: bold; color: #ff6600; font-size: 15px; }
         .oculto { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://logistics-josefina.web.app/logo.png" alt="Transporte La Josefina" class="logo-josefina">
+        <span class="logo-texto">Transporte La Josefina</span>
         
         <div id="pantalla-clave">
             <h2 style="color:#333;">Ingreso Chofer</h2>
@@ -39,6 +114,8 @@
         </div>
 
         <div id="formulario" class="oculto">
+            <h2 style="color:#333;">Reporte de Viaje</h2>
+            
             <div class="campo-grupo">
                 <label>Transporte</label>
                 <input type="text" id="transporte" placeholder="Nombre Empresa">
@@ -124,7 +201,6 @@
         function verificarClave() {
             const clave = document.getElementById('clave').value;
             if(clave) {
-                // Recuperar datos de la memoria del teléfono
                 const anterior = localStorage.getItem('josefina_camion_' + clave);
                 if(anterior) {
                     const d = JSON.parse(anterior);
@@ -134,9 +210,10 @@
                     document.getElementById('cuit_chofer').value = d.cuit_chofer || '';
                     document.getElementById('chasis').value = d.chasis || '';
                     document.getElementById('acoplado').value = d.acoplado || '';
+                    document.getElementById('tipo').value = d.tipo || 'COMÚN'; // Asegura que el tipo se cargue
+                    toggleKilos(); // Ajusta la visibilidad de kilos al cargar
                 }
                 
-                // Cargar sugerencias de destinos
                 const historial = JSON.parse(localStorage.getItem('historial_destinos') || '[]');
                 const datalist = document.getElementById('destinos-sugeridos');
                 datalist.innerHTML = "";
@@ -186,14 +263,12 @@
                 fecha: new Date().toLocaleString()
             };
 
-            // Guardar en el historial de destinos
             let historial = JSON.parse(localStorage.getItem('historial_destinos') || '[]');
             if(destinoActual && !historial.includes(destinoActual)) {
                 historial.push(destinoActual);
                 localStorage.setItem('historial_destinos', JSON.stringify(historial));
             }
 
-            // Guardar datos del camión localmente
             localStorage.setItem('josefina_camion_' + clave, JSON.stringify(datos));
 
             db.collection("reportes").add(datos).then(() => {
@@ -208,6 +283,7 @@
     </script>
 </body>
 </html>
+
 
 
 
