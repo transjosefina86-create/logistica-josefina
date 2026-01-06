@@ -7,28 +7,30 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff6600; display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; max-width: 1400px; margin: auto; display: none; }
+        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 25px; max-width: 1400px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
         
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; text-transform: uppercase; }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
+        tr:hover { background-color: #f9f9f9; }
         
         .select-estado { padding: 8px 12px; border-radius: 6px; font-weight: bold; border: none; color: white; cursor: pointer; }
         .bg-vacio { background: #27ae60 !important; }
         .bg-cargado { background: #e67e22 !important; }
         
-        .btn-archivo { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-archivo { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; transition: 0.3s; }
+        .btn-header:hover { opacity: 0.8; }
         
+        /* Modal Estilo */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
-        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; }
-        
-        .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; position: relative; }
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; font-family: monospace; font-size: 14px; }
         .btn-cerrar { background: #ff6600; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
@@ -37,8 +39,9 @@
     <div id="login-screen">
         <div class="login-box">
             <span class="logo-josefina" style="font-size: 45px;">La Josefina</span>
-            <input type="password" id="pass-admin" style="width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center; margin-top:20px;" placeholder="CLAVE ADMIN">
-            <button onclick="checkAdmin()" style="width: 80%; background: #222; color: white; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 20px;">ENTRAR</button>
+            <p style="color: #666; margin-bottom: 25px;">Panel Administrativo</p>
+            <input type="password" id="pass-admin" style="width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-size: 18px;" placeholder="CLAVE DE ACCESO">
+            <button onclick="checkAdmin()" style="width: 80%; background: #222; color: white; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 20px;">INGRESAR AL SISTEMA</button>
         </div>
     </div>
 
@@ -46,7 +49,7 @@
         <div class="header-flex">
             <div class="logo-josefina">🚚 Control Logística</div>
             <div style="display:flex;">
-                <button class="btn-header" style="background:#222" onclick="verClavesAsignadas()">📋 CLAVES / BAJAS</button>
+                <button class="btn-header" style="background:#222" onclick="verClavesAsignadas()">📋 GESTIÓN CLAVES</button>
                 <button class="btn-header" style="background:#4a4a4a" onclick="nuevaClaveChofer()">🔑 NUEVA CLAVE</button>
                 <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR TABLA</button>
             </div>
@@ -59,9 +62,8 @@
                     <th>Fecha / Hora</th>
                     <th>Estado</th>
                     <th>Chofer</th>
-                    <th>Descarga</th>
-                    <th>Chasis</th>
-                    <th>Acoplado</th>
+                    <th>Lugar Descarga</th>
+                    <th>Chasis / Acoplado</th>
                     <th>Datos</th>
                     <th>Comprobante</th>
                 </tr>
@@ -72,13 +74,14 @@
 
     <div id="modal-info" class="modal">
         <div class="modal-content">
-            <div id="titulo-modal" style="font-weight:bold; font-size:18px;">📋 Información</div>
+            <div id="titulo-modal" style="font-weight:bold; font-size:18px; color:#ff6600;">📋 Detalles del Reporte</div>
             <div id="txt-detalles" class="modal-body"></div>
-            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR</button>
+            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR VENTANA</button>
         </div>
     </div>
 
     <script>
+        // Configuración de Firebase
         const firebaseConfig = { 
             apiKey: "AIzaSyC...", 
             authDomain: "control-logistica-2026.firebaseapp.com", 
@@ -89,32 +92,40 @@
         const db = firebase.firestore();
 
         function checkAdmin() {
-            if(document.getElementById('pass-admin').value === "1234") {
+            const pass = document.getElementById('pass-admin').value;
+            if(pass === "1234") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
                 escucharReportes();
-            } else { alert("Clave Incorrecta"); }
+            } else {
+                alert("Clave administrativa incorrecta.");
+            }
         }
 
         function escucharReportes() {
             db.collection("reportes").onSnapshot(snapshot => {
                 const tbody = document.getElementById('lista-viajes');
                 let reportes = [];
-                snapshot.forEach(doc => { reportes.push({ id: doc.id, ...doc.data() }); });
+                snapshot.forEach(doc => {
+                    reportes.push({ id: doc.id, ...doc.data() });
+                });
 
-                // ORDEN: Vacíos arriba (por hora de llegada), Cargados abajo
+                // LÓGICA DE ORDENAMIENTO
                 reportes.sort((a, b) => {
+                    // 1. Mandar los "CARGADOS" al final de la lista
                     if (a.estado === "CARGADO" && b.estado !== "CARGADO") return 1;
                     if (a.estado !== "CARGADO" && b.estado === "CARGADO") return -1;
-                    
-                    // Orden cronológico: el que llegó primero (8:10) arriba del que llegó después (8:20)
-                    return new Date(a.fecha) - new Date(b.fecha);
+
+                    // 2. Orden Cronológico para los "VACÍOS": el más viejo (8:10) arriba del nuevo (8:20)
+                    let fechaA = parsearFecha(a.fecha);
+                    let fechaB = parsearFecha(b.fecha);
+                    return fechaA - fechaB;
                 });
 
                 tbody.innerHTML = "";
                 reportes.forEach(r => {
                     const claseEstado = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
-                    const botonFoto = r.foto ? `<button class="btn-archivo" onclick="window.open('${r.foto}', '_blank')">📄 VER FOTO</button>` : '<span style="color:#ccc">Sin foto</span>';
+                    const btnFoto = r.foto ? `<button class="btn-archivo" onclick="window.open('${r.foto}', '_blank')">📄 VER COMPROBANTE</button>` : '<span style="color:#bbb">Sin adjunto</span>';
 
                     tbody.innerHTML += `
                         <tr>
@@ -127,67 +138,84 @@
                                 </select>
                             </td>
                             <td><b>${r.chofer}</b></td>
-                            <td style="font-weight:bold; color:#2c3e50; text-transform:uppercase;">${r.lugar_descarga || '-'}</td>
-                            <td>${r.chasis}</td>
-                            <td>${r.acoplado}</td>
-                            <td><button onclick="verInfo('${r.id}')">📋</button></td>
-                            <td>${botonFoto}</td>
+                            <td style="text-transform:uppercase; font-weight:bold;">${r.lugar_descarga || '-'}</td>
+                            <td>${r.chasis || '-'} / ${r.acoplado || '-'}</td>
+                            <td><button onclick="verInfo('${r.id}')" style="cursor:pointer; background:none; border:1px solid #ddd; border-radius:5px;">👁️</button></td>
+                            <td>${btnFoto}</td>
                         </tr>
                     `;
                 });
             });
         }
 
+        // Función para convertir el texto de fecha de Firebase a un objeto de tiempo real
+        function parsearFecha(fechaStr) {
+            try {
+                // Formato esperado: "6/1/2026, 18:10:00"
+                const partes = fechaStr.split(', ');
+                const fechaPartes = partes[0].split('/');
+                const horaPartes = partes[1].split(':');
+                return new Date(fechaPartes[2], fechaPartes[1]-1, fechaPartes[0], horaPartes[0], horaPartes[1], horaPartes[2]);
+            } catch(e) { return new Date(); }
+        }
+
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                const msg = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_trans}\nCHOFER: ${d.chofer}\nCUIT: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA: ${d.lugar_descarga}`;
-                document.getElementById('titulo-modal').innerText = "📋 Datos Administrativos";
+                const msg = `TRANSPORTE: ${d.transporte}\nCUIT TRANS: ${d.cuit_trans}\n\nCHOFER: ${d.chofer}\nCUIT CHOF: ${d.cuit_chofer}\n\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\n\nDESCARGA: ${d.lugar_descarga}\nESTADO: ${d.estado}\nFECHA: ${d.fecha}`;
                 document.getElementById('txt-detalles').innerText = msg;
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
 
-        function cambiarEstado(id, val) { db.collection("reportes").doc(id).update({ estado: val }); }
+        function cambiarEstado(id, nuevoEstado) {
+            db.collection("reportes").doc(id).update({ estado: nuevoEstado });
+        }
+
         function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
-        function seleccionarTodo(source) { document.querySelectorAll('.viaje-check').forEach(cb => cb.checked = source.checked); }
         
+        function seleccionarTodo(source) {
+            document.querySelectorAll('.viaje-check').forEach(cb => cb.checked = source.checked);
+        }
+
         function borrarVarios() {
-            const checks = document.querySelectorAll('.viaje-check:checked');
-            if(checks.length > 0 && confirm("¿Borrar seleccionados?")) {
-                checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
+            const seleccionados = document.querySelectorAll('.viaje-check:checked');
+            if(seleccionados.length === 0) return alert("No hay nada seleccionado.");
+            if(confirm("¿Estás seguro de borrar estos " + seleccionados.length + " reportes?")) {
+                seleccionados.forEach(c => {
+                    db.collection("reportes").doc(c.dataset.id).delete();
+                });
             }
         }
 
         function nuevaClaveChofer() {
-            const nom = prompt("Nombre del Chofer:");
-            const cla = prompt("Asignale una Clave:");
-            if(nom && cla) {
-                db.collection("accesos_choferes").doc(nom).set({ clave: cla });
-                alert("Guardado.");
+            const nombre = prompt("Nombre del Chofer:");
+            const clave = prompt("Asignar Clave:");
+            if(nombre && clave) {
+                db.collection("accesos_choferes").doc(nombre).set({ clave: clave })
+                .then(() => alert("Acceso creado para " + nombre));
             }
         }
 
         function verClavesAsignadas() {
             db.collection("accesos_choferes").get().then(snap => {
-                const contenedor = document.getElementById('txt-detalles');
-                contenedor.innerHTML = "";
-                document.getElementById('titulo-modal').innerText = "📋 Gestión de Claves";
+                let html = "";
                 snap.forEach(doc => {
-                    contenedor.innerHTML += `
-                        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;">
-                            <span>👤 <b>${doc.id}</b> - Clave: ${doc.data().clave}</span>
-                            <button onclick="eliminarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✖</button>
-                        </div>`;
+                    html += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
+                        <span>👤 <b>${doc.id}</b> (Clave: ${doc.data().clave})</span>
+                        <button onclick="borrarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer;">✖</button>
+                    </div>`;
                 });
+                document.getElementById('titulo-modal').innerText = "🔑 Claves de Choferes";
+                document.getElementById('txt-detalles').innerHTML = html;
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
 
-        function eliminarAcceso(nombre) {
-            if(confirm("¿Eliminar a " + nombre + "?")) {
-                db.collection("accesos_choferes").doc(nombre).delete().then(() => {
-                    alert("Eliminado.");
+        function borrarAcceso(id) {
+            if(confirm("¿Eliminar acceso de " + id + "?")) {
+                db.collection("accesos_choferes").doc(id).delete().then(() => {
+                    cerrarModal();
                     verClavesAsignadas();
                 });
             }
@@ -195,6 +223,7 @@
     </script>
 </body>
 </html>
+
 
 
 
