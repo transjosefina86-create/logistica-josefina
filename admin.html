@@ -15,15 +15,16 @@
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .bg-vacio { background: #27ae60 !important; color: white; border-radius: 5px; padding: 5px; font-weight: bold; }
         .bg-cargado { background: #e67e22 !important; color: white; border-radius: 5px; padding: 5px; font-weight: bold; }
         .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
+        .btn-ver { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 4px; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
-        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; white-space: pre-wrap; font-size: 14px; line-height: 1.2; }
-        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; white-space: pre-wrap; font-family: monospace; font-size: 14px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -31,8 +32,8 @@
     <div id="login-screen">
         <div class="login-box">
             <span class="logo-josefina" style="font-size: 45px;">La Josefina</span>
-            <input type="password" id="pass-admin" style="width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-top: 20px;" placeholder="CLAVE ADMIN">
-            <button onclick="checkAdmin()" style="width: 80%; background: #222; color: white; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: bold;">INGRESAR</button>
+            <input type="password" id="pass-admin" style="width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-top: 20px; text-align: center;" placeholder="CLAVE ADMIN">
+            <button onclick="checkAdmin()" style="width: 80%; background: #222; color: white; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 20px;">INGRESAR</button>
         </div>
     </div>
 
@@ -55,7 +56,7 @@
                     <th>Descarga</th>
                     <th>Chasis / Acop.</th>
                     <th>Datos</th>
-                    <th>Archivo</th>
+                    <th>Comprobante</th>
                 </tr>
             </thead>
             <tbody id="lista-viajes"></tbody>
@@ -64,10 +65,9 @@
 
     <div id="modal-info" class="modal">
         <div class="modal-content">
-            <div style="font-weight:bold; font-size:18px; color:#ff6600;">Detalles del Reporte</div>
+            <div style="font-weight:bold; font-size:18px; color:#ff6600; margin-bottom:10px;">📋 Datos del Camión</div>
             <div id="txt-detalles" class="modal-body"></div>
-            <button id="btn-descargar-pdf" class="btn-pdf">⬇️ DESCARGAR PDF</button>
-            <button onclick="cerrarModal()" style="width:100%; margin-top:10px; padding:10px; border-radius:10px; border:none; cursor:pointer;">CERRAR</button>
+            <button onclick="cerrarModal()" style="width:100%; margin-top:15px; padding:12px; background:#222; color:white; border-radius:10px; border:none; cursor:pointer; font-weight:bold;">CERRAR</button>
         </div>
     </div>
 
@@ -75,7 +75,6 @@
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let reporteActual = null;
 
         function checkAdmin() {
             if(document.getElementById('pass-admin').value === "1234") {
@@ -89,11 +88,11 @@
             db.collection("reportes").onSnapshot(snap => {
                 let reportes = [];
                 snap.forEach(doc => reportes.push({ id: doc.id, ...doc.data() }));
-                
+
                 reportes.sort((a, b) => {
                     if (a.estado === "CARGADO" && b.estado !== "CARGADO") return 1;
                     if (a.estado !== "CARGADO" && b.estado === "CARGADO") return -1;
-                    return parsearFecha(a.fecha) - parsearFecha(b.fecha);
+                    return new Date(a.fecha.split(', ').reverse().join(' ')) - new Date(b.fecha.split(', ').reverse().join(' '));
                 });
 
                 const tbody = document.getElementById('lista-viajes');
@@ -108,51 +107,45 @@
                             <td><b>${r.chofer}</b></td>
                             <td>${r.lugar_descarga || '-'}</td>
                             <td>${r.chasis} / ${r.acoplado}</td>
-                            <td><button onclick="verInfo('${r.id}')">👁️</button></td>
-                            <td>${r.foto ? `<button onclick="window.open('${r.foto}', '_blank')">📄 VER</button>` : '-'}</td>
+                            <td><button onclick="verInfo('${r.id}')" style="cursor:pointer;">👁️</button></td>
+                            <td>
+                                ${r.foto ? `
+                                    <button class="btn-ver" onclick="window.open('${r.foto}', '_blank')">VER</button>
+                                    <button class="btn-pdf" onclick="descargarPDF('${r.foto}', '${r.chofer}', '${r.fecha}')">PDF</button>
+                                ` : '-'}
+                            </td>
                         </tr>`;
                 });
             });
         }
 
-        function parsearFecha(f) {
-            try {
-                const p = f.split(', ');
-                const df = p[0].split('/');
-                const dh = p[1].split(':');
-                return new Date(df[2], df[1]-1, df[0], dh[0], dh[1], dh[2]);
-            } catch(e) { return new Date(); }
-        }
-
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
-                reporteActual = doc.data();
-                const d = reporteActual;
-                const msg = `TRANSPORTE: ${d.transporte} | CUIT: ${d.cuit_trans}
-CHOFER: ${d.chofer} | CUIT: ${d.cuit_chofer}
-CHASIS: ${d.chasis} | ACOPLADO: ${d.acoplado}
-DESCARGA: ${d.lugar_descarga}
-ESTADO: ${d.estado} | FECHA: ${d.fecha}`;
+                const d = doc.data();
+                const msg = `CHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nCHOFER: ${d.chofer}\nCUIT CHOF: ${d.cuit_chofer}\nTRANSPORTE: ${d.transporte}\nCUIT TRANS: ${d.cuit_trans}`;
                 document.getElementById('txt-detalles').innerText = msg;
                 document.getElementById('modal-info').style.display = 'flex';
-                
-                document.getElementById('btn-descargar-pdf').onclick = () => generarPDF(d);
             });
         }
 
-        function generarPDF(d) {
+        async function descargarPDF(url, nombre, fecha) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFontSize(20);
-            doc.text("Reporte La Josefina", 20, 20);
-            doc.setFontSize(12);
-            doc.text(`Fecha: ${d.fecha}`, 20, 35);
-            doc.text(`Transporte: ${d.transporte} (CUIT: ${d.cuit_trans})`, 20, 45);
-            doc.text(`Chofer: ${d.chofer} (CUIT: ${d.cuit_chofer})`, 20, 55);
-            doc.text(`Patentes: Chasis ${d.chasis} - Acoplado ${d.acoplado}`, 20, 65);
-            doc.text(`Lugar de Descarga: ${d.lugar_descarga}`, 20, 75);
-            doc.text(`Estado: ${d.estado}`, 20, 85);
-            doc.save(`Reporte_${d.chofer}_${d.fecha}.pdf`);
+            doc.text(`Comprobante de Carga - La Josefina`, 10, 10);
+            doc.text(`Chofer: ${nombre} - Fecha: ${fecha}`, 10, 20);
+            
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = url;
+            img.onload = function() {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                const dataURL = canvas.toDataURL("image/jpeg");
+                doc.addImage(dataURL, 'JPEG', 10, 30, 180, 240);
+                doc.save(`Ticket_${nombre}.pdf`);
+            };
         }
 
         function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
@@ -167,13 +160,14 @@ ESTADO: ${d.estado} | FECHA: ${d.fecha}`;
         }
         function verClavesAsignadas() {
             db.collection("accesos_choferes").get().then(snap => {
-                let txt = ""; snap.forEach(doc => txt += `${doc.id}: ${doc.data().clave}\n`);
-                alert(txt);
+                let t = ""; snap.forEach(doc => t += `${doc.id}: ${doc.data().clave}\n`);
+                alert(t || "No hay claves");
             });
         }
     </script>
 </body>
 </html>
+
 
 
 
