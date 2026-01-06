@@ -3,34 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - La Josefina</title>
+    <title>Admin - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --naranja: #ff6600; --oscuro: #222; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
         
-        #login-admin { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--oscuro); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-card { background: white; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 300px; }
+        #login-admin { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--oscuro); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .login-card { background: white; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
 
         .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; max-width: 1200px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
         .logo-admin { font-family: 'Brush Script MT', cursive; font-size: 35px; color: var(--naranja); }
 
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-        th { background: var(--naranja); color: white; padding: 15px; text-align: left; font-size: 14px; }
-        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #444; }
-        tr:hover { background: #fffcf9; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: var(--naranja); color: white; padding: 15px; text-align: left; }
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
 
-        .btn { border: none; padding: 10px 18px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-negro { background: var(--oscuro); color: white; }
-        .btn-pdf { background: #e74c3c; color: white; }
-        .btn-rojo { background: #c0392b; color: white; }
-        
-        .chip { padding: 6px 12px; border-radius: 20px; font-weight: bold; color: white; font-size: 11px; text-transform: uppercase; border: none; }
+        .btn { border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; }
+        .btn-negro { background: var(--oscuro); }
+        .btn-pdf { background: #e74c3c; }
+        .btn-azul { background: #3498db; }
+        .btn-rojo { background: #c0392b; }
+
+        .chip { padding: 5px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; color: white; }
         .vacio { background: #27ae60; }
         .cargado { background: #e67e22; }
+
+        /* Modal Editor de Imagen */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 10001; }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 90%; max-width: 600px; text-align: center; }
+        .controles { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; background: #f9f9f9; padding: 15px; border-radius: 10px; }
+        canvas { max-width: 100%; max-height: 400px; border: 1px solid #ddd; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -38,137 +44,162 @@
     <div id="login-admin">
         <div class="login-card">
             <div class="logo-admin">La Josefina</div>
-            <input type="password" id="pass-adm" placeholder="Clave de Acceso" style="padding:15px; width: 85%; border-radius: 10px; border: 1px solid #ddd; margin: 20px 0;">
-            <button class="btn btn-negro" onclick="loginAdm()" style="width: 100%;">INGRESAR</button>
+            <input type="password" id="pass-adm" placeholder="Clave Administrador" style="padding:15px; width: 80%; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 20px;">
+            <button class="btn btn-negro" onclick="loginAdm()" style="width: 100%; padding: 15px;">ACCEDER</button>
         </div>
     </div>
 
     <div class="main-card" id="panel">
         <div class="header">
-            <div class="logo-admin">La Josefina <span style="font-family:sans-serif; font-size:14px; color:#999;">Administración</span></div>
+            <div class="logo-admin">La Josefina <small style="font-size:12px; color:#666">Gestión de Cargas</small></div>
             <div>
-                <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO CHOFER</button>
-                <button class="btn btn-negro" onclick="verClaves()">LISTADO CHOFERES</button>
-                <button class="btn btn-rojo" onclick="borrarSels()">ELIMINAR SELECCIÓN</button>
+                <button class="btn btn-negro" onclick="nuevaClave()">+ CHOFER</button>
+                <button class="btn btn-negro" onclick="verClaves()">LISTADO/BORRAR CHOFERES</button>
+                <button class="btn btn-rojo" onclick="borrarReportes()">LIMPIAR TABLA</button>
             </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th><input type="checkbox" onclick="selTodo(this)"></th>
-                    <th>FECHA Y HORA</th>
+                    <th><input type="checkbox" id="selTodo" onclick="seleccionarTodo(this)"></th>
+                    <th>HORA</th>
                     <th>ESTADO</th>
                     <th>CHOFER</th>
-                    <th>DESTINO</th>
-                    <th>DOCUMENTO</th>
+                    <th>PATENTES</th>
+                    <th>ACCIONES</th>
                 </tr>
             </thead>
             <tbody id="tabla"></tbody>
         </table>
     </div>
 
+    <div id="modal-editor" class="modal">
+        <div class="modal-content">
+            <h3 style="margin: 0 0 10px 0;">Ajustar Nitidez del Ticket</h3>
+            <canvas id="canvas-editor"></canvas>
+            <div class="controles">
+                <label>Brillo: <input type="range" id="brillo" min="0" max="200" value="110" oninput="aplicarFiltros()"></label>
+                <label>Contraste: <input type="range" id="contraste" min="100" max="300" value="180" oninput="aplicarFiltros()"></label>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-rojo" onclick="cerrarEditor()" style="flex:1">CANCELAR</button>
+                <button class="btn btn-pdf" id="btn-descargar-pdf" style="flex:1">DESCARGAR PDF AJUSTADO</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // CONFIGURACIÓN FIREBASE (Mantené la tuya original)
-        const firebaseConfig = { 
-            apiKey: "AIzaSyC...", 
-            authDomain: "control-logistica-2026.firebaseapp.com", 
-            projectId: "control-logistica-2026", 
-            appId: "1:389274295324:web:04467597157833633e467d" 
-        };
+        const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        let imgOriginal = new Image();
+        let datosPdf = { chofer: "", fecha: "" };
 
         function loginAdm() {
             if(document.getElementById('pass-adm').value === "1234") {
                 document.getElementById('login-admin').style.display='none';
                 document.getElementById('panel').style.display='block';
-                cargarDatos();
+                escucharReportes();
             } else { alert("Clave Incorrecta"); }
         }
 
-        function cargarDatos() {
+        function escucharReportes() {
             db.collection("reportes").onSnapshot(snap => {
-                const t = document.getElementById('tabla');
-                t.innerHTML = "";
-                let reportes = [];
-                
-                snap.forEach(doc => { reportes.push({ id: doc.id, ...doc.data() }); });
+                const t = document.getElementById('tabla'); t.innerHTML = "";
+                let reps = []; snap.forEach(doc => reps.push({id: doc.id, ...doc.data()}));
 
-                // ORDEN CRONOLÓGICO: El más viejo arriba, el nuevo se suma abajo.
-                reportes.sort((a, b) => {
+                // ORDEN: 1. VACÍOS primero. 2. Dentro de eso, por hora (viejos arriba). 3. CARGADOS abajo.
+                reps.sort((a, b) => {
+                    if (a.estado === "VACÍO" && b.estado === "CARGADO") return -1;
+                    if (a.estado === "CARGADO" && b.estado === "VACÍO") return 1;
                     const fA = a.fecha.split(', ')[0].split('/').reverse().join('-') + 'T' + a.fecha.split(', ')[1];
                     const fB = b.fecha.split(', ')[0].split('/').reverse().join('-') + 'T' + b.fecha.split(', ')[1];
                     return new Date(fA) - new Date(fB);
                 });
 
-                reportes.forEach(r => {
-                    const colorEst = r.estado === "VACÍO" ? "vacio" : "cargado";
-                    t.innerHTML += `
-                        <tr>
-                            <td><input type="checkbox" class="ck" data-id="${r.id}"></td>
-                            <td><b>${r.fecha} hs</b></td>
-                            <td><button class="chip ${colorEst}">${r.estado}</button></td>
-                            <td><b style="color:var(--naranja)">${r.chofer}</b></td>
-                            <td>${r.lugar_descarga || '-'}</td>
-                            <td>
-                                ${r.foto ? `<button class="btn btn-pdf" onclick="descargarPDF('${r.foto}','${r.chofer}','${r.fecha}')">PDF ESCÁNER</button>` : 'Sin foto'}
-                            </td>
-                        </tr>`;
+                reps.forEach(r => {
+                    const cl = r.estado === "VACÍO" ? "vacio" : "cargado";
+                    t.innerHTML += `<tr>
+                        <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
+                        <td><b>${r.fecha} hs</b></td>
+                        <td><button class="chip ${cl}" onclick="cambiarEstado('${r.id}','${r.estado}')">${r.estado}</button></td>
+                        <td><b style="color:var(--naranja)">${r.chofer}</b></td>
+                        <td>${r.chasis} / ${r.acoplado}</td>
+                        <td><button class="btn btn-azul" onclick="abrirEditor('${r.foto}','${r.chofer}','${r.fecha}')">👁️ VER / AJUSTAR</button></td>
+                    </tr>`;
                 });
             });
         }
 
-        function descargarPDF(base64, nom, fecha) {
+        function abrirEditor(base64, chofer, fecha) {
+            datosPdf = { chofer, fecha };
+            imgOriginal.src = base64;
+            imgOriginal.onload = () => {
+                document.getElementById('modal-editor').style.display = 'flex';
+                aplicarFiltros();
+            };
+        }
+
+        function aplicarFiltros() {
+            const canvas = document.getElementById('canvas-editor');
+            const ctx = canvas.getContext('2d');
+            const b = document.getElementById('brillo').value;
+            const c = document.getElementById('contraste').value;
+
+            canvas.width = imgOriginal.width;
+            canvas.height = imgOriginal.height;
+            ctx.filter = `grayscale(100%) brightness(${b}%) contrast(${c}%)`;
+            ctx.drawImage(imgOriginal, 0, 0);
+
+            document.getElementById('btn-descargar-pdf').onclick = function() {
+                const imgAjustada = canvas.toDataURL('image/jpeg', 0.9);
+                generarPDF(imgAjustada, datosPdf.chofer, datosPdf.fecha);
+            };
+        }
+
+        function generarPDF(img, nom, fecha) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            
-            // Encabezado
-            doc.setFillColor(255, 102, 0);
-            doc.rect(0, 0, 210, 20, 'F');
-            doc.setFontSize(16); doc.setTextColor(255, 255, 255);
-            doc.text("LA JOSEFINA - REGISTRO DE CARGA", 15, 13);
+            doc.setFillColor(255, 102, 0); doc.rect(0, 0, 210, 20, 'F');
+            doc.setFontSize(16); doc.setTextColor(255); doc.text("LA JOSEFINA - TICKET", 15, 13);
+            doc.setFontSize(11); doc.setTextColor(0);
+            doc.text(`Chofer: ${nom}`, 15, 30); doc.text(`Fecha: ${fecha} hs`, 15, 37);
+            doc.addImage(img, 'JPEG', 10, 45, 190, 240);
+            doc.save(`Ticket_${nom}_${fecha}.pdf`);
+        }
 
-            // Info
-            doc.setFontSize(12); doc.setTextColor(40, 40, 40);
-            doc.text(`CHOFER: ${nom}`, 15, 30);
-            doc.text(`FECHA: ${fecha} hs`, 15, 37);
-            doc.setDrawColor(255, 102, 0); doc.line(15, 40, 195, 40);
-
-            // Foto modo CamScanner
-            doc.addImage(base64, 'JPEG', 10, 45, 190, 240);
-            doc.save(`Ticket_${nom}_${fecha.replace(/[/, :]/g, '_')}.pdf`);
+        function cambiarEstado(id, actual) {
+            db.collection("reportes").doc(id).update({ estado: actual === "VACÍO" ? "CARGADO" : "VACÍO" });
         }
 
         function nuevaClave() {
-            const n = prompt("Nombre del Chofer:");
-            const c = prompt("Asignar Clave:");
-            if(n && c) {
-                db.collection("accesos_choferes").doc(n.toUpperCase()).set({ clave: c });
-                alert("Chofer Registrado.");
+            const n = prompt("Nombre Chofer:"); const c = prompt("Clave:");
+            if(n && c) db.collection("accesos_choferes").doc(n.toUpperCase()).set({ clave: c });
+        }
+
+        async function verClaves() {
+            const snap = await db.collection("accesos_choferes").get();
+            let lista = "CHOFERES (Clic en 'Aceptar' para cerrar, escribe nombre para borrar):\n\n";
+            snap.forEach(d => lista += `• ${d.id}: ${d.data().clave}\n`);
+            const borrar = prompt(lista + "\nEscriba el NOMBRE exacto para eliminar un chofer (o deje vacío para salir):");
+            if(borrar) {
+                if(confirm(`¿Eliminar a ${borrar}?`)) db.collection("accesos_choferes").doc(borrar.toUpperCase()).delete();
             }
         }
 
-        function verClaves() {
-            db.collection("accesos_choferes").get().then(s => {
-                let lista = "LISTADO DE ACCESOS:\n\n";
-                s.forEach(d => { lista += `• ${d.id}: ${d.data().clave}\n`; });
-                alert(lista);
-            });
-        }
-
-        function selTodo(s) { document.querySelectorAll('.ck').forEach(x => x.checked = s.checked); }
-        
-        function borrarSels() {
-            if(confirm("¿Seguro que desea eliminar los registros seleccionados?")) {
-                document.querySelectorAll('.ck:checked').forEach(x => {
-                    db.collection("reportes").doc(x.dataset.id).delete();
-                });
+        function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
+        function borrarReportes() {
+            if(confirm("¿Eliminar registros seleccionados?")) {
+                document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete());
             }
         }
+        function cerrarEditor() { document.getElementById('modal-editor').style.display = 'none'; }
     </script>
 </body>
 </html>
+
 
 
 
