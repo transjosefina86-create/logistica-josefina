@@ -3,146 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Choferes - La Josefina</title>
+    <title>La Josefina - Choferes</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         body { font-family: sans-serif; background: #ff6600; margin: 0; padding: 15px; }
-        .contenedor { background: white; padding: 25px; border-radius: 20px; max-width: 400px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .logo { text-align: center; font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; margin-bottom: 20px; }
-        
-        label { display: block; font-size: 11px; font-weight: bold; color: #ff6600; margin-top: 10px; }
-        input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
-        button { background: #222; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 15px; }
-        
-        /* Estilo para el botón de foto */
-        .btn-foto { background: #f39c12; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .card { background: white; padding: 25px; border-radius: 20px; max-width: 400px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
+        button { background: #222; color: white; font-weight: bold; border: none; cursor: pointer; }
         .oculto { display: none; }
-        .status-foto { font-size: 11px; color: green; text-align: center; font-weight: bold; margin-top: 5px; }
+        label { font-size: 11px; font-weight: bold; color: #ff6600; margin-top: 10px; display: block; }
+        .btn-foto { background: #f39c12; }
+        .status-foto { font-size: 12px; color: #27ae60; text-align: center; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="contenedor">
-        <div class="logo">La Josefina</div>
+    <div class="card">
+        <h2 style="text-align:center; color:#ff6600; font-family: 'Brush Script MT', cursive; font-size:35px; margin:0 0 15px 0;">La Josefina</h2>
 
         <div id="pantalla-login">
             <h3 style="text-align:center;">Ingreso Autorizado</h3>
-            <input type="text" id="login-nombre" placeholder="Tu Nombre Completo">
-            <input type="password" id="login-clave" placeholder="Clave Asignada">
-            <button onclick="validarYEntrar()">INGRESAR</button>
+            <input type="text" id="user-nom" placeholder="Tu Nombre Completo">
+            <input type="password" id="user-cla" placeholder="Clave de Acceso">
+            <button onclick="validarIngreso()">INGRESAR</button>
         </div>
 
         <div id="pantalla-reporte" class="oculto">
-            <h4 id="msj-bienvenida" style="margin:0; color:#333; text-align: center;"></h4>
+            <h4 id="saludo" style="margin:0; color:#333; text-align: center;"></h4>
             
             <label>DATOS DEL TRANSPORTE</label>
-            <input type="text" id="transporte" placeholder="Nombre de la Empresa">
-            <input type="text" id="cuit_transporte" placeholder="CUIT del Transporte">
+            <input type="text" id="trans" placeholder="Nombre Transporte">
+            <input type="text" id="cuit_trans" placeholder="CUIT Transporte">
             
             <label>DATOS DEL CHOFER</label>
-            <input type="text" id="chofer_nombre" placeholder="Nombre y Apellido del Chofer">
-            <input type="text" id="chofer_cuit" placeholder="CUIT del Chofer">
+            <input type="text" id="chofer_n" placeholder="Nombre Chofer">
+            <input type="text" id="cuit_chof" placeholder="CUIT Chofer">
             
             <label>DATOS DEL CAMIÓN</label>
-            <input type="text" id="patente_chasis" placeholder="Patente Chasis">
-            <input type="text" id="patente_acoplado" placeholder="Patente Acoplado">
+            <input type="text" id="chas" placeholder="Patente Chasis">
+            <input type="text" id="acop" placeholder="Patente Acoplado">
             
             <label>LUGAR DE DESCARGA</label>
-            <input type="text" id="lugar_descarga" placeholder="¿Dónde descargaste? (Ej: Aceitera)">
-            
+            <input type="text" id="descarga" placeholder="¿Dónde descargaste?">
+
             <label>COMPROBANTE / REMITO</label>
-            <button type="button" class="btn-foto" onclick="document.getElementById('archivo-foto').click()">
-                📷 SACAR FOTO / SUBIR PDF
-            </button>
-            <input type="file" id="archivo-foto" accept="image/*,application/pdf" capture="camera" class="oculto" onchange="fotoLista()">
-            <div id="status-foto" class="status-foto"></div>
-            
-            <button id="btn-enviar" style="background:#27ae60;" onclick="enviarReporte()">ENVIAR REPORTE</button>
+            <button type="button" class="btn-foto" onclick="document.getElementById('fileInput').click()">📸 TOMAR FOTO / SUBIR</button>
+            <input type="file" id="fileInput" accept="image/*,application/pdf" capture="camera" class="oculto" onchange="subirAImgBB()">
+            <div id="status" class="status-foto"></div>
+
+            <button id="btn-envio" style="background:#27ae60; margin-top:20px;" onclick="enviarReporte()" disabled>ENVIAR REPORTE</button>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyC...",
-            authDomain: "control-logistica-2026.firebaseapp.com",
-            projectId: "control-logistica-2026",
-            appId: "1:389274295324:web:04467597157833633e467d"
+        // CONFIGURACIÓN FIREBASE
+        const firebaseConfig = { 
+            apiKey: "AIzaSyC...", 
+            authDomain: "control-logistica-2026.firebaseapp.com", 
+            projectId: "control-logistica-2026", 
+            appId: "1:389274295324:web:04467597157833633e467d" 
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        
+        let urlImagenFinal = "";
 
-        let nombreValidado = "";
-
+        // Recordar datos guardados
         window.onload = function() {
-            if(localStorage.getItem('transporte')) {
-                document.getElementById('transporte').value = localStorage.getItem('transporte');
-                document.getElementById('cuit_transporte').value = localStorage.getItem('cuit_transporte');
-                document.getElementById('chofer_nombre').value = localStorage.getItem('chofer_nombre');
-                document.getElementById('chofer_cuit').value = localStorage.getItem('chofer_cuit');
-                document.getElementById('patente_chasis').value = localStorage.getItem('patente_chasis');
-                document.getElementById('patente_acoplado').value = localStorage.getItem('patente_acoplado');
+            if(localStorage.getItem('trans')) {
+                document.getElementById('trans').value = localStorage.getItem('trans');
+                document.getElementById('cuit_trans').value = localStorage.getItem('cuit_trans');
+                document.getElementById('chofer_n').value = localStorage.getItem('chofer_n');
+                document.getElementById('cuit_chof').value = localStorage.getItem('cuit_chof');
+                document.getElementById('chas').value = localStorage.getItem('chas');
+                document.getElementById('acop').value = localStorage.getItem('acop');
             }
         };
 
-        function validarYEntrar() {
-            const nom = document.getElementById('login-nombre').value.trim();
-            const cla = document.getElementById('login-clave').value.trim();
-
-            db.collection("accesos_choferes").doc(nom).get().then(doc => {
-                if (doc.exists && doc.data().clave === cla) {
-                    nombreValidado = nom;
-                    document.getElementById('msj-bienvenida').innerText = "Hola " + nom;
+        function validarIngreso() {
+            const n = document.getElementById('user-nom').value.trim();
+            const c = document.getElementById('user-cla').value.trim();
+            db.collection("accesos_choferes").doc(n).get().then(doc => {
+                if(doc.exists && doc.data().clave === c) {
+                    document.getElementById('saludo').innerText = "Hola " + n;
                     document.getElementById('pantalla-login').classList.add('oculto');
                     document.getElementById('pantalla-reporte').classList.remove('oculto');
-                } else {
-                    alert("Nombre o Clave incorrectos.");
-                }
+                } else { alert("Datos incorrectos. Hablá con Gabriel."); }
             });
         }
 
-        function fotoLista() {
-            const archivo = document.getElementById('archivo-foto').files[0];
-            if(archivo) {
-                document.getElementById('status-foto').innerText = "✅ DOCUMENTO CARGADO";
-            }
+        // SUBIDA A IMGBB
+        function subirAImgBB() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+            const btnEnvio = document.getElementById('btn-envio');
+            
+            if (fileInput.files.length === 0) return;
+
+            status.innerText = "⏳ SUBIENDO ARCHIVO...";
+            const formData = new FormData();
+            formData.append("image", fileInput.files[0]);
+
+            // USANDO TU CLAVE DE IMGBB: 37782b54d39999a805060851ec650117
+            fetch("https://api.imgbb.com/1/upload?key=37782b54d39999a805060851ec650117", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    urlImagenFinal = data.data.url;
+                    status.innerText = "✅ ARCHIVO CARGADO CON ÉXITO";
+                    btnEnvio.disabled = false;
+                } else {
+                    alert("Error al subir el archivo.");
+                    status.innerText = "❌ ERROR AL SUBIR";
+                }
+            })
+            .catch(err => {
+                alert("Error de conexión con ImgBB");
+            });
         }
 
         function enviarReporte() {
-            const btn = document.getElementById('btn-enviar');
-            
-            localStorage.setItem('transporte', document.getElementById('transporte').value);
-            localStorage.setItem('cuit_transporte', document.getElementById('cuit_transporte').value);
-            localStorage.setItem('chofer_nombre', document.getElementById('chofer_nombre').value);
-            localStorage.setItem('chofer_cuit', document.getElementById('chofer_cuit').value);
-            localStorage.setItem('patente_chasis', document.getElementById('patente_chasis').value);
-            localStorage.setItem('patente_acoplado', document.getElementById('patente_acoplado').value);
+            const btn = document.getElementById('btn-envio');
+            btn.disabled = true; btn.innerText = "ENVIANDO...";
 
-            btn.disabled = true;
-            btn.innerText = "ENVIANDO...";
+            localStorage.setItem('trans', document.getElementById('trans').value);
+            localStorage.setItem('cuit_trans', document.getElementById('cuit_trans').value);
+            localStorage.setItem('chofer_n', document.getElementById('chofer_n').value);
+            localStorage.setItem('cuit_chof', document.getElementById('cuit_chof').value);
+            localStorage.setItem('chas', document.getElementById('chas').value);
+            localStorage.setItem('acop', document.getElementById('acop').value);
 
             db.collection("reportes").add({
-                chofer: document.getElementById('chofer_nombre').value,
-                cuit_chofer: document.getElementById('chofer_cuit').value,
-                transporte: document.getElementById('transporte').value,
-                cuit_trans: document.getElementById('cuit_transporte').value,
-                chasis: document.getElementById('patente_chasis').value.toUpperCase(),
-                acoplado: document.getElementById('patente_acoplado').value.toUpperCase(),
-                lugar_descarga: document.getElementById('lugar_descarga').value,
+                chofer: document.getElementById('chofer_n').value,
+                cuit_chofer: document.getElementById('cuit_chof').value,
+                transporte: document.getElementById('trans').value,
+                cuit_trans: document.getElementById('cuit_trans').value,
+                chasis: document.getElementById('chas').value.toUpperCase(),
+                acoplado: document.getElementById('acop').value.toUpperCase(),
+                lugar_descarga: document.getElementById('descarga').value,
                 estado: "VACÍO",
                 fecha: new Date().toLocaleString(),
-                foto: "" // Aquí tu APK vincula la imagen
+                foto: urlImagenFinal 
             }).then(() => {
-                alert("¡Reporte enviado!");
-                document.getElementById('lugar_descarga').value = "";
-                document.getElementById('status-foto').innerText = "";
-                btn.disabled = false;
+                alert("Reporte Enviado!");
+                document.getElementById('descarga').value = "";
+                document.getElementById('status').innerText = "";
+                urlImagenFinal = "";
                 btn.innerText = "ENVIAR REPORTE";
+                btn.disabled = true; // Desactivar hasta que carguen otra foto
             });
         }
     </script>
 </body>
 </html>
+
 
 
 
