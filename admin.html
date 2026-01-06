@@ -3,30 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Control - La Josefina</title>
+    <title>Panel Administrativo - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background: #ff6600; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 1200px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; align-self: flex-start; }
-        
+        .container { background: white; padding: 30px; border-radius: 20px; width: 98%; max-width: 1300px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; align-self: flex-start; }
         .logo-texto { font-family: 'Brush Script MT', cursive; font-size: 50px; color: #ff6600; text-shadow: 3px 3px 5px rgba(0,0,0,0.3); margin-bottom: 20px; display: block; }
-        
         .pantalla-login { max-width: 400px; margin: auto; padding: 20px; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 2px solid #ddd; font-size: 18px; text-align: center; }
-        button { width: 100%; padding: 15px; border-radius: 10px; border: none; background: #222; color: white; font-size: 18px; font-weight: bold; cursor: pointer; }
-
-        .tabla-scroll { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th { background: #333; color: white; padding: 15px; text-transform: uppercase; font-size: 12px; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; text-align: left; }
-        tr:hover { background: #fdf2e9; }
-
-        .btn-pdf { background: #28a745; color: white; padding: 8px 12px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 11px; }
+        .pantalla-login input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 2px solid #ddd; font-size: 18px; text-align: center; }
+        .seccion { background: #f9f9f9; padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #eee; text-align: left; }
+        h3 { color: #ff6600; text-transform: uppercase; border-bottom: 2px solid #ff6600; padding-bottom: 5px; margin-top: 0; }
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; background: white; }
+        th { background: #333; color: white; padding: 12px; font-size: 11px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
+        .ficha-camion { line-height: 1.3; font-size: 12px; }
+        .ficha-camion b { color: #ff6600; font-size: 10px; }
+        .btn-negro { background: #222; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-pdf { background: #28a745; color: white; padding: 6px 10px; border-radius: 5px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; margin-right: 5px; }
+        .btn-borrar { background: #dc3545; color: white; padding: 6px 10px; border-radius: 5px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
+        .btn-cambio { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; border: none; font-size: 10px; cursor: pointer; margin-top: 5px; }
+        .estado-tag { font-weight: bold; padding: 5px; border-radius: 4px; display: inline-block; width: 85px; text-align: center; font-size: 11px; }
+        .vacio { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .cargado { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .oculto { display: none; }
-        .tag-estado { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 10px; }
-        .cargado { background: #ffe5d9; color: #d9480f; }
-        .vacio { background: #e3faf3; color: #087f5b; }
     </style>
 </head>
 <body>
@@ -34,37 +35,35 @@
         <span class="logo-texto">Transporte La Josefina</span>
 
         <div id="login-admin" class="pantalla-login">
-            <h2 style="color:#444;">Acceso Administrador</h2>
-            <input type="password" id="pass-admin" placeholder="CLAVE DE ACCESO">
-            <button onclick="entrarAdmin()">INGRESAR AL PANEL</button>
+            <input type="password" id="pass-admin" placeholder="CLAVE ADMINISTRADOR">
+            <button class="btn-negro" style="width:100%" onclick="entrarAdmin()">INGRESAR AL PANEL</button>
         </div>
 
         <div id="panel-datos" class="oculto">
-            <h2 style="color:#333; border-bottom: 2px solid #ff6600; padding-bottom: 10px;">Panel de Control Logístico</h2>
-            <div class="tabla-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Camión</th>
-                            <th>Transporte / CUIT</th>
-                            <th>Chofer / CUIT</th>
-                            <th>Patentes (Ch/Ac)</th>
-                            <th>Tipo/Kg</th>
-                            <th>Estado</th>
-                            <th>Destino</th>
-                            <th>Comprobante</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-reportes"></tbody>
-                </table>
+            <div class="seccion">
+                <h3>Control de Flota y Remitos</h3>
+                <div class="tabla-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha / Hora</th>
+                                <th>N° Camión</th>
+                                <th>Ficha Técnica</th>
+                                <th>Viaje / Carga</th>
+                                <th>Estado Actual</th>
+                                <th>Gestión</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-reportes"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyC...",
+            apiKey: "AIzaSyC...", 
             authDomain: "control-logistica-2026.firebaseapp.com",
             projectId: "control-logistica-2026",
             appId: "1:389274295324:web:04467597157833633e467d"
@@ -73,58 +72,80 @@
         const db = firebase.firestore();
 
         function entrarAdmin() {
-            const pass = document.getElementById('pass-admin').value;
-            if(pass === "1234") {
+            if(document.getElementById('pass-admin').value === "1234") {
                 document.getElementById('login-admin').classList.add('oculto');
                 document.getElementById('panel-datos').classList.remove('oculto');
-                cargarDatos();
-            } else {
-                alert("Clave incorrecta");
-            }
+                cargarReportes();
+            } else { alert("Clave Incorrecta"); }
         }
 
-        function cargarDatos() {
-            db.collection("reportes").orderBy("fecha", "desc").onSnapshot((snapshot) => {
+        function cargarReportes() {
+            db.collection("reportes").onSnapshot((snapshot) => {
                 const tbody = document.getElementById('lista-reportes');
+                let reportes = [];
+                snapshot.forEach(doc => {
+                    reportes.push({id: doc.id, ...doc.data()});
+                });
+
+                // ORDEN: VACÍO arriba, CARGADO abajo. Dentro de eso, por fecha más nueva.
+                reportes.sort((a, b) => {
+                    if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
+                    if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
+                    return new Date(b.fecha) - new Date(a.fecha);
+                });
+
                 tbody.innerHTML = "";
-                snapshot.forEach((doc) => {
-                    const r = doc.data();
-                    const claseEstado = r.estado === 'CARGADO' ? 'cargado' : 'vacio';
-                    
-                    // Función para abrir imagen y forzar PDF al imprimir
-                    const btnFoto = r.foto ? `<a href="javascript:void(0)" onclick="abrirComoPDF('${r.foto}')" class="btn-pdf">VER / PDF</a>` : "---";
-                    
+                reportes.forEach((r) => {
+                    const btnFoto = r.foto ? `<button onclick="imprimirPDF('${r.foto}')" class="btn-pdf">PDF / FOTO</button>` : "---";
+                    const claseEstado = r.estado === 'VACÍO' ? 'vacio' : 'cargado';
+                    const proxEstado = r.estado === 'VACÍO' ? 'CARGADO' : 'VACÍO';
+
                     tbody.innerHTML += `
                         <tr>
-                            <td>${r.fecha}</td>
-                            <td><strong>#${r.camion}</strong></td>
-                            <td>${r.transporte}<br><small>${r.cuit_transporte}</small></td>
-                            <td>${r.chofer}<br><small>${r.cuit_chofer}</small></td>
-                            <td>${r.chasis}<br>${r.acoplado}</td>
-                            <td>${r.tipo}<br>${r.kilos}kg</td>
-                            <td><span class="tag-estado ${claseEstado}">${r.estado}</span></td>
-                            <td>${r.destino}</td>
-                            <td>${btnFoto}</td>
+                            <td><small>${r.fecha}</small></td>
+                            <td style="font-size:18px; text-align:center;"><b>${r.camion}</b></td>
+                            <td class="ficha-camion">
+                                <b>TRANS:</b> ${r.transporte}<br>
+                                <b>CHOFER:</b> ${r.chofer}<br>
+                                <b>CHASIS:</b> ${r.chasis} | <b>ACOP:</b> ${r.acoplado}
+                            </td>
+                            <td>
+                                <b>TIPO:</b> ${r.tipo}<br>
+                                <b>KG:</b> ${r.kilos}<br>
+                                <b>DESTINO:</b> ${r.destino}
+                            </td>
+                            <td style="text-align:center;">
+                                <span class="estado-tag ${claseEstado}">${r.estado}</span><br>
+                                <button class="btn-cambio" onclick="cambiarEstado('${r.id}', '${proxEstado}')">CAMBIAR A ${proxEstado}</button>
+                            </td>
+                            <td>
+                                ${btnFoto}
+                                <button class="btn-borrar" onclick="borrarRegistro('${r.id}')">ELIMINAR</button>
+                            </td>
                         </tr>
                     `;
                 });
             });
         }
 
-        function abrirComoPDF(url) {
-            const win = window.open("", "_blank");
-            win.document.write(`
-                <html>
-                <head><title>Imprimir Comprobante</title></head>
-                <body style="margin:0; display:flex; justify-content:center; align-items:center;">
-                    <img src="${url}" style="max-width:100%; height:auto;" onload="window.print();">
-                </body>
-                </html>
-            `);
-            win.document.close();
+        function cambiarEstado(id, nuevoEstado) {
+            db.collection("reportes").doc(id).update({ estado: nuevoEstado });
+        }
+
+        function borrarRegistro(id) {
+            if(confirm("¿Eliminar este registro? El camión desaparecerá de la lista hasta que el chofer envíe un nuevo reporte.")) {
+                db.collection("reportes").doc(id).delete();
+            }
+        }
+
+        function imprimirPDF(url) {
+            const pwin = window.open("", "_blank");
+            pwin.document.write(`<html><body style="margin:0;display:flex;justify-content:center;align-items:center;"><img src="${url}" style="max-width:100%;height:auto;" onload="window.print();"></body></html>`);
+            pwin.document.close();
         }
     </script>
 </body>
 </html>
+
 
 
