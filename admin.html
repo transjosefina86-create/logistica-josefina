@@ -3,30 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrativo - La Josefina</title>
+    <title>Admin - Transporte La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
+        /* FONDO NARANJA Y ESTÉTICA GENERAL */
         body { font-family: 'Arial', sans-serif; background: #ff6600; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { background: white; padding: 30px; border-radius: 20px; width: 98%; max-width: 1300px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; align-self: flex-start; }
+        .container { background: white; padding: 30px; border-radius: 20px; width: 95%; max-width: 1200px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; align-self: flex-start; }
+        
+        /* LOGO ESTÉTICO */
         .logo-texto { font-family: 'Brush Script MT', cursive; font-size: 50px; color: #ff6600; text-shadow: 3px 3px 5px rgba(0,0,0,0.3); margin-bottom: 20px; display: block; }
+
+        /* LOGIN */
         .pantalla-login { max-width: 400px; margin: auto; padding: 20px; }
         .pantalla-login input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 2px solid #ddd; font-size: 18px; text-align: center; }
+
+        /* SECCIONES Y RECUADROS (Tu estructura original) */
         .seccion { background: #f9f9f9; padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #eee; text-align: left; }
         h3 { color: #ff6600; text-transform: uppercase; border-bottom: 2px solid #ff6600; padding-bottom: 5px; margin-top: 0; }
+
+        .grid-formulario { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .grid-formulario input { padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; }
+
+        /* TABLA Y FICHA DE CAMIÓN */
         .tabla-scroll { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; background: white; }
         th { background: #333; color: white; padding: 12px; font-size: 11px; text-transform: uppercase; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: middle; }
-        .ficha-camion { line-height: 1.3; font-size: 12px; }
-        .ficha-camion b { color: #ff6600; font-size: 10px; }
-        .btn-negro { background: #222; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-pdf { background: #28a745; color: white; padding: 6px 10px; border-radius: 5px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; margin-right: 5px; }
-        .btn-borrar { background: #dc3545; color: white; padding: 6px 10px; border-radius: 5px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
-        .btn-cambio { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; border: none; font-size: 10px; cursor: pointer; margin-top: 5px; }
-        .estado-tag { font-weight: bold; padding: 5px; border-radius: 4px; display: inline-block; width: 85px; text-align: center; font-size: 11px; }
-        .vacio { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .cargado { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+        .ficha-datos { font-size: 12px; line-height: 1.4; background: #fff; padding: 8px; border-radius: 8px; border: 1px solid #eee; }
+        .ficha-datos b { color: #ff6600; }
+
+        /* BOTONES */
+        .btn-negro { background: #222; color: white; padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-pdf { background: #28a745; color: white; padding: 6px 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-borrar { background: #dc3545; color: white; padding: 6px 12px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
+        
         .oculto { display: none; }
     </style>
 </head>
@@ -35,23 +47,34 @@
         <span class="logo-texto">Transporte La Josefina</span>
 
         <div id="login-admin" class="pantalla-login">
-            <input type="password" id="pass-admin" placeholder="CLAVE ADMINISTRADOR">
-            <button class="btn-negro" style="width:100%" onclick="entrarAdmin()">INGRESAR AL PANEL</button>
+            <input type="password" id="pass-admin" placeholder="CLAVE DE ACCESO">
+            <button class="btn-negro" style="width:100%" onclick="entrarAdmin()">ENTRAR AL PANEL</button>
         </div>
 
         <div id="panel-datos" class="oculto">
+            
             <div class="seccion">
-                <h3>Control de Flota y Remitos</h3>
+                <h3>Administrar Flota y Claves</h3>
+                <div class="grid-formulario">
+                    <input type="text" id="add-n-camion" placeholder="N° Camión">
+                    <input type="text" id="add-chasis" placeholder="Patente Chasis">
+                    <input type="text" id="add-acoplado" placeholder="Patente Acoplado">
+                    <input type="text" id="add-clave" placeholder="Clave Chofer">
+                </div>
+                <button class="btn-negro" onclick="guardarCamion()">REGISTRAR CAMIÓN</button>
+            </div>
+
+            <div class="seccion">
+                <h3>Reportes de Viaje y Carga</h3>
                 <div class="tabla-scroll">
                     <table>
                         <thead>
                             <tr>
-                                <th>Fecha / Hora</th>
+                                <th>Fecha</th>
                                 <th>N° Camión</th>
-                                <th>Ficha Técnica</th>
-                                <th>Viaje / Carga</th>
-                                <th>Estado Actual</th>
-                                <th>Gestión</th>
+                                <th>Ficha de Datos</th>
+                                <th>Estado / Destino</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="lista-reportes"></tbody>
@@ -79,48 +102,50 @@
             } else { alert("Clave Incorrecta"); }
         }
 
+        // GUARDAR CAMIÓN (Función original que pediste mantener)
+        function guardarCamion() {
+            const n = document.getElementById('add-n-camion').value;
+            const ch = document.getElementById('add-chasis').value.toUpperCase();
+            const ac = document.getElementById('add-acoplado').value.toUpperCase();
+            const cl = document.getElementById('add-clave').value;
+
+            if(!n || !cl) return alert("Completa los datos");
+
+            db.collection("flota").doc(n).set({
+                n_camion: n, chasis: ch, acoplado: ac, clave: cl
+            }).then(() => {
+                alert("Camión " + n + " Guardado");
+                document.querySelectorAll('.grid-formulario input').forEach(i => i.value = "");
+            });
+        }
+
         function cargarReportes() {
-            db.collection("reportes").onSnapshot((snapshot) => {
+            db.collection("reportes").orderBy("fecha", "desc").onSnapshot((snapshot) => {
                 const tbody = document.getElementById('lista-reportes');
-                let reportes = [];
-                snapshot.forEach(doc => {
-                    reportes.push({id: doc.id, ...doc.data()});
-                });
-
-                // ORDEN: VACÍO arriba, CARGADO abajo. Dentro de eso, por fecha más nueva.
-                reportes.sort((a, b) => {
-                    if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
-                    if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
-                    return new Date(b.fecha) - new Date(a.fecha);
-                });
-
                 tbody.innerHTML = "";
-                reportes.forEach((r) => {
-                    const btnFoto = r.foto ? `<button onclick="imprimirPDF('${r.foto}')" class="btn-pdf">PDF / FOTO</button>` : "---";
-                    const claseEstado = r.estado === 'VACÍO' ? 'vacio' : 'cargado';
-                    const proxEstado = r.estado === 'VACÍO' ? 'CARGADO' : 'VACÍO';
-
+                snapshot.forEach((doc) => {
+                    const r = doc.data();
+                    const id = doc.id;
+                    const btnFoto = r.foto ? `<button onclick="imprimirPDF('${r.foto}')" class="btn-pdf">PDF</button>` : "";
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td><small>${r.fecha}</small></td>
                             <td style="font-size:18px; text-align:center;"><b>${r.camion}</b></td>
-                            <td class="ficha-camion">
-                                <b>TRANS:</b> ${r.transporte}<br>
-                                <b>CHOFER:</b> ${r.chofer}<br>
-                                <b>CHASIS:</b> ${r.chasis} | <b>ACOP:</b> ${r.acoplado}
+                            <td>
+                                <div class="ficha-datos">
+                                    <b>Trans:</b> ${r.transporte} | <b>CUIT:</b> ${r.cuit_transporte}<br>
+                                    <b>Chofer:</b> ${r.chofer} | <b>CUIT:</b> ${r.cuit_chofer}<br>
+                                    <b>Chasis:</b> ${r.chasis} | <b>Acop:</b> ${r.acoplado}
+                                </div>
                             </td>
                             <td>
-                                <b>TIPO:</b> ${r.tipo}<br>
-                                <b>KG:</b> ${r.kilos}<br>
-                                <b>DESTINO:</b> ${r.destino}
-                            </td>
-                            <td style="text-align:center;">
-                                <span class="estado-tag ${claseEstado}">${r.estado}</span><br>
-                                <button class="btn-cambio" onclick="cambiarEstado('${r.id}', '${proxEstado}')">CAMBIAR A ${proxEstado}</button>
+                                <b>Estado:</b> ${r.estado}<br>
+                                <b>Destino:</b> ${r.destino}
                             </td>
                             <td>
                                 ${btnFoto}
-                                <button class="btn-borrar" onclick="borrarRegistro('${r.id}')">ELIMINAR</button>
+                                <button class="btn-borrar" onclick="borrarRegistro('${id}')">X</button>
                             </td>
                         </tr>
                     `;
@@ -128,14 +153,8 @@
             });
         }
 
-        function cambiarEstado(id, nuevoEstado) {
-            db.collection("reportes").doc(id).update({ estado: nuevoEstado });
-        }
-
         function borrarRegistro(id) {
-            if(confirm("¿Eliminar este registro? El camión desaparecerá de la lista hasta que el chofer envíe un nuevo reporte.")) {
-                db.collection("reportes").doc(id).delete();
-            }
+            if(confirm("¿Eliminar reporte?")) db.collection("reportes").doc(id).delete();
         }
 
         function imprimirPDF(url) {
@@ -146,6 +165,7 @@
     </script>
 </body>
 </html>
+
 
 
 
