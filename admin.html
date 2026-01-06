@@ -3,54 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrativo - La Josefina</title>
+    <title>Admin - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff6600; display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 350px; }
-        .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 25px; max-width: 1400px; margin: auto; display: none; }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 320px; }
+        .main-card { background: white; border-radius: 15px; padding: 25px; max-width: 1300px; margin: auto; display: none; }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; text-transform: uppercase; }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        
-        .select-estado { padding: 8px; border-radius: 6px; font-weight: bold; border: none; color: white; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .select-estado { padding: 6px; border-radius: 5px; color: white; font-weight: bold; border: none; cursor: pointer; }
         .bg-vacio { background: #27ae60 !important; }
         .bg-cargado { background: #e67e22 !important; }
-        
-        .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
-        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-left: 5px; }
-        .btn-ver { background: #3498db; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
+        .btn-pdf { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
-        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 10px 0; white-space: pre-wrap; font-family: monospace; font-size: 14px; line-height: 1.2; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 400px; }
+        /* OJITO PROLIJO: Renglones pegados */
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; white-space: pre-line; font-family: monospace; font-size: 15px; line-height: 1.2; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <span class="logo-josefina" style="font-size: 45px;">La Josefina</span>
-            <input type="password" id="pass-admin" style="width: 80%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-top: 20px; text-align: center;" placeholder="CLAVE ADMIN">
-            <button onclick="checkAdmin()" style="width: 85%; background: #222; color: white; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 20px;">INGRESAR AL SISTEMA</button>
+            <span class="logo-josefina">La Josefina</span>
+            <input type="password" id="pass-admin" style="width: 80%; padding: 12px; margin-top:20px; border-radius:10px; border:1px solid #ddd; text-align:center;" placeholder="CLAVE ADMIN">
+            <button onclick="checkAdmin()" style="width: 85%; background: #222; color: white; padding: 12px; border-radius: 10px; border:none; margin-top: 20px; cursor: pointer; font-weight: bold;">ENTRAR</button>
         </div>
     </div>
 
     <div id="admin-panel" class="main-card">
         <div class="header-flex">
-            <div class="logo-josefina">🚚 Control Logística</div>
+            <div class="logo-josefina">Control Logística</div>
             <div>
-                <button class="btn-header" style="background:#222" onclick="verClavesAsignadas()">📋 GESTIÓN CLAVES</button>
-                <button class="btn-header" style="background:#4a4a4a" onclick="nuevaClaveChofer()">🔑 NUEVA CLAVE</button>
-                <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR TABLA</button>
+                <button onclick="verClaves()" style="padding:10px; border-radius:8px; cursor:pointer; font-weight: bold;">🔑 CLAVES</button>
+                <button onclick="borrarVarios()" style="background:#d94343; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight: bold;">🧹 LIMPIAR</button>
             </div>
         </div>
-
         <table>
             <thead>
                 <tr>
@@ -58,8 +52,7 @@
                     <th>Fecha / Hora</th>
                     <th>Estado</th>
                     <th>Chofer</th>
-                    <th>Lugar Descarga</th>
-                    <th>Chasis / Acoplado</th>
+                    <th>Chasis / Acop.</th>
                     <th>Datos</th>
                     <th>Comprobante</th>
                 </tr>
@@ -70,9 +63,9 @@
 
     <div id="modal-info" class="modal">
         <div class="modal-content">
-            <div id="titulo-modal" style="font-weight:bold; font-size:18px; color:#ff6600;">📋 Información del Viaje</div>
+            <div id="titulo-modal" style="font-weight:bold; color:#ff6600; font-size: 18px;">📋 DATOS DEL CAMIÓN</div>
             <div id="txt-detalles" class="modal-body"></div>
-            <button onclick="cerrarModal()" style="width:100%; padding:12px; background:#222; color:white; border-radius:10px; border:none; cursor:pointer; font-weight:bold;">CERRAR VENTANA</button>
+            <button onclick="cerrarModal()" style="width:100%; margin-top:15px; padding:12px; background:#222; color:white; border-radius:10px; border:none; cursor:pointer; font-weight: bold;">CERRAR</button>
         </div>
     </div>
 
@@ -86,14 +79,15 @@
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
                 escucharReportes();
-            } else { alert("Clave incorrecta."); }
+            } else { alert("Clave Incorrecta"); }
         }
 
         function escucharReportes() {
             db.collection("reportes").onSnapshot(snap => {
                 let reportes = [];
                 snap.forEach(doc => reportes.push({ id: doc.id, ...doc.data() }));
-
+                
+                // ORDEN: Más temprano arriba (8:10 arriba de 8:20)
                 reportes.sort((a, b) => {
                     if (a.estado === "CARGADO" && b.estado !== "CARGADO") return 1;
                     if (a.estado !== "CARGADO" && b.estado === "CARGADO") return -1;
@@ -103,26 +97,24 @@
                 const tbody = document.getElementById('lista-viajes');
                 tbody.innerHTML = "";
                 reportes.forEach(r => {
-                    const claseColor = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
+                    const color = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
                     tbody.innerHTML += `
                         <tr>
                             <td><input type="checkbox" class="viaje-check" data-id="${r.id}"></td>
                             <td><small>${r.fecha}</small></td>
                             <td>
-                                <select class="select-estado ${claseColor}" onchange="cambiarEstado('${r.id}', this.value)">
+                                <select class="select-estado ${color}" onchange="cambiarEstado('${r.id}', this.value)">
                                     <option value="VACÍO" ${r.estado === 'VACÍO' ? 'selected' : ''}>VACÍO</option>
                                     <option value="CARGADO" ${r.estado === 'CARGADO' ? 'selected' : ''}>CARGADO</option>
                                 </select>
                             </td>
                             <td><b>${r.chofer}</b></td>
-                            <td style="text-transform:uppercase;">${r.lugar_descarga || '-'}</td>
                             <td>${r.chasis} / ${r.acoplado}</td>
                             <td><button onclick="verInfo('${r.id}')" style="cursor:pointer; border:none; background:none; font-size:18px;">👁️</button></td>
                             <td>
                                 ${r.foto ? `
-                                    <button class="btn-ver" onclick="window.open('${r.foto}', '_blank')">VER</button>
-                                    <button class="btn-pdf" onclick="imprimirTicket('${r.foto}', '${r.chofer}', '${r.fecha}')">PDF</button>
-                                ` : '-'}
+                                    <button class="btn-pdf" onclick="generarPDFConFoto('${r.foto}', '${r.chofer}', '${r.fecha}')">PDF</button>
+                                ` : '---'}
                             </td>
                         </tr>`;
                 });
@@ -134,7 +126,6 @@
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                // Renglones pegados sin espacios extras
                 const msg = `TRANSPORTE: ${d.transporte}
 CUIT TRANS: ${d.cuit_trans}
 CHOFER: ${d.chofer}
@@ -142,64 +133,62 @@ CUIT CHOF: ${d.cuit_chofer}
 CHASIS: ${d.chasis}
 ACOPLADO: ${d.acoplado}`;
                 document.getElementById('txt-detalles').innerText = msg;
-                document.getElementById('titulo-modal').innerText = "📋 Datos del Camión";
+                document.getElementById('titulo-modal').innerText = "📋 DATOS DEL CAMIÓN";
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
 
-        function imprimirTicket(url, chofer, fecha) {
-            const win = window.open('', '_blank');
-            win.document.write(`
-                <html>
-                <head><title>Ticket - ${chofer}</title></head>
-                <body style="text-align:center; font-family:sans-serif;">
-                    <h2 style="color:#ff6600">LA JOSEFINA - COMPROBANTE</h2>
-                    <p><b>Chofer:</b> ${chofer} | <b>Fecha:</b> ${fecha}</p>
-                    <hr>
-                    <img src="${url}" style="width:100%; max-width:800px;" onload="window.print();">
-                </body>
-                </html>
-            `);
-            win.document.close();
+        // FUNCIÓN PDF MEJORADA: Usa un proxy para evitar imagen en blanco
+        async function generarPDFConFoto(url, chofer, fecha) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            alert("Generando PDF... espere un momento.");
+
+            // Usamos un proxy de imágenes para saltar el bloqueo de tmpfiles
+            const proxyUrl = "https://images.weserv.nl/?url=" + url.replace("https://", "");
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = proxyUrl;
+
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const base64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                doc.setFontSize(18);
+                doc.text("LA JOSEFINA - COMPROBANTE", 10, 15);
+                doc.setFontSize(12);
+                doc.text(`Chofer: ${chofer} | Fecha: ${fecha}`, 10, 25);
+                doc.addImage(base64, 'JPEG', 10, 35, 185, 240);
+                doc.save(`Ticket_${chofer}.pdf`);
+            };
+            img.onerror = function() {
+                alert("No se pudo cargar la imagen para el PDF. Intente abrirla primero con el botón VER.");
+            };
         }
 
         function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
         function seleccionarTodo(s) { document.querySelectorAll('.viaje-check').forEach(c => c.checked = s.checked); }
         function borrarVarios() {
             const sels = document.querySelectorAll('.viaje-check:checked');
-            if(sels.length > 0 && confirm("¿Borrar seleccionados?")) {
-                sels.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
-            }
+            if(confirm("¿Borrar seleccionados?")) sels.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
         }
-
-        function nuevaClaveChofer() {
-            const n = prompt("Nombre Chofer:"); const c = prompt("Clave:");
-            if(n && c) db.collection("accesos_choferes").doc(n).set({ clave: c }).then(() => alert("Guardado"));
-        }
-
-        function verClavesAsignadas() {
+        function verClaves() {
             db.collection("accesos_choferes").get().then(snap => {
-                let html = "";
-                snap.forEach(doc => {
-                    html += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
-                        <span>👤 <b>${doc.id}</b> (Clave: ${doc.data().clave})</span>
-                        <button onclick="borrarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer;">✖</button>
-                    </div>`;
-                });
-                document.getElementById('titulo-modal').innerText = "🔑 Claves";
-                document.getElementById('txt-detalles').innerHTML = html;
+                let h = ""; snap.forEach(doc => h += `<div><b>${doc.id}</b>: ${doc.data().clave}</div>`);
+                document.getElementById('titulo-modal').innerText = "🔑 CLAVES REGISTRADAS";
+                document.getElementById('txt-detalles').innerHTML = h || "No hay claves";
                 document.getElementById('modal-info').style.display = 'flex';
             });
-        }
-
-        function borrarAcceso(id) {
-            if(confirm("¿Eliminar?")) {
-                db.collection("accesos_choferes").doc(id).delete().then(() => { cerrarModal(); verClavesAsignadas(); });
-            }
         }
     </script>
 </body>
 </html>
+
 
 
 
