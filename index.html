@@ -10,40 +10,49 @@
         body { 
             font-family: 'Segoe UI', sans-serif; 
             background: linear-gradient(135deg, #ff6600 0%, #ff9933 100%); 
-            margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; 
+            margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; 
         }
-        .login-box { background: white; padding: 30px; border-radius: 25px; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
-        .app-card { background: white; padding: 25px; border-radius: 25px; width: 90%; max-width: 450px; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; margin: 20px; }
-        .logo { font-family: 'Brush Script MT', cursive; font-size: 40px; color: #ff6600; margin-bottom: 10px; }
-        label { display: block; font-weight: bold; margin-top: 10px; color: #ff6600; font-size: 13px; text-align: left; }
-        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
-        .btn-principal { background: #ff6600; color: white; border: none; padding: 16px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 17px; margin-top: 15px; box-shadow: 0 4px 10px rgba(255,102,0,0.3); }
-        .btn-salir { background: #333; margin-top: 10px; padding: 10px; font-size: 14px; }
+        .app-card { 
+            background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 500px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;
+        }
+        .logo { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-top: 12px; color: #ff6600; font-size: 12px; text-align: left; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
+        
+        .btn-principal { background: #ff6600; color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 18px; margin-top: 20px; box-shadow: 0 5px 15px rgba(255,102,0,0.4); }
+        .btn-salir { background: #333; margin-top: 15px; padding: 10px; font-size: 14px; }
+        
         .camera-box { background: #fff5ed; padding: 15px; border-radius: 15px; border: 2px dashed #ff6600; margin: 15px 0; }
-        #preview { width: 100%; max-width: 200px; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ff6600; }
-        #status { font-weight: bold; color: #ff6600; margin-top: 5px; font-size: 14px; }
+        #preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; border: 2px solid #ff6600; }
+        #status { font-weight: bold; color: #ff6600; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="login-box">
+    <div id="login-screen" style="background:white; padding:40px; border-radius:25px; text-align:center; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
         <div class="logo">La Josefina</div>
         <input type="text" id="nombre-login" placeholder="USUARIO">
         <input type="password" id="clave-login" placeholder="CLAVE">
         <button class="btn-principal" onclick="ingresar()">INGRESAR</button>
     </div>
 
-    <div id="app-screen" class="app-card">
+    <div id="app-screen" class="app-card" style="display:none;">
         <div class="logo">La Josefina</div>
-        <label>NOMBRE DEL CHOFER</label>
-        <input type="text" id="nombre_chof_input" readonly style="background:#f9f9f9;">
-        <label>LUGAR DE DESCARGA</label>
-        <input type="text" id="lugar_descarga" placeholder="Ej: Planta Rosario">
-        <label>ESTADO DEL CAMIÓN</label>
+        
+        <label>Transporte</label><input type="text" id="transporte">
+        <label>CUIT Transporte</label><input type="text" id="cuit_trans">
+        <label>Chofer</label><input type="text" id="nombre_chof_input" readonly style="background:#f0f0f0;">
+        <label>CUIT Chofer</label><input type="text" id="cuit_chofer">
+        <label>Patente Chasis</label><input type="text" id="chasis">
+        <label>Patente Acoplado</label><input type="text" id="acoplado">
+        <label>Lugar de Descarga</label><input type="text" id="lugar_descarga">
+        <label>Estado</label>
         <select id="estado_camion"><option value="VACÍO">VACÍO</option><option value="CARGADO">CARGADO</option></select>
 
         <div class="camera-box">
             <label style="text-align:center;">📸 ESCANEAR TICKET</label>
             <input type="file" id="fileInput" accept="image/*" capture="camera">
+            <center><canvas id="canvas-procesador" style="display:none;"></canvas></center>
             <center><img id="preview"></center>
             <div id="status">Esperando ticket...</div>
         </div>
@@ -59,7 +68,7 @@
         const db = firebase.firestore();
 
         let choferLogueado = "";
-        let fotoLimpia = "";
+        let fotoFinal = "";
 
         async function ingresar() {
             const nom = document.getElementById('nombre-login').value.trim();
@@ -71,51 +80,76 @@
                 document.getElementById('login-screen').style.display='none'; 
                 document.getElementById('app-screen').style.display='block'; 
                 document.getElementById('nombre_chof_input').value = choferLogueado; 
-            } else { alert("Clave incorrecta"); }
+            } else { alert("Usuario o clave incorrecta"); }
         }
 
         document.getElementById('fileInput').onchange = function(e) {
             const file = e.target.files[0];
             if(!file) return;
+            document.getElementById('status').innerText = "⌛ ESCANEANDO...";
+            
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.src = event.target.result;
                 img.onload = function() {
-                    const canvas = document.createElement('canvas');
+                    const canvas = document.getElementById('canvas-procesador');
                     const ctx = canvas.getContext('2d');
                     const scale = 1200 / img.width;
                     canvas.width = 1200;
                     canvas.height = img.height * scale;
-                    ctx.filter = 'grayscale(1) contrast(1.8) brightness(1.1)';
+                    
+                    // PROCESAMIENTO TIPO ESCÁNER (Blanco y negro puro)
+                    ctx.filter = 'grayscale(1) contrast(2) brightness(1.2)';
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    fotoLimpia = canvas.toDataURL('image/jpeg', 0.8);
-                    document.getElementById('preview').src = fotoLimpia;
+                    
+                    fotoFinal = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById('preview').src = fotoFinal;
                     document.getElementById('preview').style.display = 'block';
-                    document.getElementById('status').innerText = "✅ TICKET LISTO";
+                    document.getElementById('status').innerText = "✅ ESCANEO COMPLETADO";
                 }
             }
             reader.readAsDataURL(file);
         }
 
         async function enviarReporte() {
-            if(!fotoLimpia) return alert("Falta la foto");
+            if(!fotoFinal) return alert("Debe sacar la foto del ticket.");
             const btn = document.getElementById('btn-enviar');
-            btn.disabled = true; btn.innerText = "ENVIANDO...";
+            btn.disabled = true; btn.innerText = "ENVIANDO REPORTE...";
+            
             const ahora = new Date();
             const fecha = ahora.toLocaleDateString('es-AR') + ", " + ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0');
 
             db.collection("reportes").add({
+                transporte: document.getElementById('transporte').value.toUpperCase(),
+                cuit_trans: document.getElementById('cuit_trans').value,
                 chofer: choferLogueado,
+                cuit_chofer: document.getElementById('cuit_chofer').value,
+                chasis: document.getElementById('chasis').value.toUpperCase(),
+                acoplado: document.getElementById('acoplado').value.toUpperCase(),
                 lugar_descarga: document.getElementById('lugar_descarga').value.toUpperCase(),
                 estado: document.getElementById('estado_camion').value,
-                foto: fotoLimpia,
+                foto: fotoFinal,
                 fecha: fecha
-            }).then(() => { alert("✅ ENVIADO"); btn.innerText = "ENVIADO"; });
+            }).then(() => { 
+                alert("✅ ENVIADO CON ÉXITO");
+                // LIMPIEZA PARA NUEVO ENVÍO
+                document.getElementById('lugar_descarga').value = "";
+                document.getElementById('fileInput').value = "";
+                document.getElementById('preview').style.display = "none";
+                fotoFinal = "";
+                btn.disabled = false;
+                btn.innerText = "ENVIAR OTRO REPORTE";
+                document.getElementById('status').innerText = "Esperando ticket...";
+            }).catch(e => {
+                alert("Error al enviar");
+                btn.disabled = false;
+            });
         }
     </script>
 </body>
 </html>
+
 
 
 
