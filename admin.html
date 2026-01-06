@@ -13,22 +13,17 @@
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; max-width: 1400px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
-        
         table { width: 100%; border-collapse: collapse; }
         th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; }
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        
         .select-estado { padding: 8px 12px; border-radius: 6px; font-weight: bold; border: none; color: white; cursor: pointer; }
         .bg-vacio { background: #27ae60 !important; }
         .bg-cargado { background: #e67e22 !important; }
-        
+        .btn-archivo { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
         .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
-        
         .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
-        .btn-cerrar { background: #ff6600; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-archivo { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -50,7 +45,6 @@
                 <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR TABLA</button>
             </div>
         </div>
-
         <table>
             <thead>
                 <tr>
@@ -62,7 +56,7 @@
                     <th>Chasis</th>
                     <th>Acoplado</th>
                     <th>Datos</th>
-                    <th>Archivo</th>
+                    <th>Comprobante</th>
                 </tr>
             </thead>
             <tbody id="lista-viajes"></tbody>
@@ -73,7 +67,7 @@
         <div class="modal-content">
             <div id="titulo-modal" style="font-weight:bold; font-size:18px;">📋 Información</div>
             <div id="txt-detalles" class="modal-body"></div>
-            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR</button>
+            <button style="background: #ff6600; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;" onclick="cerrarModal()">CERRAR</button>
         </div>
     </div>
 
@@ -91,15 +85,23 @@
         }
 
         function escucharReportes() {
-            // "orderBy('fecha', 'desc')" hace que lo más nuevo aparezca arriba
-            db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snapshot => {
+            db.collection("reportes").onSnapshot(snapshot => {
                 const tbody = document.getElementById('lista-viajes');
+                let reportes = [];
+                snapshot.forEach(doc => { reportes.push({ id: doc.id, ...doc.data() }); });
+
+                // ORDEN: Vacíos arriba, y el más reciente primero
+                reportes.sort((a, b) => {
+                    if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
+                    if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
+                    return new Date(b.fecha) - new Date(a.fecha);
+                });
+
                 tbody.innerHTML = "";
-                
-                snapshot.forEach(doc => {
-                    const r = { id: doc.id, ...doc.data() };
+                reportes.forEach(r => {
                     const claseEstado = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
-                    
+                    const btnArchivo = r.foto ? `<button class="btn-archivo" onclick="window.open('${r.foto}', '_blank')">📄 VER</button>` : '<span style="color:#ccc">Sin foto</span>';
+
                     tbody.innerHTML += `
                         <tr>
                             <td><input type="checkbox" class="viaje-check" data-id="${r.id}"></td>
@@ -115,25 +117,17 @@
                             <td>${r.chasis}</td>
                             <td>${r.acoplado}</td>
                             <td><button onclick="verInfo('${r.id}')">📋</button></td>
-                            <td>
-                                ${r.foto ? `<button class="btn-archivo" onclick="abrirArchivo('${r.foto}')">📄 Ver</button>` : '<span style="color:#ccc">Sin archivo</span>'}
-                            </td>
+                            <td>${btnArchivo}</td>
                         </tr>
                     `;
                 });
             });
         }
 
-        function abrirArchivo(url) {
-            window.open(url, '_blank');
-        }
-
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                const msg = `TRANSPORTE: ${d.transporte}\nCUIT TRANS: ${d.cuit_trans}\nCHOFER: ${d.chofer}\nCUIT CHOFER: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA EN: ${d.lugar_descarga}`;
-                document.getElementById('titulo-modal').innerText = "📋 Detalles del Viaje";
-                document.getElementById('txt-detalles').innerText = msg;
+                document.getElementById('txt-detalles').innerText = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_trans}\nCHOFER: ${d.chofer}\nCUIT: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA: ${d.lugar_descarga}`;
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
@@ -143,49 +137,31 @@
         function seleccionarTodo(source) { document.querySelectorAll('.viaje-check').forEach(cb => cb.checked = source.checked); }
         function borrarVarios() {
             const checks = document.querySelectorAll('.viaje-check:checked');
-            if(checks.length > 0 && confirm("¿Borrar seleccionados?")) {
-                checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
-            }
+            if(confirm("¿Borrar seleccionados?")) checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
         }
-        
-        // Funciones de gestión de choferes (se mantienen igual)
         function nuevaClaveChofer() {
             const nom = prompt("Nombre del Chofer:");
-            if(!nom) return;
             const cla = prompt("Asignale una Clave:");
-            if(nom && cla) {
-                db.collection("accesos_choferes").doc(nom).set({ clave: cla });
-                alert("Acceso creado.");
-            }
+            if(nom && cla) db.collection("accesos_choferes").doc(nom).set({ clave: cla });
         }
-
         function verClavesAsignadas() {
             db.collection("accesos_choferes").get().then(snap => {
                 const contenedor = document.getElementById('txt-detalles');
                 contenedor.innerHTML = "";
-                document.getElementById('titulo-modal').innerText = "📋 Gestión de Choferes";
                 snap.forEach(doc => {
-                    contenedor.innerHTML += `
-                        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;">
-                            <span>👤 <b>${doc.id}</b> - Clave: ${doc.data().clave}</span>
-                            <button onclick="eliminarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✖</button>
-                        </div>`;
+                    contenedor.innerHTML += `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;">
+                        <span>👤 <b>${doc.id}</b> - Clave: ${doc.data().clave}</span>
+                        <button onclick="eliminarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✖</button>
+                    </div>`;
                 });
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
-
-        function eliminarAcceso(nombre) {
-            if(confirm("¿Eliminar a " + nombre + "?")) {
-                db.collection("accesos_choferes").doc(nombre).delete().then(() => {
-                    alert("Eliminado.");
-                    verClavesAsignadas();
-                });
-            }
-        }
+        function eliminarAcceso(id) { if(confirm("¿Eliminar?")) db.collection("accesos_choferes").doc(id).delete().then(() => verClavesAsignadas()); }
     </script>
 </body>
 </html>
+
 
 
 
