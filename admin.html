@@ -9,7 +9,7 @@
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         
-        /* PANTALLA LOGIN */
+        /* LOGIN ADMINISTRADOR */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff6600; display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .logo-josefina { font-family: 'Brush Script MT', cursive; font-size: 45px; color: #ff6600; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
@@ -18,23 +18,20 @@
         .main-card { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; max-width: 1400px; margin: auto; display: none; }
         .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff6600; padding-bottom: 15px; margin-bottom: 15px; }
         
-        /* TABLA */
+        /* TABLA Y ESTILOS */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #f39c12; color: white; padding: 12px; font-size: 13px; text-align: left; text-transform: uppercase; }
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         
-        /* COLORES DE ESTADO */
         .select-estado { padding: 8px 12px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; color: white; }
         .bg-vacio { background: #27ae60 !important; }
         .bg-cargado { background: #e67e22 !important; }
         
-        /* ALERTAS Y ESTILOS */
-        .alerta-roja { color: #d94343; font-weight: bold; text-decoration: underline; }
         .col-descarga { font-weight: bold; color: #2c3e50; text-transform: uppercase; background: #fff8e1; padding: 5px; border-radius: 4px; }
         
-        /* VENTANA MODAL (DATOS) */
+        /* MODAL */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
         .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; margin: 15px 0; }
         
         .btn-header { padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 10px; }
@@ -58,14 +55,14 @@
             <div class="logo-josefina" style="font-size: 30px;">🚚 Control Logística</div>
             <div>
                 <button class="btn-header" style="background: #d94343;" onclick="borrarSeleccionados()">🧹 LIMPIAR PROCESADOS</button>
-                <button class="btn-header" style="background: #4a4a4a;" onclick="abrirConfigFlota()">🔑 CLAVES/FLOTA</button>
+                <button class="btn-header" style="background: #4a4a4a;" onclick="gestionarClavesChofer()">🔑 ASIGNAR CLAVE CHOFER</button>
             </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th style="width:30px;"><input type="checkbox" id="check-master" onclick="marcarTodos(this)"></th>
+                    <th style="width:30px;"><input type="checkbox" onclick="marcarTodos(this)"></th>
                     <th>Fecha / Hora</th>
                     <th>Estado</th>
                     <th>Chofer</th>
@@ -84,12 +81,11 @@
         <div class="modal-content">
             <div style="font-weight:bold; font-size:18px; margin-bottom:10px;">📋 Datos Administrativos</div>
             <div id="contenido-modal" class="modal-body"></div>
-            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR VENTANA</button>
+            <button class="btn-cerrar" onclick="cerrarModal()">CERRAR</button>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyC...",
             authDomain: "control-logistica-2026.firebaseapp.com",
@@ -99,22 +95,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let flotaReferencia = {};
-
         function verificarEntrada() {
             if(document.getElementById('pass-admin').value === "1234") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                cargarDatosFlota();
-            } else { alert("Clave Incorrecta"); }
-        }
-
-        // Cargar datos de referencia para comparar patentes
-        function cargarDatosFlota() {
-            db.collection("flota").onSnapshot(snap => {
-                snap.forEach(doc => { flotaReferencia[doc.id] = doc.data(); });
                 escucharReportes();
-            });
+            } else { alert("Clave Incorrecta"); }
         }
 
         function escucharReportes() {
@@ -123,7 +109,7 @@
                 let lista = [];
                 snapshot.forEach(doc => { lista.push({ id: doc.id, ...doc.data() }); });
 
-                // ORDEN: Vacíos arriba (por hora vieja a nueva), Cargados abajo.
+                // ORDEN: Vacíos arriba (viejos primero), Cargados abajo.
                 lista.sort((a, b) => {
                     if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
                     if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
@@ -132,13 +118,7 @@
 
                 tbody.innerHTML = "";
                 lista.forEach(r => {
-                    const oficial = flotaReferencia[r.camion] || {};
                     const colorBtn = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
-                    
-                    // Alerta si la patente que mandó el chofer no es la que vos tenés registrada
-                    const clChasis = (oficial.chasis && oficial.chasis !== r.chasis) ? "alerta-roja" : "";
-                    const clAcop = (oficial.acoplado && oficial.acoplado !== r.acoplado) ? "alerta-roja" : "";
-
                     tbody.innerHTML += `
                         <tr>
                             <td><input type="checkbox" class="chk-viaje" data-id="${r.id}"></td>
@@ -151,13 +131,29 @@
                             </td>
                             <td><b>${r.chofer}</b></td>
                             <td><span class="col-descarga">${r.lugar_descarga || '-'}</span></td>
-                            <td class="${clChasis}">${r.chasis}</td>
-                            <td class="${clAcop}">${r.acoplado}</td>
+                            <td>${r.chasis}</td>
+                            <td>${r.acoplado}</td>
                             <td><button class="btn-icon" onclick="verDetalles('${r.id}')">📋</button></td>
                             <td>${r.foto ? `<button class="btn-icon" onclick="abrirPDF('${r.foto}')">📄</button>` : '-'}</td>
                         </tr>
                     `;
                 });
+            });
+        }
+
+        // FUNCIÓN NUEVA: Gestionar por NOMBRE DE CHOFER
+        function gestionarClavesChofer() {
+            const nombre = prompt("Nombre completo del Chofer:");
+            if(!nombre) return;
+            const clave = prompt("Asignale una Clave (Ej: 1010):");
+            if(!clave) return;
+
+            db.collection("accesos_choferes").doc(nombre).set({
+                nombre: nombre,
+                clave: clave,
+                fecha_alta: new Date().toLocaleString()
+            }).then(() => {
+                alert("Clave habilitada para: " + nombre + "\nClave: " + clave);
             });
         }
 
@@ -171,39 +167,24 @@
         }
 
         function cerrarModal() { document.getElementById('modal-datos').style.display = 'none'; }
-        
         function cambiarEstado(id, nuevo) { db.collection("reportes").doc(id).update({ estado: nuevo }); }
-
+        function marcarTodos(source) { document.querySelectorAll('.chk-viaje').forEach(c => c.checked = source.checked); }
         function abrirPDF(url) {
             const win = window.open("", "_blank");
             win.document.write(`<html><body style="margin:0;display:flex;justify-content:center;"><img src="${url}" style="max-width:100%;" onload="window.print();"></body></html>`);
             win.document.close();
         }
-
-        function marcarTodos(source) {
-            document.querySelectorAll('.chk-viaje').forEach(c => c.checked = source.checked);
-        }
-
         function borrarSeleccionados() {
             const seleccion = document.querySelectorAll('.chk-viaje:checked');
             if(seleccion.length === 0) return alert("Nada seleccionado");
-            if(confirm("¿Borrar estos registros de la lista?")) {
+            if(confirm("¿Borrar estos registros?")) {
                 seleccion.forEach(s => db.collection("reportes").doc(s.dataset.id).delete());
             }
-        }
-
-        function abrirConfigFlota() {
-            const cam = prompt("N° Camión a configurar:");
-            if(!cam) return;
-            const ch = prompt("Patente Chasis OFICIAL:");
-            const ac = prompt("Patente Acoplado OFICIAL:");
-            const cl = prompt("Clave para este camión:");
-            db.collection("flota").doc(cam).set({ chasis: ch, acoplado: ac, clave: cl });
-            alert("Configuración guardada para el camión " + cam);
         }
     </script>
 </body>
 </html>
+
 
 
 
