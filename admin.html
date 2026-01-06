@@ -24,13 +24,11 @@
         
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 10000; }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 450px; }
-        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; }
-        
-        .item-clave { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #ddd; }
-        .btn-borrar-chofer { color: #d94343; font-weight: bold; cursor: pointer; border: none; background: none; font-size: 18px; }
+        .modal-body { background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 15px; margin: 15px 0; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
         
         .btn-header { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
-        .btn-cerrar { background: #ff6600; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; }
+        .btn-cerrar { background: #ff6600; color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-archivo { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -47,9 +45,9 @@
         <div class="header-flex">
             <div class="logo-josefina">🚚 Control Logística</div>
             <div style="display:flex;">
-                <button class="btn-header" style="background:#222" onclick="verClavesAsignadas()">📋 VER CLAVES / ELIMINAR</button>
+                <button class="btn-header" style="background:#222" onclick="verClavesAsignadas()">📋 CLAVES / BAJAS</button>
                 <button class="btn-header" style="background:#4a4a4a" onclick="nuevaClaveChofer()">🔑 NUEVA CLAVE</button>
-                <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR REPORTES</button>
+                <button class="btn-header" style="background:#d94343" onclick="borrarVarios()">🧹 LIMPIAR TABLA</button>
             </div>
         </div>
 
@@ -64,7 +62,7 @@
                     <th>Chasis</th>
                     <th>Acoplado</th>
                     <th>Datos</th>
-                    <th>PDF</th>
+                    <th>Archivo</th>
                 </tr>
             </thead>
             <tbody id="lista-viajes"></tbody>
@@ -80,7 +78,6 @@
     </div>
 
     <script>
-        // CONFIGURACION FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -94,20 +91,15 @@
         }
 
         function escucharReportes() {
-            db.collection("reportes").onSnapshot(snapshot => {
+            // "orderBy('fecha', 'desc')" hace que lo más nuevo aparezca arriba
+            db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snapshot => {
                 const tbody = document.getElementById('lista-viajes');
-                let reportes = [];
-                snapshot.forEach(doc => { reportes.push({ id: doc.id, ...doc.data() }); });
-
-                reportes.sort((a, b) => {
-                    if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
-                    if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
-                    return new Date(a.fecha) - new Date(b.fecha);
-                });
-
                 tbody.innerHTML = "";
-                reportes.forEach(r => {
+                
+                snapshot.forEach(doc => {
+                    const r = { id: doc.id, ...doc.data() };
                     const claseEstado = r.estado === "VACÍO" ? "bg-vacio" : "bg-cargado";
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td><input type="checkbox" class="viaje-check" data-id="${r.id}"></td>
@@ -119,34 +111,51 @@
                                 </select>
                             </td>
                             <td><b>${r.chofer}</b></td>
-                            <td style="font-weight:bold; color:#2c3e50;">${r.lugar_descarga || '-'}</td>
+                            <td style="font-weight:bold; color:#2c3e50; text-transform:uppercase;">${r.lugar_descarga || '-'}</td>
                             <td>${r.chasis}</td>
                             <td>${r.acoplado}</td>
                             <td><button onclick="verInfo('${r.id}')">📋</button></td>
-                            <td>${r.foto ? `<button onclick="printPDF('${r.foto}')">📄</button>` : '-'}</td>
+                            <td>
+                                ${r.foto ? `<button class="btn-archivo" onclick="abrirArchivo('${r.foto}')">📄 Ver</button>` : '<span style="color:#ccc">Sin archivo</span>'}
+                            </td>
                         </tr>
                     `;
                 });
             });
         }
 
+        function abrirArchivo(url) {
+            window.open(url, '_blank');
+        }
+
         function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                const msg = `TRANSPORTE: ${d.transporte}\nCUIT: ${d.cuit_transporte}\nCHOFER: ${d.chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA: ${d.lugar_descarga}\nKILOS: ${d.kilos}`;
-                document.getElementById('titulo-modal').innerText = "📋 Datos Administrativos";
+                const msg = `TRANSPORTE: ${d.transporte}\nCUIT TRANS: ${d.cuit_trans}\nCHOFER: ${d.chofer}\nCUIT CHOFER: ${d.cuit_chofer}\nCHASIS: ${d.chasis}\nACOPLADO: ${d.acoplado}\nDESCARGA EN: ${d.lugar_descarga}`;
+                document.getElementById('titulo-modal').innerText = "📋 Detalles del Viaje";
                 document.getElementById('txt-detalles').innerText = msg;
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
 
+        function cambiarEstado(id, val) { db.collection("reportes").doc(id).update({ estado: val }); }
+        function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
+        function seleccionarTodo(source) { document.querySelectorAll('.viaje-check').forEach(cb => cb.checked = source.checked); }
+        function borrarVarios() {
+            const checks = document.querySelectorAll('.viaje-check:checked');
+            if(checks.length > 0 && confirm("¿Borrar seleccionados?")) {
+                checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
+            }
+        }
+        
+        // Funciones de gestión de choferes (se mantienen igual)
         function nuevaClaveChofer() {
             const nom = prompt("Nombre del Chofer:");
             if(!nom) return;
             const cla = prompt("Asignale una Clave:");
             if(nom && cla) {
                 db.collection("accesos_choferes").doc(nom).set({ clave: cla });
-                alert("Chofer " + nom + " guardado.");
+                alert("Acceso creado.");
             }
         }
 
@@ -154,45 +163,30 @@
             db.collection("accesos_choferes").get().then(snap => {
                 const contenedor = document.getElementById('txt-detalles');
                 contenedor.innerHTML = "";
-                document.getElementById('titulo-modal').innerText = "📋 Gestión de Claves";
-                
+                document.getElementById('titulo-modal').innerText = "📋 Gestión de Choferes";
                 snap.forEach(doc => {
-                    const div = document.createElement('div');
-                    div.className = 'item-clave';
-                    div.innerHTML = `
-                        <span>👤 <b>${doc.id}</b> (Clave: ${doc.data().clave})</span>
-                        <button class="btn-borrar-chofer" onclick="eliminarAcceso('${doc.id}')">✖</button>
-                    `;
-                    contenedor.appendChild(div);
+                    contenedor.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #ddd;">
+                            <span>👤 <b>${doc.id}</b> - Clave: ${doc.data().clave}</span>
+                            <button onclick="eliminarAcceso('${doc.id}')" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✖</button>
+                        </div>`;
                 });
                 document.getElementById('modal-info').style.display = 'flex';
             });
         }
 
         function eliminarAcceso(nombre) {
-            if(confirm("¿Seguro que querés eliminar a " + nombre + "? No podrá entrar más a la App.")) {
+            if(confirm("¿Eliminar a " + nombre + "?")) {
                 db.collection("accesos_choferes").doc(nombre).delete().then(() => {
-                    alert("Eliminado correctamente.");
-                    verClavesAsignadas(); // Refresca la lista
+                    alert("Eliminado.");
+                    verClavesAsignadas();
                 });
             }
-        }
-
-        function cerrarModal() { document.getElementById('modal-info').style.display = 'none'; }
-        function cambiarEstado(id, val) { db.collection("reportes").doc(id).update({ estado: val }); }
-        function seleccionarTodo(source) { document.querySelectorAll('.viaje-check').forEach(cb => cb.checked = source.checked); }
-        function printPDF(url) {
-            const w = window.open("", "_blank");
-            w.document.write(`<html><body style="margin:0;"><img src="${url}" style="width:100%;" onload="window.print();"></body></html>`);
-            w.document.close();
-        }
-        function borrarVarios() {
-            const checks = document.querySelectorAll('.viaje-check:checked');
-            if(confirm("¿Borrar seleccionados?")) checks.forEach(c => db.collection("reportes").doc(c.dataset.id).delete());
         }
     </script>
 </body>
 </html>
+
 
 
 
