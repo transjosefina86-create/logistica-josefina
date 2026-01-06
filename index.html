@@ -9,10 +9,10 @@
     <style>
         body { font-family: sans-serif; background: #ff6600; margin: 0; padding: 15px; }
         .card { background: white; padding: 25px; border-radius: 20px; max-width: 400px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
+        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
         button { background: #222; color: white; font-weight: bold; border: none; cursor: pointer; }
         .oculto { display: none; }
-        label { font-size: 11px; font-weight: bold; color: #ff6600; margin-top: 10px; display: block; }
+        label { font-size: 11px; font-weight: bold; color: #ff6600; margin-top: 10px; display: block; text-transform: uppercase; }
         .btn-foto { background: #f39c12; }
         .status-foto { font-size: 12px; color: #27ae60; text-align: center; font-weight: bold; margin-top: 5px; }
     </style>
@@ -32,6 +32,12 @@
         <div id="pantalla-reporte" class="oculto">
             <h4 id="saludo" style="margin:0; color:#333; text-align: center;"></h4>
             
+            <label>Estado del Camión</label>
+            <select id="estado_manual">
+                <option value="VACÍO">VACÍO</option>
+                <option value="CARGADO">CARGADO</option>
+            </select>
+
             <label>DATOS DEL TRANSPORTE</label>
             <input type="text" id="trans" placeholder="Nombre Transporte">
             <input type="text" id="cuit_trans" placeholder="CUIT Transporte">
@@ -47,12 +53,12 @@
             <label>LUGAR DE DESCARGA</label>
             <input type="text" id="descarga" placeholder="¿Dónde descargaste?">
 
-            <label>COMPROBANTE / REMITO</label>
+            <label>COMPROBANTE (OPCIONAL)</label>
             <button type="button" class="btn-foto" onclick="document.getElementById('fileInput').click()">📸 TOMAR FOTO / SUBIR</button>
             <input type="file" id="fileInput" accept="image/*,application/pdf" capture="camera" class="oculto" onchange="subirAImgBB()">
             <div id="status" class="status-foto"></div>
 
-            <button id="btn-envio" style="background:#27ae60; margin-top:20px;" onclick="enviarReporte()" disabled>ENVIAR REPORTE</button>
+            <button id="btn-envio" style="background:#27ae60; margin-top:20px;" onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
     </div>
 
@@ -97,11 +103,12 @@
         function subirAImgBB() {
             const fileInput = document.getElementById('fileInput');
             const status = document.getElementById('status');
-            const btnEnvio = document.getElementById('btn-envio');
             
             if (fileInput.files.length === 0) return;
 
             status.innerText = "⏳ SUBIENDO ARCHIVO...";
+            status.style.color = "#f39c12";
+
             const formData = new FormData();
             formData.append("image", fileInput.files[0]);
 
@@ -114,11 +121,12 @@
             .then(data => {
                 if (data.success) {
                     urlImagenFinal = data.data.url;
-                    status.innerText = "✅ ARCHIVO CARGADO CON ÉXITO";
-                    btnEnvio.disabled = false;
+                    status.innerText = "✅ ARCHIVO CARGADO";
+                    status.style.color = "#27ae60";
                 } else {
                     alert("Error al subir el archivo.");
                     status.innerText = "❌ ERROR AL SUBIR";
+                    status.style.color = "red";
                 }
             })
             .catch(err => {
@@ -130,6 +138,7 @@
             const btn = document.getElementById('btn-envio');
             btn.disabled = true; btn.innerText = "ENVIANDO...";
 
+            // Guardar fijos para la próxima vez
             localStorage.setItem('trans', document.getElementById('trans').value);
             localStorage.setItem('cuit_trans', document.getElementById('cuit_trans').value);
             localStorage.setItem('chofer_n', document.getElementById('chofer_n').value);
@@ -145,7 +154,7 @@
                 chasis: document.getElementById('chas').value.toUpperCase(),
                 acoplado: document.getElementById('acop').value.toUpperCase(),
                 lugar_descarga: document.getElementById('descarga').value,
-                estado: "VACÍO",
+                estado: document.getElementById('estado_manual').value, // Estado manual
                 fecha: new Date().toLocaleString(),
                 foto: urlImagenFinal 
             }).then(() => {
@@ -154,12 +163,17 @@
                 document.getElementById('status').innerText = "";
                 urlImagenFinal = "";
                 btn.innerText = "ENVIAR REPORTE";
-                btn.disabled = true; // Desactivar hasta que carguen otra foto
+                btn.disabled = false; 
+            }).catch(err => {
+                alert("Error al enviar a Firebase");
+                btn.disabled = false;
+                btn.innerText = "ENVIAR REPORTE";
             });
         }
     </script>
 </body>
 </html>
+
 
 
 
