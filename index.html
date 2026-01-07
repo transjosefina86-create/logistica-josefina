@@ -15,7 +15,6 @@
             background-color: var(--naranja); 
         }
 
-        /* Contenedor Principal Centrado */
         .wrapper {
             display: flex;
             justify-content: center;
@@ -83,7 +82,6 @@
             gap: 12px;
         }
 
-        /* Botones de Equipo */
         .equipo-cont {
             display: flex;
             gap: 10px;
@@ -108,7 +106,6 @@
             border-color: var(--oscuro);
         }
 
-        /* Cartel de Rechazo */
         #aviso-rechazo {
             display: none;
             background: #e74c3c;
@@ -253,7 +250,6 @@
 </div>
 
 <script>
-    // Firebase Config
     const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -262,22 +258,17 @@
     let equipoSel = "Común";
     let choferAutenticado = "";
 
-    // FUNCIÓN DE LOGIN CORREGIDA
     async function ejecutarLogin() {
         const u = document.getElementById('user-log').value.trim().toLowerCase();
         const p = document.getElementById('pass-log').value.trim();
-        
         try {
             const snapshot = await db.collection("accesos_choferes").get();
             let encontrado = false;
-            
             snapshot.forEach(doc => {
                 if(doc.id.toLowerCase() === u && doc.data().clave === p) {
-                    encontrado = true;
-                    choferAutenticado = doc.id;
+                    encontrado = true; choferAutenticado = doc.id;
                 }
             });
-
             if(encontrado) {
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('pantalla-form').style.display = 'block';
@@ -289,22 +280,27 @@
         } catch(e) { alert("Error de conexión: " + e); }
     }
 
-    // Radar de Rechazo
+    // RADAR INTELIGENTE: Solo mira el último reporte
     function iniciarRadar() {
-        db.collection("reportes").where("chofer", "==", choferAutenticado).onSnapshot(s => {
+        db.collection("reportes")
+          .where("chofer", "==", choferAutenticado)
+          .orderBy("fecha", "desc")
+          .limit(1)
+          .onSnapshot(s => {
             let mostrar = false;
             s.forEach(d => {
-                if(d.data().estado === 'CARGADO' && (!d.data().fotos || d.data().fotos.length === 0)) mostrar = true;
+                const data = d.data();
+                if(data.estado === 'CARGADO' && (!data.fotos || data.fotos.length === 0)) {
+                    mostrar = true;
+                }
             });
             document.getElementById('aviso-rechazo').style.display = mostrar ? 'block' : 'none';
         });
     }
 
-    // Procesar fotos con alta compatibilidad
     function procesarFotos() {
         const files = document.getElementById('input-file').files;
         document.getElementById('aviso-rechazo').style.display = 'none';
-        
         Array.from(files).forEach(f => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -314,20 +310,12 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     const MAX_WIDTH = 1000;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
+                    let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
-                    
                     const base64 = canvas.toDataURL('image/jpeg', 0.7);
                     listaFotosB64.push(base64);
-                    
                     const preview = document.createElement('img');
                     preview.src = base64;
                     document.getElementById('contenedor-previa').appendChild(preview);
@@ -374,10 +362,8 @@
         if(document.getElementById('campo-estado').value === 'CARGADO' && listaFotosB64.length === 0) {
             alert("DEBES SACAR FOTO AL TICKET"); return;
         }
-
         document.getElementById('btn-final').style.display = 'none';
         document.getElementById('cargando').style.display = 'block';
-
         try {
             await db.collection("reportes").add({
                 chofer: choferAutenticado,
@@ -392,19 +378,17 @@
                 fecha: new Date().toLocaleString('es-AR'),
                 fotos: listaFotosB64
             });
-            
             alert("✅ REPORTE ENVIADO");
             listaFotosB64 = [];
             document.getElementById('contenedor-previa').innerHTML = "";
         } catch(e) { alert("Error al enviar: " + e); }
-        
         document.getElementById('cargando').style.display = 'none';
         document.getElementById('btn-final').style.display = 'block';
     }
 </script>
-
 </body>
 </html>
+
 
 
 
