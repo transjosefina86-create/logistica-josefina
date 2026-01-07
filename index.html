@@ -15,6 +15,7 @@
             background-color: var(--naranja); 
         }
 
+        /* Contenedor Principal Centrado */
         .wrapper {
             display: flex;
             justify-content: center;
@@ -26,54 +27,63 @@
 
         .card {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             box-sizing: border-box;
         }
 
         .logo-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .logo-header h2 {
             color: var(--naranja);
             margin: 0;
-            font-size: 26px;
+            font-size: 28px;
             text-transform: uppercase;
             font-weight: 900;
             letter-spacing: 1px;
         }
 
+        .logo-header p {
+            font-size: 13px;
+            color: #777;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
         label {
             display: block;
             font-size: 11px;
-            font-weight: 700;
-            color: #555;
-            margin-bottom: 4px;
+            font-weight: 800;
+            color: #444;
+            margin-bottom: 5px;
             text-transform: uppercase;
             margin-left: 2px;
         }
 
         input, select {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 15px;
             border: 2px solid #eee;
             border-radius: 12px;
-            font-size: 15px;
+            font-size: 16px;
             box-sizing: border-box;
-            transition: 0.3s;
+            transition: all 0.3s ease;
             font-weight: 600;
+            color: #333;
         }
 
         input:focus {
             border-color: var(--naranja);
             outline: none;
             background: #fff9f5;
+            box-shadow: 0 0 8px rgba(255,102,0,0.1);
         }
 
         .grid-patentes {
@@ -82,22 +92,24 @@
             gap: 12px;
         }
 
+        /* Selectores de Equipo Estéticos */
         .equipo-cont {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         .btn-eq {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             border: 2px solid #ddd;
             border-radius: 12px;
             background: #f8f9fa;
             font-weight: 800;
             cursor: pointer;
-            font-size: 12px;
-            transition: 0.2s;
+            font-size: 13px;
+            transition: 0.3s;
+            text-transform: uppercase;
         }
 
         .btn-eq.active {
@@ -106,55 +118,87 @@
             border-color: var(--oscuro);
         }
 
+        /* Botón de Cámara Profesional */
+        #btn-foto {
+            background: #fff;
+            border: 3px dashed #ccc;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #btn-foto:hover {
+            border-color: var(--naranja);
+            color: var(--naranja);
+            background: #fffbf9;
+        }
+
+        .previa-fotos {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            padding: 5px;
+            min-height: 90px;
+        }
+
+        .previa-fotos img {
+            width: 85px;
+            height: 85px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 3px solid var(--naranja);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
         .btn-enviar {
             background: var(--naranja);
             color: white;
             border: none;
-            padding: 16px;
+            padding: 18px;
             border-radius: 15px;
             width: 100%;
             font-size: 18px;
             font-weight: 900;
             cursor: pointer;
             text-transform: uppercase;
-            box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
-            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(255, 102, 0, 0.3);
+            transition: 0.3s;
         }
 
-        #btn-foto {
-            background: #fff;
-            border: 3px dashed #ccc;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            color: #666;
-        }
-
-        .previa-fotos {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            margin-bottom: 15px;
-            padding: 5px;
-        }
-
-        .previa-fotos img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid var(--naranja);
+        .btn-enviar:active {
+            transform: scale(0.98);
         }
 
         .loader {
             display: none;
             text-align: center;
-            font-weight: bold;
+            font-weight: 900;
             color: var(--naranja);
+            padding: 15px;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        #error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+            margin-top: 12px;
+            font-weight: 800;
+            background: #fdf2f2;
             padding: 10px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -165,42 +209,41 @@
     <div id="pantalla-login" class="card">
         <div class="logo-header">
             <h2>LA JOSEFINA</h2>
-            <p style="font-size: 12px; color: #777; font-weight: bold;">ACCESO CHOFERES</p>
+            <p>SISTEMA DE CONTROL DE CARGA</p>
         </div>
-        <label>Usuario</label>
-        <input type="text" id="user-log" placeholder="Tu nombre de usuario">
+        <label>Usuario del Camión</label>
+        <input type="text" id="user-log" placeholder="Ingrese su usuario">
         <label>Contraseña (PIN)</label>
         <input type="password" id="pass-log" placeholder="****">
-        <button class="btn-enviar" onclick="ejecutarLogin()">INGRESAR AL SISTEMA</button>
-        <p id="error-msg" style="color: red; font-size: 12px; text-align: center; display: none; margin-top: 10px; font-weight: bold;">Usuario o PIN incorrectos</p>
+        <button class="btn-enviar" onclick="ejecutarLogin()">INGRESAR AL PANEL</button>
+        <p id="error-msg">⚠️ Usuario o clave incorrectos</p>
     </div>
 
     <div id="pantalla-form" class="card" style="display: none;">
-        
         <div class="logo-header">
-            <h2>NUEVO REPORTE</h2>
+            <h2 style="font-size: 22px;">NUEVO REPORTE</h2>
         </div>
 
         <label>Transporte / Empresa</label>
-        <input type="text" id="campo-empresa" oninput="guardarEstado()">
+        <input type="text" id="campo-empresa" oninput="guardarEstado()" placeholder="Ej: Transporte Perez">
 
         <label>CUIT Empresa</label>
-        <input type="text" id="campo-cuit-emp" placeholder="00-00000000-0" oninput="guardarEstado()">
+        <input type="text" id="campo-cuit-emp" oninput="guardarEstado()" placeholder="00-00000000-0">
 
         <label>Nombre del Chofer</label>
-        <input type="text" id="campo-chofer-nom" oninput="guardarEstado()">
+        <input type="text" id="campo-chofer-nom" oninput="guardarEstado()" placeholder="Nombre y Apellido">
 
         <label>CUIL del Chofer</label>
-        <input type="text" id="campo-chofer-cuil" placeholder="00-00000000-0" oninput="guardarEstado()">
+        <input type="text" id="campo-chofer-cuil" oninput="guardarEstado()" placeholder="00-00000000-0">
 
         <div class="grid-patentes">
             <div>
                 <label>Patente Chasis</label>
-                <input type="text" id="campo-chasis" oninput="guardarEstado()">
+                <input type="text" id="campo-chasis" oninput="guardarEstado()" placeholder="ABC-123">
             </div>
             <div>
                 <label>Patente Acoplado</label>
-                <input type="text" id="campo-acoplado" oninput="guardarEstado()">
+                <input type="text" id="campo-acoplado" oninput="guardarEstado()" placeholder="DEF-456">
             </div>
         </div>
 
@@ -217,19 +260,21 @@
         </select>
 
         <div id="btn-foto" onclick="document.getElementById('input-file').click()">
-            📸 SACAR FOTO DEL TICKET
+            <span style="font-size: 30px;">📸</span>
+            <span>SACAR FOTO DEL TICKET</span>
             <input type="file" id="input-file" multiple accept="image/*" capture="camera" style="display: none;" onchange="procesarFotos()">
         </div>
 
         <div id="contenedor-previa" class="previa-fotos"></div>
 
-        <div id="cargando" class="loader">ENVIANDO REPORTE...</div>
+        <div id="cargando" class="loader">⚙️ PROCESANDO Y ENVIANDO...</div>
         <button class="btn-enviar" id="btn-final" onclick="enviarDatos()">ENVIAR REPORTE</button>
     </div>
 
 </div>
 
 <script>
+    // Firebase Configuración
     const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -238,17 +283,22 @@
     let equipoSel = "Común";
     let choferAutenticado = "";
 
+    // LOGIN ROBUSTO
     async function ejecutarLogin() {
         const u = document.getElementById('user-log').value.trim().toLowerCase();
         const p = document.getElementById('pass-log').value.trim();
+        
         try {
             const snapshot = await db.collection("accesos_choferes").get();
             let encontrado = false;
+            
             snapshot.forEach(doc => {
                 if(doc.id.toLowerCase() === u && doc.data().clave === p) {
-                    encontrado = true; choferAutenticado = doc.id;
+                    encontrado = true;
+                    choferAutenticado = doc.id;
                 }
             });
+
             if(encontrado) {
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('pantalla-form').style.display = 'block';
@@ -256,11 +306,13 @@
             } else {
                 document.getElementById('error-msg').style.display = 'block';
             }
-        } catch(e) { alert("Error de conexión"); }
+        } catch(e) { alert("Error de conexión con el servidor"); }
     }
 
+    // PROCESAMIENTO DE IMAGEN CON COMPRESIÓN PARA PDF
     function procesarFotos() {
         const files = document.getElementById('input-file').files;
+        
         Array.from(files).forEach(f => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -269,13 +321,24 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const MAX_WIDTH = 1000;
-                    let width = img.width, height = img.height;
-                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    canvas.width = width; canvas.height = height;
+                    
+                    // Definimos calidad para el PDF del Administrador
+                    const MAX_WIDTH = 1200; 
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    const base64 = canvas.toDataURL('image/jpeg', 0.75);
                     listaFotosB64.push(base64);
+                    
                     const preview = document.createElement('img');
                     preview.src = base64;
                     document.getElementById('contenedor-previa').appendChild(preview);
@@ -292,6 +355,7 @@
         guardarEstado();
     }
 
+    // MEMORIA LOCAL
     function guardarEstado() {
         const datos = {
             emp: document.getElementById('campo-empresa').value,
@@ -318,14 +382,24 @@
         }
     }
 
+    // ENVÍO CON LÓGICA DE ACTUALIZACIÓN (SIN DUPLICAR)
     async function enviarDatos() {
         if(document.getElementById('campo-estado').value === 'CARGADO' && listaFotosB64.length === 0) {
-            alert("DEBES SACAR FOTO AL TICKET"); return;
+            alert("⚠️ POR FAVOR, TOMA LA FOTO DEL TICKET"); return;
         }
+
         document.getElementById('btn-final').style.display = 'none';
         document.getElementById('cargando').style.display = 'block';
+
         try {
-            await db.collection("reportes").add({
+            // Buscamos si el administrador pidió un reenvío para este chofer
+            const queryReenvio = await db.collection("reportes")
+                .where("chofer", "==", choferAutenticado)
+                .where("estado", "==", "PIDIENDO REENVÍO")
+                .limit(1)
+                .get();
+
+            const paqueteDatos = {
                 chofer: choferAutenticado,
                 chofer_nombre: document.getElementById('campo-chofer-nom').value,
                 chofer_cuil: document.getElementById('campo-chofer-cuil').value,
@@ -334,20 +408,37 @@
                 chasis: document.getElementById('campo-chasis').value,
                 acoplado: document.getElementById('campo-acoplado').value,
                 equipo: equipoSel,
-                estado: document.getElementById('campo-estado').value,
-                fecha: new Date().toLocaleString('es-AR'),
-                fotos: listaFotosB64
-            });
-            alert("✅ REPORTE ENVIADO");
+                estado: "FOTO REENVIADA",
+                fecha_envio: new Date().toLocaleString('es-AR'),
+                fotos: listaFotosB64,
+                reenviada: true
+            };
+
+            if(!queryReenvio.empty) {
+                // Si existía el pedido, actualizamos esa misma fila
+                const idDocExistente = queryReenvio.docs[0].id;
+                await db.collection("reportes").doc(idDocExistente).update(paqueteDatos);
+            } else {
+                // Si es un reporte nuevo, lo creamos normalmente
+                paqueteDatos.estado = document.getElementById('campo-estado').value;
+                paqueteDatos.reenviada = false;
+                await db.collection("reportes").add(paqueteDatos);
+            }
+            
+            alert("✅ REPORTE ENVIADO CORRECTAMENTE");
             listaFotosB64 = [];
             document.getElementById('contenedor-previa').innerHTML = "";
-        } catch(e) { alert("Error al enviar"); }
+        } catch(e) { 
+            alert("Error al enviar el reporte. Verifique su conexión."); 
+        }
+        
         document.getElementById('cargando').style.display = 'none';
         document.getElementById('btn-final').style.display = 'block';
     }
 </script>
 </body>
 </html>
+
 
 
 
