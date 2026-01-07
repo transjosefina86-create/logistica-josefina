@@ -3,377 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Transporte La Josefina - Choferes</title>
+    <title>La Josefina - Choferes</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
+        :root { --naranja: #ff6600; --gris: #f8f9fa; --texto: #333; }
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #ff6600; 
-            margin: 0; 
-            padding: 10px; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: #e9ecef; margin: 0; padding: 10px; 
+            display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; 
         }
-
         .card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            width: 100%; 
-            max-width: 420px; 
-            align-self: flex-start;
+            background: white; padding: 15px; border-radius: 15px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 360px; 
         }
-
         h2 { 
-            color: #ff6600; 
-            text-align: center; 
-            font-weight: 900; 
-            font-size: 20px; 
-            margin: 0 0 15px 0; 
-            text-transform: uppercase;
+            color: var(--naranja); text-align: center; font-size: 18px; 
+            margin: 0 0 15px 0; letter-spacing: 1px;
         }
-
         label { 
-            font-size: 11px; 
-            font-weight: bold; 
-            color: #444; 
-            display: block; 
-            margin-bottom: 3px; 
-            text-transform: uppercase; 
+            font-size: 10px; font-weight: 700; color: #777; 
+            display: block; margin-bottom: 2px; margin-left: 5px; text-transform: uppercase; 
         }
-
         input, select { 
-            width: 100%; 
-            padding: 10px; 
-            margin-bottom: 10px; 
-            border-radius: 10px; 
-            border: 2px solid #eee; 
-            box-sizing: border-box; 
-            font-size: 14px; 
-            background: #fafafa; 
-            font-weight: 600;
-            color: #333;
+            width: 100%; padding: 8px 12px; margin-bottom: 8px; border-radius: 8px; 
+            border: 1px solid #ddd; box-sizing: border-box; font-size: 13px; color: var(--texto);
         }
+        input:focus { border-color: var(--naranja); outline: none; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-        input:focus { border-color: #ff6600; outline: none; background: white; }
-
-        .tipo-equipo { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 15px; 
+        .btn-equipo { 
+            display: flex; gap: 5px; margin-bottom: 10px; 
         }
-
-        .btn-tipo { 
-            flex: 1; 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            border-radius: 10px; 
-            background: #f0f0f0; 
-            font-weight: 800; 
-            font-size: 12px; 
-            cursor: pointer; 
-            transition: 0.2s;
-            color: #555;
+        .btn-eq { 
+            flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px; 
+            background: #fff; font-size: 11px; font-weight: bold; cursor: pointer; color: #666;
         }
+        .btn-eq.active { background: #333; color: #fff; border-color: #333; }
 
-        .btn-tipo.active { 
-            background: #333; 
-            color: white; 
-            border-color: #000; 
-        }
-
-        /* CARTEL DE AVISO REFORZADO */
         #aviso-foto { 
-            display: none; 
-            background: #ff0000; 
-            color: white; 
-            padding: 15px; 
-            border-radius: 15px; 
-            margin-bottom: 15px; 
-            font-weight: 900; 
-            text-align: center; 
-            border: 4px solid yellow; 
-            font-size: 14px;
-            box-shadow: 0 0 15px rgba(255,0,0,0.4);
-            animation: latido 0.8s infinite;
+            display: none; background: #d00; color: white; padding: 10px; 
+            border-radius: 10px; margin-bottom: 10px; font-weight: bold; 
+            text-align: center; border: 2px solid #ff0; font-size: 12px;
+            animation: pulse 1s infinite;
         }
-
-        @keyframes latido {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         .btn-enviar { 
-            background: #ff6600; 
-            color: white; 
-            font-weight: 900; 
-            border: none; 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 15px; 
-            font-size: 20px; 
-            cursor: pointer; 
-            box-shadow: 0 5px 0px #b34700; 
-            text-transform: uppercase; 
-            transition: 0.1s;
+            background: var(--naranja); color: white; font-weight: bold; border: none; 
+            width: 100%; padding: 12px; border-radius: 10px; font-size: 16px; 
+            cursor: pointer; transition: 0.2s; margin-top: 5px;
         }
-
-        .btn-enviar:active { transform: translateY(3px); box-shadow: 0 2px 0px #b34700; }
+        .btn-enviar:active { transform: scale(0.98); }
 
         #camara-btn { 
-            background: #f8f8f8; 
-            color: #333; 
-            padding: 25px 15px; 
-            border-radius: 15px; 
-            text-align: center; 
-            margin: 10px 0; 
-            cursor: pointer; 
-            border: 3px dashed #bbb; 
-            font-weight: 800; 
-            font-size: 16px;
+            background: #fff; color: var(--naranja); padding: 12px; border-radius: 10px; 
+            text-align: center; margin: 8px 0; cursor: pointer; 
+            border: 2px dashed var(--naranja); font-weight: bold; font-size: 13px;
         }
-
-        .preview { 
-            display: flex; 
-            gap: 10px; 
-            overflow-x: auto; 
-            margin-bottom: 15px; 
-            padding: 5px;
-        }
-
-        .preview img { 
-            width: 90px; 
-            height: 90px; 
-            object-fit: cover; 
-            border-radius: 12px; 
-            border: 3px solid #ff6600; 
-            flex-shrink: 0;
-        }
-
-        .loader { 
-            display: none; 
-            text-align: center; 
-            color: #ff6600; 
-            font-weight: 900; 
-            font-size: 18px; 
-            padding: 15px; 
-        }
-
+        .preview { display: flex; gap: 5px; overflow-x: auto; padding: 2px; }
+        .preview img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--naranja); }
+        .loader { display: none; text-align: center; color: var(--naranja); font-weight: bold; font-size: 14px; padding: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="login-chof" style="width: 100%; max-width: 380px; margin-top: 40px;">
+    <div id="login-box" style="width: 100%; max-width: 320px; margin-top: 30px;">
         <div class="card">
-            <h2>LA JOSEFINA - ACCESO</h2>
-            <form onsubmit="event.preventDefault(); login();">
-                <label>Usuario Chofer</label>
-                <input type="text" id="nombre-login" placeholder="Ej: JuanPerez" required>
-                <label>PIN de Acceso</label>
-                <input type="password" id="pin-login" placeholder="****" required>
-                <button type="submit" class="btn-enviar">INGRESAR</button>
-                <p id="error-login" style="color:red; font-weight:bold; text-align:center; display:none; margin-top:10px;">Datos incorrectos</p>
-            </form>
+            <h2>LA JOSEFINA</h2>
+            <input type="text" id="u-log" placeholder="Usuario">
+            <input type="password" id="p-log" placeholder="PIN">
+            <button class="btn-enviar" onclick="login()">ENTRAR</button>
         </div>
     </div>
 
-    <div id="form-chof" style="display: none; width: 100%; max-width: 420px;">
+    <div id="form-box" style="display: none; width: 100%; max-width: 360px;">
         <div class="card">
-            
-            <div id="aviso-foto">⚠️ ¡FOTO RECHAZADA!<br>POR FAVOR SACÁ OTRA FOTO DEL TICKET Y VOLVÉ A ENVIAR.</div>
-
+            <div id="aviso-foto">⚠️ FOTO RECHAZADA - SACAR OTRA</div>
             <h2>NUEVO REPORTE</h2>
             
-            <label>Nombre y Apellido Chofer</label>
-            <input type="text" id="chofer_nom" placeholder="Nombre completo" oninput="guardarMemoria()">
+            <label>Transporte / Empresa</label>
+            <input type="text" id="f-empresa" oninput="saveM()">
+
+            <label>CUIT Empresa</label>
+            <input type="text" id="f-cuit" placeholder="00-00000000-0" oninput="saveM()">
+
+            <label>Nombre del Chofer</label>
+            <input type="text" id="f-chof-nom" oninput="saveM()">
 
             <label>CUIL Chofer</label>
-            <input type="text" id="chofer_cuil" placeholder="00-00000000-0" oninput="guardarMemoria()">
+            <input type="text" id="f-chof-cuil" placeholder="00-00000000-0" oninput="saveM()">
 
-            <label>Transporte / Empresa</label>
-            <input type="text" id="transporte" placeholder="Nombre empresa" oninput="guardarMemoria()">
-            
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
+            <div class="grid-2">
+                <div>
                     <label>Patente Chasis</label>
-                    <input type="text" id="chasis" placeholder="ABC-123" oninput="guardarMemoria()">
+                    <input type="text" id="f-pat1" oninput="saveM()">
                 </div>
-                <div style="flex: 1;">
+                <div>
                     <label>Patente Acoplado</label>
-                    <input type="text" id="acoplado" placeholder="DEF-456" oninput="guardarMemoria()">
+                    <input type="text" id="f-pat2" oninput="saveM()">
                 </div>
             </div>
 
             <label>Tipo de Equipo</label>
-            <div class="tipo-equipo">
-                <button type="button" class="btn-tipo active" id="btn-comun" onclick="setEquipo('Común')">COMÚN</button>
-                <button type="button" class="btn-tipo" id="btn-escalable" onclick="setEquipo('Escalable')">ESCALABLE</button>
+            <div class="btn-equipo">
+                <button id="eq-c" class="btn-eq active" onclick="setEq('Común')">COMÚN</button>
+                <button id="eq-e" class="btn-eq" onclick="setEq('Escalable')">ESCALABLE</button>
             </div>
 
-            <label>Estado del Camión</label>
-            <select id="estado">
+            <label>Estado</label>
+            <select id="f-estado">
                 <option value="VACÍO">ESTOY VACÍO</option>
                 <option value="CARGADO">ESTOY CARGADO</option>
             </select>
             
-            <div id="camara-btn" onclick="document.getElementById('fotos-input').click()">
-                📸 SACAR FOTO DEL TICKET
-                <input type="file" id="fotos-input" multiple accept="image/*" capture="camera" style="display: none;" onchange="procesarImagenes()">
+            <div id="camara-btn" onclick="document.getElementById('f-file').click()">
+                📸 SACAR FOTO TICKET
+                <input type="file" id="f-file" multiple accept="image/*" capture="camera" style="display: none;" onchange="handleImg()">
             </div>
 
-            <div id="previs-fotos" class="preview"></div>
-
-            <div id="cargando-aviso" class="loader">🚀 ENVIANDO DATOS...</div>
-            
-            <button class="btn-enviar" id="btn-enviar-final" onclick="enviarReporte()">ENVIAR REPORTE</button>
+            <div id="f-prev" class="preview"></div>
+            <div id="f-load" class="loader">ENVIANDO...</div>
+            <button class="btn-enviar" id="f-btn" onclick="enviar()">ENVIAR REPORTE</button>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let fotosBase64 = [];
-        let equipoGlobal = "Común";
-        let userDocID = "";
+        let imgsB64 = [];
+        let eq = "Común";
+        let uID = "";
 
-        // LOGIN COMPLETO CON VALIDACIÓN
         async function login() {
-            const u = document.getElementById('nombre-login').value.trim().toLowerCase();
-            const p = document.getElementById('pin-login').value.trim();
-            try {
-                const s = await db.collection("accesos_choferes").get();
-                let ok = false;
-                s.forEach(doc => {
-                    if(doc.id.toLowerCase() === u && doc.data().clave === p) {
-                        ok = true; userDocID = doc.id;
-                    }
-                });
-                if(ok) {
-                    document.getElementById('login-chof').style.display = 'none';
-                    document.getElementById('form-chof').style.display = 'block';
-                    cargarMemoria();
-                    activarEscuchaRechazo();
-                } else {
-                    document.getElementById('error-login').style.display = 'block';
+            const u = document.getElementById('u-log').value.toLowerCase();
+            const p = document.getElementById('p-log').value;
+            const s = await db.collection("accesos_choferes").get();
+            s.forEach(doc => {
+                if(doc.id.toLowerCase() === u && doc.data().clave === p) {
+                    uID = doc.id;
+                    document.getElementById('login-box').style.display = 'none';
+                    document.getElementById('form-box').style.display = 'block';
+                    loadM();
+                    radar();
                 }
-            } catch(e) { alert("Error de red: " + e); }
-        }
-
-        // RADAR DE RECHAZO (CARTEL ROJO)
-        function activarEscuchaRechazo() {
-            db.collection("reportes").where("chofer", "==", userDocID).onSnapshot(snap => {
-                let hayRechazo = false;
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if(d.estado === 'CARGADO' && (!d.fotos || d.fotos.length === 0)) hayRechazo = true;
-                });
-                document.getElementById('aviso-foto').style.display = hayRechazo ? 'block' : 'none';
             });
         }
 
-        // PROCESADOR DE IMÁGENES (ALTA COMPRESIÓN)
-        function procesarImagenes() {
-            const archivos = document.getElementById('fotos-input').files;
-            // SI SACA FOTO NUEVA, SE BORRA EL CARTEL DE RECHAZO
-            document.getElementById('aviso-foto').style.display = 'none';
+        function radar() {
+            db.collection("reportes").where("chofer", "==", uID).onSnapshot(s => {
+                let r = false;
+                s.forEach(d => { if(d.data().estado === 'CARGADO' && (!d.data().fotos || d.data().fotos.length === 0)) r = true; });
+                document.getElementById('aviso-foto').style.display = r ? 'block' : 'none';
+            });
+        }
 
-            Array.from(archivos).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const MAX = 1000;
-                        let w = img.width, h = img.height;
-                        if(w > MAX) { h *= MAX/w; w = MAX; }
-                        canvas.width = w; canvas.height = h;
-                        ctx.drawImage(img, 0, 0, w, h);
-                        const b64 = canvas.toDataURL('image/jpeg', 0.6); // CALIDAD 0.6 PARA SEÑAL DÉBIL
-                        fotosBase64.push(b64);
-                        const previewImg = document.createElement('img');
-                        previewImg.src = b64;
-                        document.getElementById('previs-fotos').appendChild(previewImg);
+        function handleImg() {
+            const fs = document.getElementById('f-file').files;
+            document.getElementById('aviso-foto').style.display = 'none';
+            Array.from(fs).forEach(f => {
+                const rd = new FileReader();
+                rd.onload = (e) => {
+                    const i = new Image(); i.src = e.target.result;
+                    i.onload = () => {
+                        const cv = document.createElement('canvas'); const cx = cv.getContext('2d');
+                        cv.width = 800; cv.height = (i.height * 800) / i.width;
+                        cx.drawImage(i, 0, 0, cv.width, cv.height);
+                        const b = cv.toDataURL('image/jpeg', 0.6);
+                        imgsB64.push(b);
+                        const m = document.createElement('img'); m.src = b;
+                        document.getElementById('f-prev').appendChild(m);
                     }
                 };
-                reader.readAsDataURL(file);
+                rd.readAsDataURL(f);
             });
         }
 
-        function setEquipo(t) {
-            equipoGlobal = t;
-            document.getElementById('btn-comun').classList.toggle('active', t === 'Común');
-            document.getElementById('btn-escalable').classList.toggle('active', t === 'Escalable');
-            guardarMemoria();
+        function setEq(t) {
+            eq = t;
+            document.getElementById('eq-c').className = t === 'Común' ? 'btn-eq active' : 'btn-eq';
+            document.getElementById('eq-e').className = t === 'Escalable' ? 'btn-eq active' : 'btn-eq';
+            saveM();
         }
 
-        function guardarMemoria() {
-            const d = {
-                n: document.getElementById('chofer_nom').value,
-                c: document.getElementById('chofer_cuil').value,
-                t: document.getElementById('transporte').value,
-                ch: document.getElementById('chasis').value,
-                ac: document.getElementById('acoplado').value,
-                e: equipoGlobal
-            };
-            localStorage.setItem('josefina_v4_data', JSON.stringify(d));
+        function saveM() {
+            const d = { emp: document.getElementById('f-empresa').value, ct: document.getElementById('f-cuit').value, nom: document.getElementById('f-chof-nom').value, cu: document.getElementById('f-chof-cuil').value, p1: document.getElementById('f-pat1').value, p2: document.getElementById('f-pat2').value, e: eq };
+            localStorage.setItem('josefina_m', JSON.stringify(d));
         }
 
-        function cargarMemoria() {
-            const m = JSON.parse(localStorage.getItem('josefina_v4_data'));
+        function loadM() {
+            const m = JSON.parse(localStorage.getItem('josefina_m'));
             if(m) {
-                document.getElementById('chofer_nom').value = m.n || "";
-                document.getElementById('chofer_cuil').value = m.c || "";
-                document.getElementById('transporte').value = m.t || "";
-                document.getElementById('chasis').value = m.ch || "";
-                document.getElementById('acoplado').value = m.ac || "";
-                if(m.e) setEquipo(m.e);
+                document.getElementById('f-empresa').value = m.emp || ""; document.getElementById('f-cuit').value = m.ct || "";
+                document.getElementById('f-chof-nom').value = m.nom || ""; document.getElementById('f-chof-cuil').value = m.cu || "";
+                document.getElementById('f-pat1').value = m.p1 || ""; document.getElementById('f-pat2').value = m.p2 || "";
+                if(m.e) setEq(m.e);
             }
         }
 
-        async function enviarReporte() {
-            const btn = document.getElementById('btn-enviar-final');
-            const load = document.getElementById('cargando-aviso');
-            
-            if(document.getElementById('estado').value === 'CARGADO' && fotosBase64.length === 0) {
-                alert("DEBES SACAR FOTO AL TICKET PARA ESTADO CARGADO."); return;
-            }
-
-            btn.style.display = 'none'; load.style.display = 'block';
-
-            try {
-                await db.collection("reportes").add({
-                    chofer: userDocID,
-                    chofer_nombre: document.getElementById('chofer_nom').value,
-                    chofer_cuil: document.getElementById('chofer_cuil').value,
-                    transporte: document.getElementById('transporte').value,
-                    chasis: document.getElementById('chasis').value,
-                    acoplado: document.getElementById('acoplado').value,
-                    equipo: equipoGlobal,
-                    estado: document.getElementById('estado').value,
-                    fecha: new Date().toLocaleString('es-AR'),
-                    fotos: fotosBase64
-                });
-                
-                fotosBase64 = [];
-                document.getElementById('previs-fotos').innerHTML = "";
-                alert("✅ REPORTE ENVIADO CON ÉXITO");
-            } catch(e) { alert("ERROR AL ENVIAR: " + e); btn.style.display = 'block'; }
-            
-            load.style.display = 'none'; btn.style.display = 'block';
+        async function enviar() {
+            if(document.getElementById('f-estado').value === 'CARGADO' && imgsB64.length === 0) { alert("Saca la foto"); return; }
+            document.getElementById('f-btn').style.display = 'none'; document.getElementById('f-load').style.display = 'block';
+            await db.collection("reportes").add({
+                chofer: uID, chofer_nombre: document.getElementById('f-chof-nom').value, chofer_cuil: document.getElementById('f-chof-cuil').value,
+                transporte: document.getElementById('f-empresa').value, cuit_trans: document.getElementById('f-cuit').value,
+                chasis: document.getElementById('f-pat1').value, acoplado: document.getElementById('f-pat2').value,
+                equipo: eq, estado: document.getElementById('f-estado').value, fecha: new Date().toLocaleString('es-AR'), fotos: imgsB64
+            });
+            imgsB64 = []; document.getElementById('f-prev').innerHTML = "";
+            document.getElementById('f-btn').style.display = 'block'; document.getElementById('f-load').style.display = 'none';
+            alert("ENVIADO");
         }
     </script>
 </body>
 </html>
+
 
 
 
