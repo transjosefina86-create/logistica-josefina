@@ -11,25 +11,26 @@
         .card { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 360px; align-self: flex-start; margin-top: 10px; }
         h2 { color: #ff6600; text-align: center; font-weight: 900; font-size: 20px; margin: 5px 0 15px 0; text-shadow: 1.5px 1.5px 0px #000; text-transform: uppercase; }
         label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 8px 10px; margin-bottom: 10px; border-radius: 8px; border: 1.5px solid #ccc; box-sizing: border-box; font-size: 15px; outline: none; background: #fafafa; height: 40px; }
+        input, select { width: 100%; padding: 8px 10px; margin-bottom: 10px; border-radius: 8px; border: 1.5px solid #ccc; box-sizing: border-box; font-size: 16px; outline: none; background: #fafafa; height: 42px; }
+        input:focus { border-color: #ff6600; background: #fff; }
         .tipo-equipo { display: flex; gap: 8px; margin-bottom: 12px; }
-        .btn-tipo { flex: 1; padding: 10px 5px; border: 1.5px solid #ddd; border-radius: 8px; background: #eee; font-weight: bold; font-size: 11px; color: #333; }
+        .btn-tipo { flex: 1; padding: 12px 5px; border: 1.5px solid #ddd; border-radius: 8px; background: #eee; font-weight: bold; font-size: 11px; color: #333; cursor: pointer; }
         .btn-tipo.active { background: #333; color: white; border-color: #000; }
-        .btn-enviar { background: #ff6600; color: white; font-weight: bold; border: none; width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0px #b34700; text-transform: uppercase; }
-        #camara-btn { background: #f0f0f0; color: #222; padding: 15px; border-radius: 12px; text-align: center; margin: 5px 0 12px 0; cursor: pointer; border: 2px dashed #999; font-weight: bold; font-size: 13px; }
-        .preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; }
-        .preview img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #ff6600; }
-        .loader { display: none; text-align: center; color: #ff6600; font-weight: bold; padding: 10px; }
+        .btn-enviar { background: #ff6600; color: white; font-weight: bold; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 17px; cursor: pointer; box-shadow: 0 4px 0px #b34700; text-transform: uppercase; }
+        #camara-btn { background: #f0f0f0; color: #222; padding: 18px; border-radius: 12px; text-align: center; margin: 5px 0 12px 0; cursor: pointer; border: 2px dashed #999; font-weight: bold; font-size: 14px; }
+        .preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; padding: 5px; }
+        .preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #ff6600; }
+        .loader { display: none; text-align: center; color: #ff6600; font-weight: bold; padding: 15px; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <div id="login-chof" style="width: 100%; max-width: 320px; margin-top: 50px;">
+    <div id="login-chof" style="width: 100%; max-width: 320px; margin-top: 40px;">
         <form onsubmit="event.preventDefault(); login();">
             <div class="card">
                 <h2>Transporte<br>La Josefina</h2>
                 <label>Usuario</label>
-                <input type="text" id="nombre-chof" placeholder="Tu nombre" required>
+                <input type="text" id="nombre-chof" placeholder="Nombre guardado" required>
                 <label>Clave</label>
                 <input type="password" id="pin-chof" placeholder="Tu clave" required>
                 <button type="submit" class="btn-enviar">INGRESAR</button>
@@ -40,40 +41,54 @@
     <div id="form-chof" style="display: none; width: 100%;">
         <div class="card">
             <h2>Datos del Viaje</h2>
+            
             <label>Estado</label>
             <select id="estado">
                 <option value="VACÍO">ESTOY VACÍO</option>
                 <option value="CARGADO">ESTOY CARGADO</option>
             </select>
+
             <label>Empresa de Transporte</label>
             <input type="text" id="transporte" placeholder="Nombre de la empresa">
+            
             <label>CUIT de la Empresa</label>
             <input type="text" id="cuit_trans" placeholder="CUIT Empresa">
+            
             <label>Nombre del Chofer</label>
             <input type="text" id="chofer_nombre_real" placeholder="Nombre completo">
+            
             <label>CUIT del Chofer</label>
             <input type="text" id="cuit_chofer" placeholder="Tu CUIT">
+
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 1;"><label>Patente Chasis</label><input type="text" id="chasis" placeholder="Chasis"></div>
                 <div style="flex: 1;"><label>Patente Acoplado</label><input type="text" id="acoplado" placeholder="Acoplado"></div>
             </div>
+
             <label>Tipo de Equipo</label>
             <div class="tipo-equipo">
                 <button type="button" class="btn-tipo active" id="btn-comun" onclick="setEquipo('Común')">EQUIPO COMÚN</button>
                 <button type="button" class="btn-tipo" id="btn-escalable" onclick="setEquipo('Escalable')">ESCALABLE</button>
             </div>
+            
             <div id="camara-btn" onclick="document.getElementById('fotos').click()">
-                📸 SACAR FOTO TICKET
-                <input type="file" id="fotos" multiple accept="image/*" capture="camera" style="display: none;" onchange="procesarImagenes()">
+                📸 SACAR FOTO O GALERÍA
+                <input type="file" id="fotos" multiple accept="image/*" capture="camera" style="display: none;" onchange="procesarFotos()">
             </div>
             <div id="previs" class="preview"></div>
-            <div id="cargando" class="loader">ENVIANDO REPORTE...</div>
+
+            <div id="cargando" class="loader">SUBIENDO DATOS...</div>
             <button class="btn-enviar" id="btn-env" onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyC...", 
+            authDomain: "control-logistica-2026.firebaseapp.com", 
+            projectId: "control-logistica-2026", 
+            appId: "1:389274295324:web:04467597157833633e467d" 
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -91,58 +106,51 @@
             const pin = document.getElementById('pin-chof').value.trim();
             try {
                 const snapshot = await db.collection("accesos_choferes").get();
-                let usuarioEncontrado = null;
+                let encontrado = null;
                 snapshot.forEach(doc => {
-                    if (doc.id.toLowerCase() === nomInput && doc.data().clave === pin) usuarioEncontrado = doc.id;
+                    if (doc.id.toLowerCase() === nomInput && doc.data().clave === pin) encontrado = doc.id;
                 });
-                if(usuarioEncontrado) {
+                if(encontrado) {
                     document.getElementById('login-chof').style.display = 'none';
                     document.getElementById('form-chof').style.display = 'block';
-                    document.getElementById('chofer_nombre_real').value = usuarioEncontrado;
-                } else { alert("Datos incorrectos."); }
+                    document.getElementById('chofer_nombre_real').value = encontrado;
+                } else { alert("Nombre o clave incorrectos."); }
             } catch (e) { alert("Error de conexión."); }
         }
 
-        // MOTOR DE IMAGEN CORREGIDO
-        function procesarImagenes() {
-            const files = document.getElementById('fotos').files;
-            const contenedor = document.getElementById('previs');
-            contenedor.innerHTML = "";
+        function procesarFotos() {
+            const archivos = document.getElementById('fotos').files;
+            const previsualizacion = document.getElementById('previs');
+            previsualizacion.innerHTML = "";
             fotosBase64 = [];
 
-            if (files.length === 0) return;
-
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const resultado = e.target.result;
-                    fotosBase64.push(resultado); // Guardamos la imagen convertida
-                    
-                    // Mostrar previsualización
+            Array.from(archivos).forEach(file => {
+                const lector = new FileReader();
+                lector.onload = function(e) {
+                    const base64 = e.target.result;
+                    fotosBase64.push(base64);
                     const img = document.createElement('img');
-                    img.src = resultado;
-                    contenedor.appendChild(img);
+                    img.src = base64;
+                    previsualizacion.appendChild(img);
                 };
-                reader.onerror = function() { alert("Error al leer la imagen del celular."); };
-                reader.readAsDataURL(file);
+                lector.readAsDataURL(file);
             });
         }
 
         async function enviarReporte() {
-            const btn = document.getElementById('btn-env');
-            const loader = document.getElementById('cargando');
-            
-            // Verificación si está cargado y no hay fotos
-            if (document.getElementById('estado').value === 'CARGADO' && fotosBase64.length === 0) {
-                if(!confirm("No se detectó ninguna foto. ¿Enviar de todas formas?")) return;
+            const estado = document.getElementById('estado').value;
+            if (estado === 'CARGADO' && fotosBase64.length === 0) {
+                if(!confirm("No pusiste ninguna foto. ¿Enviar igual?")) return;
             }
 
+            const btn = document.getElementById('btn-env');
+            const loader = document.getElementById('cargando');
             btn.style.display = 'none';
             loader.style.display = 'block';
             
             const data = {
                 chofer: document.getElementById('chofer_nombre_real').value,
-                estado: document.getElementById('estado').value,
+                estado: estado,
                 transporte: document.getElementById('transporte').value,
                 cuit_trans: document.getElementById('cuit_trans').value,
                 cuit_chofer: document.getElementById('cuit_chofer').value,
@@ -150,15 +158,15 @@
                 acoplado: document.getElementById('acoplado').value,
                 equipo: tipoEquipo,
                 fecha: new Date().toLocaleString('es-AR'),
-                fotos: fotosBase64 // Aquí enviamos el array con los textos de las fotos
+                fotos: fotosBase64
             };
 
             try {
                 await db.collection("reportes").add(data);
-                alert("¡Reporte enviado con éxito!");
+                alert("¡Reporte enviado!");
                 location.reload();
             } catch (e) {
-                alert("Error al subir a la base de datos: " + e.message);
+                alert("Error: " + e.message);
                 btn.style.display = 'block';
                 loader.style.display = 'none';
             }
@@ -166,6 +174,7 @@
     </script>
 </body>
 </html>
+
 
 
 
