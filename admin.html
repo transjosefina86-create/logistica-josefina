@@ -11,56 +11,59 @@
         :root { --naranja: #ff6600; --oscuro: #222; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
         
-        #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:2000; display:flex; justify-content:center; align-items:center; }
+        #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:5000; display:flex; justify-content:center; align-items:center; }
         .card-login { background:white; padding:35px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 
-        .main-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; display:none; }
+        .main-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1300px; margin: auto; display:none; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 15px; }
         .logo { font-family: 'Brush Script MT', cursive; font-size: 32px; color: var(--naranja); }
 
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--naranja); color: white; padding: 10px; text-align: left; font-size: 13px; }
+        th { background: var(--naranja); color: white; padding: 10px; text-align: left; font-size: 12px; }
         td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
         
-        .btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin: 2px; }
         .btn-ojo { background: #3498db; }
         .btn-pdf { background: #e74c3c; }
         .btn-negro { background: var(--oscuro); }
-        .alerta { background: #ffeded; color: #e74c3c; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
+        .alerta-patente { background: #ffeded; color: #c0392b; font-weight: bold; padding: 2px 5px; border-radius: 4px; border: 1px solid #ebccd1; }
 
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:3000; }
-        .modal-box { background:white; padding:20px; border-radius:20px; width:95%; max-width:650px; text-align:center; }
-        canvas { max-width: 100%; height: 350px; border: 1px solid #ccc; border-radius: 10px; background: #eee; }
-        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:6000; }
+        .modal-box { background:white; padding:20px; border-radius:20px; width:95%; max-width:700px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        canvas { max-width: 100%; height: auto; max-height: 400px; border: 1px solid #ccc; background: #000; margin-bottom: 10px; }
+        
+        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .sliders label { font-size: 11px; font-weight: bold; color: #666; }
     </style>
 </head>
 <body>
 
     <div id="bloqueo">
         <div class="card-login">
-            <h2 style="color:var(--naranja)">Control Administrativo</h2>
-            <input type="password" id="pass-adm" placeholder="Clave" style="padding:12px; width:180px; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;"><br>
-            <button class="btn btn-negro" style="width:100%" onclick="entrar()">ACCEDER</button>
+            <h2 style="color:var(--naranja)">Control de Cargas</h2>
+            <input type="password" id="pass-adm" placeholder="Clave Administrador" style="padding:15px; width:200px; border-radius:10px; border:1px solid #ccc; font-size: 16px;"><br><br>
+            <button class="btn btn-negro" style="width:100%; padding:15px;" onclick="entrar()">ACCEDER PANEL</button>
         </div>
     </div>
 
     <div class="main-card" id="app">
         <div class="header">
-            <div class="logo">La Josefina</div>
+            <div class="logo">La Josefina <small style="font-size:12px; color:#666; font-family: sans-serif;">(Panel Administrativo)</small></div>
             <div>
-                <button class="btn btn-negro" onclick="verClaves()">CHOFERES</button>
-                <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO</button>
-                <button class="btn btn-pdf" style="background:#c0392b" onclick="borrarSels()">BORRAR SELECCIÓN</button>
+                <button class="btn btn-negro" onclick="verClaves()">GESTIONAR CHOFERES</button>
+                <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO CHOFER</button>
+                <button class="btn btn-pdf" style="background:#c0392b" onclick="borrarSels()">ELIMINAR SELECCIÓN</button>
             </div>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="check-todo" onclick="seleccionarTodo(this)"></th>
-                    <th>HORA LLEGADA</th>
+                    <th><input type="checkbox" onclick="seleccionarTodo(this)"></th>
+                    <th>LLEGADA</th>
+                    <th>RECIBIDO</th>
                     <th>ESTADO</th>
                     <th>CHOFER</th>
-                    <th>CHASIS</th>
+                    <th>PATENTE</th>
                     <th>ACCIONES</th>
                 </tr>
             </thead>
@@ -70,16 +73,22 @@
 
     <div id="modal-pdf" class="modal">
         <div class="modal-box">
-            <h3 id="titulo-pdf" style="margin:0 0 10px 0;">Ajustar Ticket</h3>
+            <h3 id="nom-chof-pdf" style="margin:0 0 10px 0; color:var(--naranja)">Ajuste de Ticket</h3>
             <canvas id="canvas-pdf"></canvas>
             <div class="sliders">
-                <div><label>BRILLO</label><br><input type="range" id="brillo" min="50" max="250" value="110" oninput="procesar()"></div>
-                <div><label>NITIDEZ (CONTR)</label><br><input type="range" id="contraste" min="100" max="450" value="180" oninput="procesar()"></div>
+                <div>
+                    <label>BRILLO</label><br>
+                    <input type="range" id="brillo" min="50" max="250" value="110" style="width:100%" oninput="procesarFiltro()">
+                </div>
+                <div>
+                    <label>NITIDEZ (CONTR.)</label><br>
+                    <input type="range" id="contraste" min="100" max="450" value="180" style="width:100%" oninput="procesarFiltro()">
+                </div>
             </div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-pdf" style="background:#c0392b; flex:1" onclick="rechazarFoto()">RECHAZAR / PEDIR OTRA</button>
-                <button class="btn btn-negro" style="flex:1" onclick="cerrar()">CERRAR</button>
-                <button class="btn btn-pdf" style="flex:2" id="btn-descargar">DESCARGAR PDF</button>
+                <button class="btn btn-pdf" style="background:#c0392b; flex:1" onclick="rechazarFoto()">✖ RECHAZAR FOTO</button>
+                <button class="btn btn-negro" style="flex:1" onclick="cerrarModal()">CANCELAR</button>
+                <button class="btn btn-pdf" style="flex:2; padding:15px;" id="btn-descargar">✔ DESCARGAR PDF</button>
             </div>
         </div>
     </div>
@@ -89,17 +98,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let imgCache = new Image();
+        let imgObj = new Image();
         let reporteActual = null;
         let historicoPatentes = {};
 
-        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarDatos(); } }
+        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); } else { alert("Clave Incorrecta"); } }
 
-        function cargarDatos() {
+        function cargarReportes() {
             db.collection("reportes").onSnapshot(snap => {
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
                 let lista = []; snap.forEach(doc => lista.push({id: doc.id, ...doc.data()}));
                 
+                // ORDEN: Vacío arriba, Cargado abajo. Siempre por hora de llegada.
                 lista.sort((a,b) => {
                     if(a.estado === "VACÍO" && b.estado === "CARGADO") return -1;
                     if(a.estado === "CARGADO" && b.estado === "VACÍO") return 1;
@@ -107,73 +117,113 @@
                 });
 
                 lista.forEach(r => {
-                    let aviso = "";
+                    // Control de cambio de patente
+                    let alerta = "";
                     if(historicoPatentes[r.chofer] && historicoPatentes[r.chofer] !== r.chasis) {
-                        aviso = " <span class='alerta'>⚠️ CAMBIO</span>";
+                        alerta = " <span class='alerta-patente'>⚠️ CAMBIO</span>";
                     }
                     historicoPatentes[r.chofer] = r.chasis;
 
+                    // Hora de servidor para control de internet
+                    if(!r.hora_servidor) {
+                        const h = new Date();
+                        const horaAct = h.getHours().toString().padStart(2,'0') + ":" + h.getMinutes().toString().padStart(2,'0');
+                        db.collection("reportes").doc(r.id).update({hora_servidor: horaAct});
+                    }
+
                     t.innerHTML += `<tr>
                         <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
-                        <td>${r.fecha}</td>
-                        <td style="color:${r.estado==='VACÍO'?'green':'orange'}; font-weight:bold;">${r.estado}</td>
+                        <td style="font-weight:bold;">${r.fecha.split(',')[1]} hs</td>
+                        <td style="color:#666">${r.hora_servidor || '--:--'} hs</td>
+                        <td style="color:${r.estado==='VACÍO'?'#27ae60':'#e67e22'}; font-weight:bold;">${r.estado}</td>
                         <td><b>${r.chofer}</b></td>
-                        <td>${r.chasis}${aviso}</td>
+                        <td>${r.chasis}${alerta}</td>
                         <td>
-                            <button class="btn btn-ojo" onclick="verInfo('${r.id}')">👁️</button>
-                            ${r.fotos && r.fotos.length > 0 ? `<button class="btn btn-pdf" onclick="abrirPdf('${r.id}')">PDF (${r.fotos.length})</button>` : ''}
+                            <button class="btn btn-ojo" onclick="verDetalles('${r.id}')">👁️</button>
+                            ${r.fotos && r.fotos.length > 0 ? `<button class="btn btn-pdf" onclick="abrirEditor('${r.id}')">PDF (${r.fotos.length})</button>` : ''}
                         </td>
                     </tr>`;
                 });
             });
         }
 
-        function verInfo(id) {
+        function verDetalles(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                alert(`DETALLES:\n\nTransporte: ${d.transporte}\nCUIT: ${d.cuit_trans}\nChofer: ${d.chofer}\nCUIT Chof: ${d.cuit_chofer}\nPatentes: ${d.chasis} / ${d.acoplado}`);
+                alert(`DATOS COMPLETOS DEL VIAJE\n\n` +
+                      `Transporte: ${d.transporte || '---'}\n` +
+                      `CUIT Trans: ${d.cuit_trans || '---'}\n` +
+                      `Chofer: ${d.chofer}\n` +
+                      `CUIT Chof: ${d.cuit_chofer || '---'}\n` +
+                      `Patente Chasis: ${d.chasis}\n` +
+                      `Patente Acoplado: ${d.acoplado}\n\n` +
+                      `Llegada (Celular): ${d.fecha}\n` +
+                      `Recibido (Internet): ${d.hora_servidor || '---'} hs`);
             });
         }
 
-        async function abrirPdf(id) {
+        async function abrirEditor(id) {
             const doc = await db.collection("reportes").doc(id).get();
             reporteActual = {id, ...doc.data()};
-            imgCache.src = reporteActual.fotos[0]; 
-            imgCache.onload = () => {
+            document.getElementById('nom-chof-pdf').innerText = "Ticket: " + reporteActual.chofer;
+            imgObj.src = reporteActual.fotos[0]; 
+            imgObj.onload = () => {
                 document.getElementById('modal-pdf').style.display='flex';
-                procesar();
+                procesarFiltro();
             }
         }
 
-        function procesar() {
+        function procesarFiltro() {
             const canvas = document.getElementById('canvas-pdf');
             const ctx = canvas.getContext('2d');
+            canvas.width = imgObj.width; canvas.height = imgObj.height;
             const b = document.getElementById('brillo').value;
             const c = document.getElementById('contraste').value;
-            canvas.width = imgCache.width; canvas.height = imgCache.height;
             ctx.filter = `grayscale(1) brightness(${b}%) contrast(${c}%)`;
-            ctx.drawImage(imgCache, 0, 0);
+            ctx.drawImage(imgObj, 0, 0);
 
             document.getElementById('btn-descargar').onclick = () => {
-                const pdf = new jspdf.jsPDF();
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
                 reporteActual.fotos.forEach((f, i) => {
                     if(i > 0) pdf.addPage();
-                    pdf.text(`LA JOSEFINA - ${reporteActual.chofer} - Ticket ${i+1}`, 10, 10);
-                    pdf.addImage(f, 'JPEG', 10, 20, 190, 240);
+                    pdf.setFillColor(255,102,0); pdf.rect(0,0,210,15,'F');
+                    pdf.setTextColor(255); pdf.setFontSize(14); pdf.text("LA JOSEFINA - TICKET DE CARGA", 10, 10);
+                    pdf.setTextColor(0); pdf.setFontSize(10);
+                    pdf.text(`Chofer: ${reporteActual.chofer} | Fecha: ${reporteActual.fecha}`, 10, 22);
+                    pdf.addImage(f, 'JPEG', 10, 30, 190, 245);
                 });
-                pdf.save(`Ticket_${reporteActual.chofer}.pdf`);
+                pdf.save(`Ticket_${reporteActual.chofer}_${reporteActual.fecha.replace(/[/, :]/g,'_')}.pdf`);
             };
         }
 
-        function rechazarFoto() { if(confirm("¿Borrar ticket y pedir uno nuevo?")) { db.collection("reportes").doc(reporteActual.id).delete(); cerrar(); } }
-        function cerrar() { document.getElementById('modal-pdf').style.display='none'; }
-        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d=>l+=`${d.id}: ${d.data().clave}\n`); alert(l); }); }
-        function nuevaClave() { const n=prompt("Nombre:"); const c=prompt("Clave:"); if(n&&c) db.collection("accesos_choferes").doc(n.toUpperCase()).set({clave:c}); }
+        function rechazarFoto() { if(confirm("¿Eliminar este ticket y pedir uno nuevo?")) { db.collection("reportes").doc(reporteActual.id).delete(); cerrarModal(); } }
+        function cerrarModal() { document.getElementById('modal-pdf').style.display='none'; }
+        
+        function verClaves() { 
+            db.collection("accesos_choferes").get().then(s => { 
+                let lista = "LISTADO DE CHOFERES:\n\n"; 
+                s.forEach(d => lista += `• ${d.id}: ${d.data().clave}\n`); 
+                const borrar = prompt(lista + "\nEscriba el NOMBRE para borrar un chofer (o deje vacío):");
+                if(borrar) { if(confirm(`¿Borrar a ${borrar}?`)) db.collection("accesos_choferes").doc(borrar.toUpperCase()).delete(); }
+            }); 
+        }
+
+        function nuevaClave() { 
+            const n = prompt("Nombre del Chofer:"); 
+            const c = prompt("Clave de acceso:"); 
+            if(n && c) db.collection("accesos_choferes").doc(n.toUpperCase()).set({clave: c}); 
+        }
+
         function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
-        function borrarSels() { if(confirm("¿Borrar seleccionados?")) document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); }
+        function borrarSels() { 
+            if(confirm("¿Borrar registros seleccionados?")) {
+                document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete());
+            } 
+        }
     </script>
 </body>
 </html>
+
 
 
 
