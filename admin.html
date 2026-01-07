@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Josefina - Admin</title>
+    <title>La Josefina - Panel de Control</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -16,7 +16,7 @@
 
         .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; display:none; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
-        .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); }
+        .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); text-shadow: 1px 1px 0px #000; }
 
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--oscuro); color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
@@ -31,13 +31,15 @@
         .bg-vacio { background: var(--verde); }
         .bg-cargado { background: var(--naranja); }
 
+        /* MODAL OJITO RENGLONES JUNTOS */
         .modal-detalles { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:11000; }
         .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:550px; text-align:left; }
-        .linea-dato { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 15px; }
+        .linea-dato { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 15px; color: #333; }
 
+        /* MODAL FILTRO CAMSCANNER */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
         .modal-box { background:white; padding:20px; border-radius:25px; width:95%; max-width:1100px; text-align:center; }
-        #canvas-pdf { width: 100%; max-height: 60vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
+        #canvas-pdf { width: 100%; max-height: 55vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
         .controles-scanner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
         input[type=range] { width: 100%; accent-color: var(--naranja); }
 
@@ -48,7 +50,7 @@
 
     <div id="bloqueo">
         <div class="card-login">
-            <div class="logo">La Josefina</div>
+            <div class="logo">La Josefina</div><br>
             <input type="password" id="pass-adm" placeholder="Clave Administrador" style="padding:15px; width:220px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
             <button class="btn btn-negro" style="width:100%; height:50px;" onclick="entrar()">ENTRAR AL SISTEMA</button>
         </div>
@@ -67,16 +69,16 @@
         <div class="header">
             <div class="logo">La Josefina</div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-negro" onclick="verClaves()">GESTIONAR CHOFERES</button>
+                <button class="btn btn-negro" onclick="verClaves()">CHOFERES</button>
                 <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO</button>
-                <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">ELIMINAR SELECCIÓN</button>
+                <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">BORRAR SELECCIONADOS</button>
             </div>
         </div>
         <table>
             <thead>
                 <tr>
                     <th><input type="checkbox" onclick="seleccionarTodo(this)"></th>
-                    <th>FECHA Y HORA</th>
+                    <th>FECHA / HORA</th>
                     <th>ESTADO</th>
                     <th>CHOFER</th>
                     <th>TRANSPORTE</th>
@@ -90,26 +92,26 @@
 
     <div id="modal-pdf" class="modal">
         <div class="modal-box">
-            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Filtro CamScanner</h3>
+            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Procesador de Imagen Estilo CamScanner</h3>
             <canvas id="canvas-pdf"></canvas>
             <div class="controles-scanner">
                 <div>
                     <label style="font-size:11px; font-weight:bold;">LIMPIEZA DE HOJA</label>
-                    <input type="range" id="limpieza" min="100" max="250" value="120" oninput="procesarFiltro()">
+                    <input type="range" id="limpieza" min="100" max="250" value="130" oninput="procesarFiltro()">
                 </div>
                 <div>
                     <label style="font-size:11px; font-weight:bold;">NITIDEZ LETRA</label>
-                    <input type="range" id="contraste" min="100" max="500" value="150" oninput="procesarFiltro()">
+                    <input type="range" id="contraste" min="100" max="500" value="160" oninput="procesarFiltro()">
                 </div>
                 <div>
                     <label style="font-size:11px; font-weight:bold;">FUERZA NEGRO</label>
-                    <input type="range" id="negro" min="1" max="10" step="0.5" value="1" oninput="procesarFiltro()">
+                    <input type="range" id="negro" min="1" max="8" step="0.5" value="1" oninput="procesarFiltro()">
                 </div>
             </div>
             <div class="footer-modal">
                 <button class="btn" style="background:#666; flex:1" onclick="cerrarModal()">CANCELAR</button>
                 <button class="btn" style="background:#f39c12; flex:1" onclick="pedirFoto()">PEDIR OTRA FOTO</button>
-                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">GENERAR PDF LIMPIO</button>
+                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">GENERAR PDF CON DATOS</button>
             </div>
         </div>
     </div>
@@ -127,11 +129,14 @@
             db.collection("reportes").onSnapshot(snap => {
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
                 let lista = []; snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
+                
+                // ORDEN: VACÍOS primero
                 lista.sort((a,b) => {
                     if(a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
                     if(a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
                     return new Date(b.fecha.replace(',','')) - new Date(a.fecha.replace(',',''));
                 });
+
                 lista.forEach(r => {
                     const tieneFotos = (r.fotos && r.fotos.length > 0);
                     const claseEstado = r.estado === 'VACÍO' ? 'bg-vacio' : 'bg-cargado';
@@ -159,6 +164,7 @@
         function verDetalles(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
+                // Renglones juntos para copiar fácil
                 document.getElementById('contenido-info').innerHTML = `
                     <div class="linea-dato"><b>TRANSPORTE:</b> ${d.transporte}</div>
                     <div class="linea-dato"><b>CUIT TRANS:</b> ${d.cuit_trans}</div>
@@ -166,6 +172,7 @@
                     <div class="linea-dato"><b>CUIT CHOFER:</b> ${d.cuit_chofer || '---'}</div>
                     <div class="linea-dato"><b>PATENTE CHASIS:</b> ${d.chasis}</div>
                     <div class="linea-dato"><b>PATENTE ACOPLADO:</b> ${d.acoplado}</div>
+                    <div class="linea-dato"><b>EQUIPO:</b> ${d.equipo || 'Común'}</div>
                     <div class="linea-dato"><b>FECHA LLEGADA:</b> ${d.fecha}</div>
                 `;
                 document.getElementById('modal-info').style.display = 'flex';
@@ -176,10 +183,12 @@
         async function abrirEditor(id) {
             const doc = await db.collection("reportes").doc(id).get();
             reporteActual = {id, ...doc.data()};
-            imgObj.src = reporteActual.fotos[0]; 
-            imgObj.onload = () => { 
-                document.getElementById('modal-pdf').style.display='flex'; 
-                procesarFiltro(); 
+            if(reporteActual.fotos && reporteActual.fotos.length > 0) {
+                imgObj.src = reporteActual.fotos[0]; 
+                imgObj.onload = () => { 
+                    document.getElementById('modal-pdf').style.display='flex'; 
+                    procesarFiltro(); 
+                }
             }
         }
 
@@ -193,11 +202,12 @@
             const n = document.getElementById('negro').value;
 
             ctx.clearRect(0,0,canvas.width,canvas.height);
-            // Aplicar filtros base
+            
+            // Paso 1: Filtro Base (Escala de grises, brillo y alto contraste)
             ctx.filter = `grayscale(100%) brightness(${l}%) contrast(${c}%)`;
             ctx.drawImage(imgObj, 0, 0);
 
-            // REFUERZO DE NEGRO (Multiplicado)
+            // Paso 2: Refuerzo de Negro (Efecto CamScanner real)
             if(n > 1) {
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
@@ -205,6 +215,7 @@
                 tCtx.drawImage(canvas, 0, 0);
 
                 ctx.globalCompositeOperation = "multiply";
+                // Repetimos el dibujo para intensificar el negro sin tocar el blanco
                 for(let i=0; i < Math.floor(n); i++) {
                     ctx.drawImage(tempCanvas, 0, 0);
                 }
@@ -212,19 +223,24 @@
             }
 
             document.getElementById('btn-descargar').onclick = () => {
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
                 const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                // ACÁ AGREGAMOS LOS DATOS AL PDF
-                pdf.setFontSize(10);
-                pdf.text(`TRANSPORTE: ${reporteActual.transporte} | CHOFER: ${reporteActual.chofer}`, 10, 8);
-                pdf.text(`PATENTES: ${reporteActual.chasis} / ${reporteActual.acoplado} | FECHA: ${reporteActual.fecha}`, 10, 13);
-                pdf.addImage(imgData, 'JPEG', 5, 18, 200, 270); 
+                
+                // ENCABEZADO CON DATOS EN EL PDF
+                pdf.setFontSize(11);
+                pdf.setTextColor(0, 0, 0);
+                pdf.text(`TRANSPORTE: ${reporteActual.transporte}`, 10, 10);
+                pdf.text(`CHOFER: ${reporteActual.chofer} | PATENTES: ${reporteActual.chasis} / ${reporteActual.acoplado}`, 10, 15);
+                pdf.text(`FECHA: ${reporteActual.fecha} | EQUIPO: ${reporteActual.equipo || 'Común'}`, 10, 20);
+                
+                pdf.addImage(imgData, 'JPEG', 5, 25, 200, 260); 
                 pdf.save(`TICKET_${reporteActual.chofer}.pdf`);
             };
         }
 
         function pedirFoto() { 
-            if(confirm("¿Pedir otra foto? Los datos se mantienen.")) {
+            if(confirm("¿Pedir que manden la foto otra vez? No se borrarán los datos del horario.")) {
                 db.collection("reportes").doc(reporteActual.id).update({ fotos: [] });
                 cerrarModal();
             }
@@ -237,6 +253,7 @@
     </script>
 </body>
 </html>
+
 
 
 
