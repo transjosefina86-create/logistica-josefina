@@ -7,45 +7,19 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        /* EVITAR QUE TODO SE VEA GIGANTE */
         body { font-family: 'Segoe UI', sans-serif; background: #ff6600; margin: 0; padding: 10px; display: flex; justify-content: center; min-height: 100vh; box-sizing: border-box; }
-        
         .card { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 360px; align-self: flex-start; margin-top: 10px; }
-        
         h2 { color: #ff6600; text-align: center; font-weight: 900; font-size: 20px; margin: 5px 0 15px 0; text-shadow: 1.5px 1.5px 0px #000; text-transform: uppercase; }
-
-        label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px; text-transform: uppercase; padding-left: 2px; }
-        
-        /* ENTRADAS MÁS FINAS */
-        input, select { 
-            width: 100%; 
-            padding: 8px 10px; 
-            margin-bottom: 10px; 
-            border-radius: 8px; 
-            border: 1.5px solid #ccc; 
-            box-sizing: border-box; 
-            font-size: 15px; 
-            outline: none; 
-            background: #fafafa;
-            height: 40px; /* Altura fija para que no se deforme */
-        }
-        
-        input:focus { border-color: #ff6600; background: #fff; }
-
+        label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 8px 10px; margin-bottom: 10px; border-radius: 8px; border: 1.5px solid #ccc; box-sizing: border-box; font-size: 15px; outline: none; background: #fafafa; height: 40px; }
         .tipo-equipo { display: flex; gap: 8px; margin-bottom: 12px; }
-        .btn-tipo { flex: 1; padding: 10px 5px; border: 1.5px solid #ddd; border-radius: 8px; background: #eee; font-weight: bold; cursor: pointer; font-size: 11px; color: #333; }
+        .btn-tipo { flex: 1; padding: 10px 5px; border: 1.5px solid #ddd; border-radius: 8px; background: #eee; font-weight: bold; font-size: 11px; color: #333; }
         .btn-tipo.active { background: #333; color: white; border-color: #000; }
-
-        .btn-enviar { background: #ff6600; color: white; font-weight: bold; border: none; width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0px #b34700; text-transform: uppercase; margin-top: 5px; }
-        .btn-enviar:active { transform: translateY(2px); box-shadow: 0 2px 0px #b34700; }
-
-        /* BOTÓN CÁMARA REFORZADO */
+        .btn-enviar { background: #ff6600; color: white; font-weight: bold; border: none; width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0px #b34700; text-transform: uppercase; }
         #camara-btn { background: #f0f0f0; color: #222; padding: 15px; border-radius: 12px; text-align: center; margin: 5px 0 12px 0; cursor: pointer; border: 2px dashed #999; font-weight: bold; font-size: 13px; }
-        
         .preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; }
         .preview img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #ff6600; }
-        
-        .loader { display: none; text-align: center; color: #ff6600; font-weight: bold; padding: 10px; font-size: 15px; }
+        .loader { display: none; text-align: center; color: #ff6600; font-weight: bold; padding: 10px; }
     </style>
 </head>
 <body>
@@ -66,43 +40,34 @@
     <div id="form-chof" style="display: none; width: 100%;">
         <div class="card">
             <h2>Datos del Viaje</h2>
-            
             <label>Estado</label>
             <select id="estado">
                 <option value="VACÍO">ESTOY VACÍO</option>
                 <option value="CARGADO">ESTOY CARGADO</option>
             </select>
-
             <label>Empresa de Transporte</label>
             <input type="text" id="transporte" placeholder="Nombre de la empresa">
-            
             <label>CUIT de la Empresa</label>
             <input type="text" id="cuit_trans" placeholder="CUIT Empresa">
-            
             <label>Nombre del Chofer</label>
             <input type="text" id="chofer_nombre_real" placeholder="Nombre completo">
-            
             <label>CUIT del Chofer</label>
             <input type="text" id="cuit_chofer" placeholder="Tu CUIT">
-
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 1;"><label>Patente Chasis</label><input type="text" id="chasis" placeholder="Chasis"></div>
                 <div style="flex: 1;"><label>Patente Acoplado</label><input type="text" id="acoplado" placeholder="Acoplado"></div>
             </div>
-
             <label>Tipo de Equipo</label>
             <div class="tipo-equipo">
-                <button type="button" class="btn-tipo active" id="btn-comun" onclick="setEquipo('Común')">COMÚN</button>
+                <button type="button" class="btn-tipo active" id="btn-comun" onclick="setEquipo('Común')">EQUIPO COMÚN</button>
                 <button type="button" class="btn-tipo" id="btn-escalable" onclick="setEquipo('Escalable')">ESCALABLE</button>
             </div>
-            
             <div id="camara-btn" onclick="document.getElementById('fotos').click()">
                 📸 SACAR FOTO TICKET
-                <input type="file" id="fotos" multiple accept="image/*" capture="camera" style="display: none;" onchange="previsualizar()">
+                <input type="file" id="fotos" multiple accept="image/*" capture="camera" style="display: none;" onchange="procesarImagenes()">
             </div>
             <div id="previs" class="preview"></div>
-
-            <div id="cargando" class="loader">ENVIANDO...</div>
+            <div id="cargando" class="loader">ENVIANDO REPORTE...</div>
             <button class="btn-enviar" id="btn-env" onclick="enviarReporte()">ENVIAR REPORTE</button>
         </div>
     </div>
@@ -124,47 +89,56 @@
         async function login() {
             const nomInput = document.getElementById('nombre-chof').value.trim().toLowerCase();
             const pin = document.getElementById('pin-chof').value.trim();
-            
             try {
                 const snapshot = await db.collection("accesos_choferes").get();
                 let usuarioEncontrado = null;
-
                 snapshot.forEach(doc => {
-                    if (doc.id.toLowerCase() === nomInput && doc.data().clave === pin) {
-                        usuarioEncontrado = doc.id;
-                    }
+                    if (doc.id.toLowerCase() === nomInput && doc.data().clave === pin) usuarioEncontrado = doc.id;
                 });
-
                 if(usuarioEncontrado) {
                     document.getElementById('login-chof').style.display = 'none';
                     document.getElementById('form-chof').style.display = 'block';
                     document.getElementById('chofer_nombre_real').value = usuarioEncontrado;
-                } else {
-                    alert("Datos incorrectos.");
-                }
+                } else { alert("Datos incorrectos."); }
             } catch (e) { alert("Error de conexión."); }
         }
 
-        function previsualizar() {
+        // MOTOR DE IMAGEN CORREGIDO
+        function procesarImagenes() {
             const files = document.getElementById('fotos').files;
-            document.getElementById('previs').innerHTML = "";
+            const contenedor = document.getElementById('previs');
+            contenedor.innerHTML = "";
             fotosBase64 = [];
-            Array.from(files).forEach(f => {
+
+            if (files.length === 0) return;
+
+            Array.from(files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    fotosBase64.push(e.target.result);
+                reader.onload = function(e) {
+                    const resultado = e.target.result;
+                    fotosBase64.push(resultado); // Guardamos la imagen convertida
+                    
+                    // Mostrar previsualización
                     const img = document.createElement('img');
-                    img.src = e.target.result;
-                    document.getElementById('previs').appendChild(img);
+                    img.src = resultado;
+                    contenedor.appendChild(img);
                 };
-                reader.readAsDataURL(f);
+                reader.onerror = function() { alert("Error al leer la imagen del celular."); };
+                reader.readAsDataURL(file);
             });
         }
 
         async function enviarReporte() {
             const btn = document.getElementById('btn-env');
             const loader = document.getElementById('cargando');
-            btn.style.display = 'none'; loader.style.display = 'block';
+            
+            // Verificación si está cargado y no hay fotos
+            if (document.getElementById('estado').value === 'CARGADO' && fotosBase64.length === 0) {
+                if(!confirm("No se detectó ninguna foto. ¿Enviar de todas formas?")) return;
+            }
+
+            btn.style.display = 'none';
+            loader.style.display = 'block';
             
             const data = {
                 chofer: document.getElementById('chofer_nombre_real').value,
@@ -176,21 +150,23 @@
                 acoplado: document.getElementById('acoplado').value,
                 equipo: tipoEquipo,
                 fecha: new Date().toLocaleString('es-AR'),
-                fotos: fotosBase64
+                fotos: fotosBase64 // Aquí enviamos el array con los textos de las fotos
             };
 
             try {
                 await db.collection("reportes").add(data);
-                alert("¡Enviado!");
+                alert("¡Reporte enviado con éxito!");
                 location.reload();
             } catch (e) {
-                alert("Error al subir.");
-                btn.style.display = 'block'; loader.style.display = 'none';
+                alert("Error al subir a la base de datos: " + e.message);
+                btn.style.display = 'block';
+                loader.style.display = 'none';
             }
         }
     </script>
 </body>
 </html>
+
 
 
 
