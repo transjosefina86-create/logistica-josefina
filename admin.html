@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - La Josefina</title>
+    <title>La Josefina - Admin</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,11 +11,11 @@
         :root { --naranja: #ff6600; --oscuro: #222; --verde: #27ae60; --azul: #2980b9; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
         
-        /* BLOQUEO */
+        /* LOGIN */
         #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:9999; display:flex; justify-content:center; align-items:center; }
         .card-login { background:white; padding:40px; border-radius:25px; text-align:center; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
 
-        /* INTERFAZ */
+        /* TABLA Y PANEL */
         .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; display:none; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
         .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); }
@@ -29,21 +29,21 @@
         .btn-pdf { background: #e74c3c; }
         .btn-negro { background: var(--oscuro); }
         
-        .badge { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; border: none; text-transform: uppercase; width: 100px; }
-        .bg-vacio { background: var(--verde); }
-        .bg-cargado { background: var(--naranja); }
+        /* ESTADOS INTERACTIVOS */
+        .badge { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; border: none; text-transform: uppercase; width: 110px; text-align: center; }
+        .bg-vacio { background: var(--verde); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); }
+        .bg-cargado { background: var(--naranja); box-shadow: 0 4px 10px rgba(255, 102, 0, 0.2); }
 
-        /* MODAL DETALLES (OJITO) */
+        /* MODAL DETALLES (OJITO CORREGIDO) */
         .modal-detalles { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:11000; }
-        .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:500px; text-align:left; }
+        .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:550px; text-align:left; }
+        .linea-dato { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 15px; }
 
-        /* MODAL EDITOR */
+        /* MODAL SCANNER */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
         .modal-box { background:white; padding:20px; border-radius:25px; width:95%; max-width:1100px; text-align:center; }
         #canvas-pdf { width: 100%; max-height: 60vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
-
         .controles-scanner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-        .controles-scanner label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
         input[type=range] { width: 100%; accent-color: var(--naranja); }
 
         .footer-modal { display: flex; gap: 10px; }
@@ -55,14 +55,14 @@
         <div class="card-login">
             <div class="logo">La Josefina</div>
             <input type="password" id="pass-adm" placeholder="Clave Administrador" style="padding:15px; width:220px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
-            <button class="btn btn-negro" style="width:100%;" onclick="entrar()">ACCEDER</button>
+            <button class="btn btn-negro" style="width:100%; height:50px;" onclick="entrar()">ENTRAR AL SISTEMA</button>
         </div>
     </div>
 
     <div id="modal-info" class="modal-detalles">
         <div class="detalles-box">
-            <h3 style="color:var(--naranja); margin-top:0;">Detalles del Reporte</h3>
-            <div id="contenido-info" style="line-height:1.6; font-size:16px; user-select: all;"></div>
+            <h3 style="color:var(--naranja); margin-top:0;">Información del Viaje</h3>
+            <div id="contenido-info" style="user-select: all;"></div>
             <br>
             <button class="btn btn-negro" style="width:100%" onclick="cerrarInfo()">CERRAR</button>
         </div>
@@ -72,9 +72,9 @@
         <div class="header">
             <div class="logo">La Josefina</div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-negro" onclick="verClaves()">CHOFERES</button>
+                <button class="btn btn-negro" onclick="verClaves()">GESTIONAR CHOFERES</button>
                 <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO</button>
-                <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">BORRAR SELECCIÓN</button>
+                <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">ELIMINAR SELECCIÓN</button>
             </div>
         </div>
         <table>
@@ -95,26 +95,26 @@
 
     <div id="modal-pdf" class="modal">
         <div class="modal-box">
-            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Ajuste de Ticket</h3>
+            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Filtro CamScanner</h3>
             <canvas id="canvas-pdf"></canvas>
             <div class="controles-scanner">
                 <div>
-                    <label>BRILLO</label>
-                    <input type="range" id="brillo" min="50" max="200" value="100" oninput="procesarFiltro()">
+                    <label style="font-size:11px; font-weight:bold;">LIMPIEZA DE HOJA</label>
+                    <input type="range" id="limpieza" min="100" max="250" value="120" oninput="procesarFiltro()">
                 </div>
                 <div>
-                    <label>CONTRASTE (NITIDEZ)</label>
-                    <input type="range" id="contraste" min="100" max="300" value="100" oninput="procesarFiltro()">
+                    <label style="font-size:11px; font-weight:bold;">NITIDEZ LETRA</label>
+                    <input type="range" id="contraste" min="100" max="400" value="150" oninput="procesarFiltro()">
                 </div>
                 <div>
-                    <label>BLANQUEAR PAPEL</label>
-                    <input type="range" id="blanco" min="0" max="100" value="0" oninput="procesarFiltro()">
+                    <label style="font-size:11px; font-weight:bold;">CONTRASTE NEGRO</label>
+                    <input type="range" id="negro" min="0" max="100" value="10" oninput="procesarFiltro()">
                 </div>
             </div>
             <div class="footer-modal">
                 <button class="btn" style="background:#666; flex:1" onclick="cerrarModal()">CANCELAR</button>
-                <button class="btn" style="background:#c0392b; flex:1" onclick="rechazarFoto()">BORRAR</button>
-                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">DESCARGAR PDF</button>
+                <button class="btn" style="background:#f39c12; flex:1" onclick="pedirFoto()">PEDIR OTRA FOTO</button>
+                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">GENERAR PDF LIMPIO</button>
             </div>
         </div>
     </div>
@@ -133,7 +133,7 @@
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
                 let lista = []; snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
                 
-                // ORDEN: Vacíos primero, luego por hora
+                // ORDEN: Vacíos arriba, luego por hora [cite: 9, 13]
                 lista.sort((a,b) => {
                     if(a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
                     if(a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
@@ -167,10 +167,15 @@
         function verDetalles(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
+                // Renglones juntos para copiar fácil 
                 document.getElementById('contenido-info').innerHTML = `
-                    <b>TRANSPORTE:</b> ${d.transporte}<br><b>CUIT:</b> ${d.cuit_trans}<br><br>
-                    <b>CHOFER:</b> ${d.chofer}<br><b>CUIT:</b> ${d.cuit_chofer || '---'}<br><br>
-                    <b>PATENTES:</b> ${d.chasis} / ${d.acoplado}<br><b>FECHA:</b> ${d.fecha}
+                    <div class="linea-dato"><b>TRANSPORTE:</b> ${d.transporte}</div>
+                    <div class="linea-dato"><b>CUIT TRANS:</b> ${d.cuit_trans}</div>
+                    <div class="linea-dato"><b>CHOFER:</b> ${d.chofer}</div>
+                    <div class="linea-dato"><b>CUIT CHOFER:</b> ${d.cuit_chofer || '---'}</div>
+                    <div class="linea-dato"><b>PATENTE CHASIS:</b> ${d.chasis}</div>
+                    <div class="linea-dato"><b>PATENTE ACOPLADO:</b> ${d.acoplado}</div>
+                    <div class="linea-dato"><b>FECHA LLEGADA:</b> ${d.fecha}</div>
                 `;
                 document.getElementById('modal-info').style.display = 'flex';
             });
@@ -192,20 +197,20 @@
             const ctx = canvas.getContext('2d');
             canvas.width = imgObj.width; canvas.height = imgObj.height;
             
-            const b = document.getElementById('brillo').value;
+            const l = document.getElementById('limpieza').value;
             const c = document.getElementById('contraste').value;
-            const w = document.getElementById('blanco').value;
+            const n = document.getElementById('negro').value;
 
             ctx.clearRect(0,0,canvas.width,canvas.height);
-            // Filtro parejo sin distorsión
-            ctx.filter = `grayscale(100%) brightness(${b}%) contrast(${c}%)`;
+            // Filtro estilo CamScanner: Blanco puro y negro resaltado 
+            ctx.filter = `grayscale(1) brightness(${l}%) contrast(${c}%) saturate(0)`;
             ctx.drawImage(imgObj, 0, 0);
 
-            if(w > 0) {
-                ctx.globalAlpha = w / 100;
-                ctx.globalCompositeOperation = "screen";
-                ctx.fillStyle = "white";
-                ctx.fillRect(0,0,canvas.width,canvas.height);
+            // Capa de refuerzo para el negro de las letras
+            if(n > 0) {
+                ctx.globalAlpha = n / 100;
+                ctx.globalCompositeOperation = "multiply";
+                ctx.drawImage(canvas, 0, 0);
                 ctx.globalCompositeOperation = "source-over";
                 ctx.globalAlpha = 1;
             }
@@ -218,7 +223,12 @@
             };
         }
 
-        function rechazarFoto() { if(confirm("¿Borrar reporte?")) { db.collection("reportes").doc(reporteActual.id).delete(); cerrarModal(); } }
+        function pedirFoto() { 
+            if(confirm("¿Pedir al chofer que envíe la foto de nuevo? Los datos del horario se mantendrán.")) {
+                db.collection("reportes").doc(reporteActual.id).update({ fotos: [] });
+                cerrarModal();
+            }
+        }
         function cerrarModal() { document.getElementById('modal-pdf').style.display='none'; }
         function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d => l += `${d.id}: ${d.data().clave}\n`); alert(l); }); }
         function nuevaClave() { const n = prompt("Nombre:"); const c = prompt("Clave:"); if(n && c) db.collection("accesos_choferes").doc(n).set({clave: c}); }
@@ -227,6 +237,7 @@
     </script>
 </body>
 </html>
+
 
 
 
