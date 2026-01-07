@@ -2,33 +2,55 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Transporte La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
+        /* EVITAR QUE TODO SE VEA GIGANTE */
         body { font-family: 'Segoe UI', sans-serif; background: #ff6600; margin: 0; padding: 10px; display: flex; justify-content: center; min-height: 100vh; box-sizing: border-box; }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 450px; align-self: flex-start; }
-        h2 { color: #ff6600; text-align: center; font-weight: 900; font-size: 22px; margin: 5px 0 15px 0; text-shadow: 2px 2px 0px #000; text-transform: uppercase; }
-        label { font-size: 12px; font-weight: bold; color: #444; display: block; margin-bottom: 3px; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 8px; border: 2px solid #ddd; box-sizing: border-box; font-size: 16px; outline: none; background: #fdfdfd; }
         
-        .login-box { max-width: 320px; margin-top: 40px; }
-        .btn-enviar { background: #ff6600; color: white; font-weight: bold; border: none; width: 100%; padding: 16px; border-radius: 15px; font-size: 18px; cursor: pointer; box-shadow: 0 5px 0px #b34700; text-transform: uppercase; margin-top: 10px; }
+        .card { background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 360px; align-self: flex-start; margin-top: 10px; }
         
-        .tipo-equipo { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-tipo { flex: 1; padding: 12px 5px; border: 2px solid #ddd; border-radius: 10px; background: #eee; font-weight: bold; cursor: pointer; font-size: 11px; color: #333; text-transform: uppercase; }
+        h2 { color: #ff6600; text-align: center; font-weight: 900; font-size: 20px; margin: 5px 0 15px 0; text-shadow: 1.5px 1.5px 0px #000; text-transform: uppercase; }
+
+        label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 2px; text-transform: uppercase; padding-left: 2px; }
+        
+        /* ENTRADAS MÁS FINAS */
+        input, select { 
+            width: 100%; 
+            padding: 8px 10px; 
+            margin-bottom: 10px; 
+            border-radius: 8px; 
+            border: 1.5px solid #ccc; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            outline: none; 
+            background: #fafafa;
+            height: 40px; /* Altura fija para que no se deforme */
+        }
+        
+        input:focus { border-color: #ff6600; background: #fff; }
+
+        .tipo-equipo { display: flex; gap: 8px; margin-bottom: 12px; }
+        .btn-tipo { flex: 1; padding: 10px 5px; border: 1.5px solid #ddd; border-radius: 8px; background: #eee; font-weight: bold; cursor: pointer; font-size: 11px; color: #333; }
         .btn-tipo.active { background: #333; color: white; border-color: #000; }
 
-        #camara-btn { background: #f0f0f0; color: #222; padding: 15px; border-radius: 12px; text-align: center; margin: 5px 0 15px 0; cursor: pointer; border: 3px dashed #bbb; font-weight: bold; }
-        .preview { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 10px; }
-        .preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 10px; border: 2px solid #ff6600; }
-        .loader { display: none; text-align: center; color: #ff6600; font-weight: bold; padding: 15px; }
+        .btn-enviar { background: #ff6600; color: white; font-weight: bold; border: none; width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 0px #b34700; text-transform: uppercase; margin-top: 5px; }
+        .btn-enviar:active { transform: translateY(2px); box-shadow: 0 2px 0px #b34700; }
+
+        /* BOTÓN CÁMARA REFORZADO */
+        #camara-btn { background: #f0f0f0; color: #222; padding: 15px; border-radius: 12px; text-align: center; margin: 5px 0 12px 0; cursor: pointer; border: 2px dashed #999; font-weight: bold; font-size: 13px; }
+        
+        .preview { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; }
+        .preview img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #ff6600; }
+        
+        .loader { display: none; text-align: center; color: #ff6600; font-weight: bold; padding: 10px; font-size: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="login-chof" class="login-box">
+    <div id="login-chof" style="width: 100%; max-width: 320px; margin-top: 50px;">
         <form onsubmit="event.preventDefault(); login();">
             <div class="card">
                 <h2>Transporte<br>La Josefina</h2>
@@ -53,10 +75,13 @@
 
             <label>Empresa de Transporte</label>
             <input type="text" id="transporte" placeholder="Nombre de la empresa">
+            
             <label>CUIT de la Empresa</label>
             <input type="text" id="cuit_trans" placeholder="CUIT Empresa">
+            
             <label>Nombre del Chofer</label>
             <input type="text" id="chofer_nombre_real" placeholder="Nombre completo">
+            
             <label>CUIT del Chofer</label>
             <input type="text" id="cuit_chofer" placeholder="Tu CUIT">
 
@@ -67,13 +92,13 @@
 
             <label>Tipo de Equipo</label>
             <div class="tipo-equipo">
-                <button type="button" class="btn-tipo active" id="btn-comun" onclick="setEquipo('Común')">EQUIPO COMÚN</button>
+                <button type="button" class="btn-tipo active" id="btn-comun" onclick="setEquipo('Común')">COMÚN</button>
                 <button type="button" class="btn-tipo" id="btn-escalable" onclick="setEquipo('Escalable')">ESCALABLE</button>
             </div>
             
             <div id="camara-btn" onclick="document.getElementById('fotos').click()">
-                📷 FOTO TICKET / GALERÍA
-                <input type="file" id="fotos" multiple accept="image/*" style="display: none;" onchange="previsualizar()">
+                📸 SACAR FOTO TICKET
+                <input type="file" id="fotos" multiple accept="image/*" capture="camera" style="display: none;" onchange="previsualizar()">
             </div>
             <div id="previs" class="preview"></div>
 
@@ -97,17 +122,14 @@
         }
 
         async function login() {
-            // .toLowerCase() hace que todo sea minúscula automáticamente
             const nomInput = document.getElementById('nombre-chof').value.trim().toLowerCase();
             const pin = document.getElementById('pin-chof').value.trim();
             
             try {
-                // Buscamos todos los choferes para comparar nombres sin importar mayúsculas
                 const snapshot = await db.collection("accesos_choferes").get();
                 let usuarioEncontrado = null;
 
                 snapshot.forEach(doc => {
-                    // Comparamos el nombre guardado (en minúscula) con lo que puso el chofer (en minúscula)
                     if (doc.id.toLowerCase() === nomInput && doc.data().clave === pin) {
                         usuarioEncontrado = doc.id;
                     }
@@ -118,11 +140,9 @@
                     document.getElementById('form-chof').style.display = 'block';
                     document.getElementById('chofer_nombre_real').value = usuarioEncontrado;
                 } else {
-                    alert("Los datos no coinciden. Verificá si pusiste bien el nombre o la clave.");
+                    alert("Datos incorrectos.");
                 }
-            } catch (e) {
-                alert("Error de conexión con la base de datos.");
-            }
+            } catch (e) { alert("Error de conexión."); }
         }
 
         function previsualizar() {
@@ -161,10 +181,10 @@
 
             try {
                 await db.collection("reportes").add(data);
-                alert("¡Reporte enviado con éxito!");
+                alert("¡Enviado!");
                 location.reload();
             } catch (e) {
-                alert("Error al subir el reporte.");
+                alert("Error al subir.");
                 btn.style.display = 'block'; loader.style.display = 'none';
             }
         }
