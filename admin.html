@@ -10,37 +10,30 @@
     <style>
         :root { --naranja: #ff6600; --oscuro: #222; --verde: #27ae60; --azul: #2980b9; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
-        
         #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:9999; display:flex; justify-content:center; align-items:center; }
         .card-login { background:white; padding:40px; border-radius:25px; text-align:center; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
-
         .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; display:none; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
         .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); text-shadow: 1px 1px 0px #000; }
-
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--oscuro); color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        
         .btn { border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
         .btn-ojo { background: var(--azul); }
         .btn-pdf { background: #e74c3c; }
         .btn-negro { background: var(--oscuro); }
-        
+        .btn-ws { background: #25d366; color: white; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; display: inline-block; }
         .badge { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; border: none; text-transform: uppercase; width: 110px; text-align: center; }
         .bg-vacio { background: var(--verde); }
         .bg-cargado { background: var(--naranja); }
-
         .modal-detalles { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:11000; }
         .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:550px; text-align:left; }
         .linea-dato { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 15px; color: #333; }
-
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
         .modal-box { background:white; padding:20px; border-radius:25px; width:95%; max-width:1100px; text-align:center; }
         #canvas-pdf { width: 100%; max-height: 55vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
         .controles-scanner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
         input[type=range] { width: 100%; accent-color: var(--naranja); }
-
         .footer-modal { display: flex; gap: 10px; }
     </style>
 </head>
@@ -49,7 +42,7 @@
     <div id="bloqueo">
         <div class="card-login">
             <div class="logo">La Josefina</div><br>
-            <input type="password" id="pass-adm" placeholder="Clave Administrador" style="padding:15px; width:220px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
+            <input type="password" id="pass-adm" placeholder="Clave" style="padding:15px; width:220px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
             <button class="btn btn-negro" style="width:100%; height:50px;" onclick="entrar()">ENTRAR AL SISTEMA</button>
         </div>
     </div>
@@ -57,8 +50,7 @@
     <div id="modal-info" class="modal-detalles">
         <div class="detalles-box">
             <h3 style="color:var(--naranja); margin-top:0;">Información del Viaje</h3>
-            <div id="contenido-info" style="user-select: all;"></div>
-            <br>
+            <div id="contenido-info" style="user-select: all;"></div><br>
             <button class="btn btn-negro" style="width:100%" onclick="cerrarInfo()">CERRAR</button>
         </div>
     </div>
@@ -80,7 +72,7 @@
                     <th>ESTADO</th>
                     <th>CHOFER</th>
                     <th>TRANSPORTE</th>
-                    <th>PATENTES (CH/AC)</th>
+                    <th>PATENTES</th>
                     <th>ACCIONES</th>
                 </tr>
             </thead>
@@ -93,18 +85,9 @@
             <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Procesador de Imagen Estilo CamScanner</h3>
             <canvas id="canvas-pdf"></canvas>
             <div class="controles-scanner">
-                <div>
-                    <label style="font-size:11px; font-weight:bold;">LIMPIEZA DE HOJA</label>
-                    <input type="range" id="limpieza" min="100" max="250" value="130" oninput="procesarFiltro()">
-                </div>
-                <div>
-                    <label style="font-size:11px; font-weight:bold;">NITIDEZ LETRA</label>
-                    <input type="range" id="contraste" min="100" max="500" value="160" oninput="procesarFiltro()">
-                </div>
-                <div>
-                    <label style="font-size:11px; font-weight:bold;">FUERZA NEGRO</label>
-                    <input type="range" id="negro" min="1" max="8" step="0.5" value="1" oninput="procesarFiltro()">
-                </div>
+                <div><label style="font-size:11px; font-weight:bold;">LIMPIEZA</label><input type="range" id="limpieza" min="100" max="250" value="130" oninput="procesarFiltro()"></div>
+                <div><label style="font-size:11px; font-weight:bold;">NITIDEZ</label><input type="range" id="contraste" min="100" max="500" value="160" oninput="procesarFiltro()"></div>
+                <div><label style="font-size:11px; font-weight:bold;">NEGRO</label><input type="range" id="negro" min="1" max="8" step="0.5" value="1" oninput="procesarFiltro()"></div>
             </div>
             <div class="footer-modal">
                 <button class="btn" style="background:#666; flex:1" onclick="cerrarModal()">CANCELAR</button>
@@ -120,30 +103,33 @@
         const db = firebase.firestore();
         let imgObj = new Image();
         let reporteActual = null;
+        let diccChoferes = {};
 
-        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); } }
+        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); cargarChoferes(); } }
+
+        async function cargarChoferes() {
+            db.collection("accesos_choferes").onSnapshot(s => { s.forEach(doc => { diccChoferes[doc.id] = doc.data(); }); });
+        }
 
         function cargarReportes() {
             db.collection("reportes").onSnapshot(snap => {
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
                 let lista = []; snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
-                
-                lista.sort((a,b) => {
-                    if(a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
-                    if(a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
-                    return new Date(b.fecha.replace(',','')) - new Date(a.fecha.replace(',',''));
-                });
+                lista.sort((a,b) => (a.estado === "VACÍO" && b.estado !== "VACÍO") ? -1 : 1);
 
                 lista.forEach(r => {
                     const tieneFotos = (r.fotos && r.fotos.length > 0);
                     const claseEstado = r.estado === 'VACÍO' ? 'bg-vacio' : 'bg-cargado';
+                    const tel = diccChoferes[r.chofer]?.telefono || "";
+                    const linkWS = tel ? `<a class="btn-ws" target="_blank" href="https://wa.me/${tel}?text=Hola%20${r.chofer},%20la%20foto%20del%20ticket%20no%20salio%20bien.%20Por%20favor%20entra%20a%20la%20app%20y%20manda%20una%20nueva.">WS</a>` : "";
+
                     t.innerHTML += `<tr>
                         <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
                         <td><b>${r.fecha}</b></td>
                         <td><button class="badge ${claseEstado}" onclick="cambiarEstadoManual('${r.id}', '${r.estado}')">${r.estado}</button></td>
-                        <td><b>${r.chofer}</b></td>
+                        <td><b>${r.chofer}</b> ${linkWS}</td>
                         <td>${r.transporte || '---'}</td>
-                        <td>${r.chasis || '---'} / ${r.acoplado || '---'}</td>
+                        <td>${r.chasis || '---'}</td>
                         <td>
                             <button class="btn btn-ojo" onclick="verDetalles('${r.id}')">👁️</button>
                             ${tieneFotos ? `<button class="btn btn-pdf" onclick="abrirEditor('${r.id}')">PDF</button>` : ''}
@@ -154,8 +140,7 @@
         }
 
         async function cambiarEstadoManual(id, estadoActual) {
-            const nuevoEstado = estadoActual === 'VACÍO' ? 'CARGADO' : 'VACÍO';
-            await db.collection("reportes").doc(id).update({ estado: nuevoEstado });
+            await db.collection("reportes").doc(id).update({ estado: estadoActual === 'VACÍO' ? 'CARGADO' : 'VACÍO' });
         }
 
         function verDetalles(id) {
@@ -163,13 +148,9 @@
                 const d = doc.data();
                 document.getElementById('contenido-info').innerHTML = `
                     <div class="linea-dato"><b>TRANSPORTE:</b> ${d.transporte}</div>
-                    <div class="linea-dato"><b>CUIT TRANS:</b> ${d.cuit_trans}</div>
                     <div class="linea-dato"><b>CHOFER:</b> ${d.chofer}</div>
-                    <div class="linea-dato"><b>CUIT CHOFER:</b> ${d.cuit_chofer || '---'}</div>
-                    <div class="linea-dato"><b>PATENTE CHASIS:</b> ${d.chasis}</div>
-                    <div class="linea-dato"><b>PATENTE ACOPLADO:</b> ${d.acoplado}</div>
-                    <div class="linea-dato"><b>EQUIPO:</b> ${d.equipo || 'Común'}</div>
-                    <div class="linea-dato"><b>FECHA LLEGADA:</b> ${d.fecha}</div>
+                    <div class="linea-dato"><b>PATENTES:</b> ${d.chasis} / ${d.acoplado}</div>
+                    <div class="linea-dato"><b>FECHA:</b> ${d.fecha}</div>
                 `;
                 document.getElementById('modal-info').style.display = 'flex';
             });
@@ -179,73 +160,54 @@
         async function abrirEditor(id) {
             const doc = await db.collection("reportes").doc(id).get();
             reporteActual = {id, ...doc.data()};
-            if(reporteActual.fotos && reporteActual.fotos.length > 0) {
-                imgObj.src = reporteActual.fotos[0]; 
-                imgObj.onload = () => { 
-                    document.getElementById('modal-pdf').style.display='flex'; 
-                    procesarFiltro(); 
-                }
-            }
+            imgObj.src = reporteActual.fotos[0]; 
+            imgObj.onload = () => { document.getElementById('modal-pdf').style.display='flex'; procesarFiltro(); }
         }
 
         function procesarFiltro() {
-            const canvas = document.getElementById('canvas-pdf');
-            const ctx = canvas.getContext('2d');
+            const canvas = document.getElementById('canvas-pdf'); const ctx = canvas.getContext('2d');
             canvas.width = imgObj.width; canvas.height = imgObj.height;
-            const l = document.getElementById('limpieza').value;
-            const c = document.getElementById('contraste').value;
-            const n = document.getElementById('negro').value;
+            const l = document.getElementById('limpieza').value, c = document.getElementById('contraste').value, n = document.getElementById('negro').value;
             ctx.clearRect(0,0,canvas.width,canvas.height);
             ctx.filter = `grayscale(100%) brightness(${l}%) contrast(${c}%)`;
             ctx.drawImage(imgObj, 0, 0);
             if(n > 1) {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
-                const tCtx = tempCanvas.getContext('2d');
-                tCtx.drawImage(canvas, 0, 0);
+                const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
+                const tCtx = tempCanvas.getContext('2d'); tCtx.drawImage(canvas, 0, 0);
                 ctx.globalCompositeOperation = "multiply";
-                for(let i=0; i < Math.floor(n); i++) { ctx.drawImage(tempCanvas, 0, 0); }
+                for(let i=0; i < Math.floor(n); i++) ctx.drawImage(tempCanvas, 0, 0);
                 ctx.globalCompositeOperation = "source-over";
             }
-
             document.getElementById('btn-descargar').onclick = () => {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                pdf.setFontSize(11);
-                pdf.text(`TRANSPORTE: ${reporteActual.transporte}`, 10, 10);
-                pdf.text(`CHOFER: ${reporteActual.chofer} | PATENTES: ${reporteActual.chasis} / ${reporteActual.acoplado}`, 10, 15);
-                pdf.text(`FECHA: ${reporteActual.fecha} | EQUIPO: ${reporteActual.equipo || 'Común'}`, 10, 20);
-                pdf.addImage(imgData, 'JPEG', 5, 25, 200, 260); 
+                const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.text(`CHOFER: ${reporteActual.chofer} | FECHA: ${reporteActual.fecha}`, 10, 10);
+                pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 5, 20, 200, 260); 
                 pdf.save(`TICKET_${reporteActual.chofer}.pdf`);
             };
         }
 
-        // MEJORA 1: Vaciamos fotos para que al chofer le salte el cartel de aviso
         function pedirFoto() { 
-            if(confirm("¿Pedir que manden la foto otra vez? Se borrarán las fotos actuales.")) {
+            if(confirm("¿Pedir otra foto? El chofer verá el aviso en su celu.")) {
                 db.collection("reportes").doc(reporteActual.id).update({ fotos: [] });
                 cerrarModal();
             }
         }
         function cerrarModal() { document.getElementById('modal-pdf').style.display='none'; }
-        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d => l += `${d.id}: ${d.data().clave}\n`); alert(l); }); }
-        function nuevaClave() { const n = prompt("Nombre:"); const c = prompt("Clave:"); if(n && c) db.collection("accesos_choferes").doc(n).set({clave: c}); }
+        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d => l += `${d.id}: ${d.data().clave} (Tel: ${d.data().telefono || 'N/A'})\n`); alert(l); }); }
+        function nuevaClave() { 
+            const n = prompt("Nombre:"); const c = prompt("Clave:"); const t = prompt("Teléfono (con 549...):");
+            if(n && c) db.collection("accesos_choferes").doc(n).set({clave: c, telefono: t}); 
+        }
         function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
-
-        // MEJORA 2: Ahora borra de Firebase físicamente para no ocupar espacio
         function borrarSels() { 
-            if(confirm("¿Borrar definitivamente de Firebase los seleccionados?")) { 
-                document.querySelectorAll('.chk:checked').forEach(x => {
-                    db.collection("reportes").doc(x.dataset.id).delete()
-                    .then(() => console.log("Eliminado de Firebase"))
-                    .catch((e) => console.error("Error al borrar:", e));
-                }); 
+            if(confirm("¿Borrar de Firebase permanentemente?")) { 
+                document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); 
             } 
         }
     </script>
 </body>
 </html>
+
 
 
 
