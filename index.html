@@ -7,112 +7,80 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #ff6600 0%, #ff9933 100%); margin: 0; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
-        .app-card { background: white; padding: 20px; border-radius: 25px; width: 100%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
-        .logo { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; margin-bottom: 10px; }
-        label { display: block; font-weight: bold; margin-top: 10px; color: #ff6600; font-size: 11px; text-align: left; text-transform: uppercase; }
-        input { width: 100%; padding: 12px; margin: 4px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; }
-        .btn { border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
-        .btn-principal { background: #ff6600; color: white; box-shadow: 0 5px 15px rgba(255,102,0,0.4); }
+        body { font-family: 'Segoe UI', sans-serif; background: #ff6600; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .app-card { background: white; padding: 20px; border-radius: 25px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .logo { font-family: 'Brush Script MT', cursive; font-size: 35px; color: #ff6600; }
+        label { display: block; text-align: left; font-size: 11px; font-weight: bold; color: #ff6600; margin-top: 10px; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .btn { border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-principal { background: #ff6600; color: white; }
         .btn-vacio { background: #27ae60; color: white; }
-        .btn-salir { background: #333; color: white; font-size: 13px; margin-top: 20px; }
-        .camera-box { background: #fff5ed; padding: 15px; border-radius: 15px; border: 2px dashed #ff6600; margin: 15px 0; }
-        #preview { width: 100%; border-radius: 10px; display: none; border: 2px solid #ff6600; margin-top: 10px; }
+        #preview { width: 100%; border-radius: 12px; display: none; margin-top: 10px; border: 2px solid #ff6600; }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="app-card" style="margin-top: 50px;">
+
+    <div id="login-screen" class="app-card">
         <div class="logo">La Josefina</div>
-        <p style="font-size: 12px; color: #666;">INGRESO DE CHOFERES</p>
-        <input type="text" id="nombre-login" placeholder="NOMBRE DE USUARIO" style="text-transform: uppercase;">
-        <input type="password" id="clave-login" placeholder="CONTRASEÑA">
+        <p>CONTROL DE CARGAS</p>
+        <input type="text" id="nombre-login" placeholder="Nombre de Usuario">
+        <input type="password" id="clave-login" placeholder="Contraseña">
         <button class="btn btn-principal" onclick="ingresar()">INGRESAR</button>
     </div>
 
     <div id="app-screen" class="app-card" style="display:none;">
         <div class="logo">La Josefina</div>
-        <div id="hora-fija" style="font-size: 12px; color: #666; font-weight: bold; margin-bottom: 15px;"></div>
+        <div id="hora-info" style="font-weight:bold; color:#666; margin-bottom:10px;"></div>
         
         <label>Transporte</label>
-        <input type="text" id="transporte" placeholder="Nombre de la Empresa">
+        <input type="text" id="transporte" placeholder="Empresa">
         <label>CUIT Transporte</label>
         <input type="text" id="cuit_trans" placeholder="00-00000000-0">
-        <label>Chofer (Logueado)</label>
-        <input type="text" id="chof_nom" readonly style="background:#f0f0f0;">
+        <label>Chofer</label>
+        <input type="text" id="chof_nom" readonly>
         <label>CUIT Chofer</label>
         <input type="text" id="cuit_chof" placeholder="00-00000000-0">
         <label>Patente Chasis</label>
-        <input type="text" id="chasis" placeholder="Ej: ABC 123">
+        <input type="text" id="chasis" placeholder="ABC 123">
         <label>Patente Acoplado</label>
-        <input type="text" id="acoplado" placeholder="Ej: DEF 456">
+        <input type="text" id="acoplado" placeholder="DEF 456">
 
-        <div class="camera-box">
-            <label style="text-align:center;">📸 SACAR FOTO TICKET / REMITO</label>
+        <div style="background:#fff5ee; padding:15px; border-radius:15px; margin-top:15px; border:1px dashed #ff6600;">
+            <label style="text-align:center;">📸 SACAR FOTO DEL TICKET</label>
             <input type="file" id="fileInput" accept="image/*" capture="camera">
-            <center><img id="preview"></center>
+            <img id="preview">
         </div>
 
-        <button class="btn btn-principal" id="btn-foto" onclick="subirFoto()">ENVIAR FOTO</button>
-        <button class="btn btn-vacio" id="btn-vacio-id" onclick="marcarVacio()">REGISTRAR COMO VACÍO</button>
-        <button class="btn btn-salir" onclick="location.reload()">CERRAR SESIÓN</button>
+        <button class="btn btn-principal" id="btn-enviar" onclick="subirFoto()">ENVIAR TICKET</button>
+        <button class="btn btn-vacio" id="btn-vacio" onclick="marcarVacio()">MARCAR COMO VACÍO</button>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let choferLogueado = "";
-        let horaLlegadaGlobal = "";
-        let idDocReporte = "";
-        let fotoData = "";
+        let idReporte = "";
+        let fotoProcesada = "";
+        let fechaLlegada = "";
 
         async function ingresar() {
-            const nom = document.getElementById('nombre-login').value.toUpperCase().trim();
+            const nom = document.getElementById('nombre-login').value.trim();
             const cla = document.getElementById('clave-login').value.trim();
             
-            if(!nom || !cla) {
-                alert("Por favor, completa nombre y clave.");
-                return;
-            }
-
-            try {
-                // Buscamos al chofer en la colección accesos_choferes
-                const doc = await db.collection("accesos_choferes").doc(nom).get();
-                
-                if(doc.exists) {
-                    const datos = doc.data();
-                    // Comprobamos clave (convertimos a string por si se guardó como número)
-                    if(datos.clave.toString() === cla) {
-                        choferLogueado = nom;
-                        iniciarApp();
-                    } else {
-                        alert("La clave es incorrecta.");
-                    }
-                } else {
-                    alert("El usuario no existe. Verificá que el nombre esté bien escrito en el Panel Admin.");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Error de conexión. Intentá de nuevo.");
-            }
+            const doc = await db.collection("accesos_choferes").doc(nom).get();
+            if(doc.exists && doc.data().clave.toString() === cla) {
+                choferLogueado = nom;
+                fechaLlegada = new Date().toLocaleString();
+                document.getElementById('login-screen').style.display='none';
+                document.getElementById('app-screen').style.display='block';
+                document.getElementById('chof_nom').value = nom;
+                document.getElementById('hora-info').innerText = "Llegada: " + fechaLlegada;
+            } else { alert("Usuario o Clave incorrectos."); }
         }
 
-        function iniciarApp() {
-            const hoy = new Date();
-            horaLlegadaGlobal = hoy.toLocaleDateString('es-AR') + ", " + hoy.getHours().toString().padStart(2, '0') + ":" + hoy.getMinutes().toString().padStart(2, '0');
-            
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'block';
-            document.getElementById('chof_nom').value = choferLogueado;
-            document.getElementById('hora-fija').innerText = "LLEGADA REGISTRADA: " + horaLlegadaGlobal;
-        }
-
-        // PROCESAMIENTO DE FOTO
         document.getElementById('fileInput').onchange = function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -120,87 +88,71 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const scale = 1000 / img.width;
-                    canvas.width = 1000;
+                    const max = 1200;
+                    const scale = max / Math.max(img.width, img.height);
+                    canvas.width = img.width * scale;
                     canvas.height = img.height * scale;
-                    // Pre-filtro para que ya viaje más clara
-                    ctx.filter = 'grayscale(1) contrast(1.2) brightness(1.1)';
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    fotoData = canvas.toDataURL('image/jpeg', 0.7);
-                    document.getElementById('preview').src = fotoData;
+                    fotoProcesada = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById('preview').src = fotoProcesada;
                     document.getElementById('preview').style.display = 'block';
                 }
             }
-            reader.readAsDataURL(file);
-        }
-
-        async function marcarVacio() {
-            if(idDocReporte) return alert("Ya iniciaste un reporte para este viaje.");
-            
-            const data = {
-                chofer: choferLogueado,
-                fecha: horaLlegadaGlobal,
-                transporte: document.getElementById('transporte').value.toUpperCase(),
-                cuit_trans: document.getElementById('cuit_trans').value,
-                cuit_chofer: document.getElementById('cuit_chof').value,
-                chasis: document.getElementById('chasis').value.toUpperCase(),
-                acoplado: document.getElementById('acoplado').value.toUpperCase(),
-                estado: "VACÍO",
-                fotos: []
-            };
-            
-            try {
-                const docRef = await db.collection("reportes").add(data);
-                idDocReporte = docRef.id;
-                alert("REGISTRADO COMO VACÍO");
-                document.getElementById('btn-vacio-id').innerText = "YA REGISTRADO (VACÍO)";
-                document.getElementById('btn-vacio-id').disabled = true;
-            } catch (e) { alert("Error al guardar."); }
+            reader.readAsDataURL(e.target.files[0]);
         }
 
         async function subirFoto() {
-            if(!fotoData) return alert("Primero debés sacar una foto.");
-            const btn = document.getElementById('btn-foto');
-            btn.disabled = true; 
-            btn.innerText = "ENVIANDO...";
-            
-            try {
-                if(!idDocReporte) {
-                    // Si no marcó vacío antes, crea el reporte nuevo como CARGADO
-                    const data = {
-                        chofer: choferLogueado,
-                        fecha: horaLlegadaGlobal,
-                        transporte: document.getElementById('transporte').value.toUpperCase(),
-                        cuit_trans: document.getElementById('cuit_trans').value,
-                        cuit_chofer: document.getElementById('cuit_chof').value,
-                        chasis: document.getElementById('chasis').value.toUpperCase(),
-                        acoplado: document.getElementById('acoplado').value.toUpperCase(),
-                        estado: "CARGADO",
-                        fotos: [fotoData]
-                    };
-                    const docRef = await db.collection("reportes").add(data);
-                    idDocReporte = docRef.id;
-                } else {
-                    // Si ya existía (porque marcó vacío), agrega la foto y cambia estado
-                    await db.collection("reportes").doc(idDocReporte).update({
-                        fotos: firebase.firestore.FieldValue.arrayUnion(fotoData),
-                        estado: "CARGADO"
-                    });
-                }
-                alert("FOTO ENVIADA CON ÉXITO");
-                btn.disabled = false; 
-                btn.innerText = "ENVIAR OTRA FOTO";
-                document.getElementById('preview').style.display = 'none';
-                fotoData = "";
-            } catch (e) {
-                alert("Error al subir la foto.");
-                btn.disabled = false;
-                btn.innerText = "REINTENTAR ENVIAR";
+            if(!fotoProcesada) return alert("Saca la foto primero.");
+            const btn = document.getElementById('btn-enviar');
+            btn.innerText = "ENVIANDO..."; btn.disabled = true;
+
+            const datos = {
+                chofer: choferLogueado,
+                fecha: fechaLlegada,
+                transporte: document.getElementById('transporte').value,
+                cuit_trans: document.getElementById('cuit_trans').value,
+                cuit_chofer: document.getElementById('cuit_chof').value,
+                chasis: document.getElementById('chasis').value,
+                acoplado: document.getElementById('acoplado').value,
+                estado: "CARGADO"
+            };
+
+            if(!idReporte) {
+                datos.fotos = [fotoProcesada];
+                datos.hora_servidor = new Date().getHours().toString().padStart(2,'0') + ":" + new Date().getMinutes().toString().padStart(2,'0');
+                const res = await db.collection("reportes").add(datos);
+                idReporte = res.id;
+            } else {
+                await db.collection("reportes").doc(idReporte).update({
+                    fotos: firebase.firestore.FieldValue.arrayUnion(fotoProcesada),
+                    estado: "CARGADO"
+                });
             }
+            alert("¡Ticket enviado con éxito!");
+            btn.innerText = "ENVIAR OTRO TICKET"; btn.disabled = false;
+            document.getElementById('preview').style.display = 'none';
+            fotoProcesada = "";
+        }
+
+        async function marcarVacio() {
+            if(idReporte) return alert("Ya iniciaste este viaje.");
+            const res = await db.collection("reportes").add({
+                chofer: choferLogueado,
+                fecha: fechaLlegada,
+                transporte: document.getElementById('transporte').value,
+                chasis: document.getElementById('chasis').value,
+                estado: "VACÍO",
+                fotos: [],
+                hora_servidor: new Date().getHours().toString().padStart(2,'0') + ":" + new Date().getMinutes().toString().padStart(2,'0')
+            });
+            idReporte = res.id;
+            alert("Registrado como VACÍO");
+            document.getElementById('btn-vacio').disabled = true;
         }
     </script>
 </body>
 </html>
+
 
 
 
