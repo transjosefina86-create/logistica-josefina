@@ -106,25 +106,6 @@
             border-color: var(--oscuro);
         }
 
-        #aviso-rechazo {
-            display: none;
-            background: #e74c3c;
-            color: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-            border: 3px solid #f1c40f;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
         .btn-enviar {
             background: var(--naranja);
             color: white;
@@ -195,7 +176,6 @@
     </div>
 
     <div id="pantalla-form" class="card" style="display: none;">
-        <div id="aviso-rechazo">⚠️ FOTO RECHAZADA<br>POR FAVOR, SACÁ OTRA FOTO DEL TICKET</div>
         
         <div class="logo-header">
             <h2>NUEVO REPORTE</h2>
@@ -273,34 +253,14 @@
                 document.getElementById('pantalla-login').style.display = 'none';
                 document.getElementById('pantalla-form').style.display = 'block';
                 cargarEstado();
-                iniciarRadar();
             } else {
                 document.getElementById('error-msg').style.display = 'block';
             }
-        } catch(e) { alert("Error de conexión: " + e); }
-    }
-
-    // RADAR INTELIGENTE: Solo mira el último reporte
-    function iniciarRadar() {
-        db.collection("reportes")
-          .where("chofer", "==", choferAutenticado)
-          .orderBy("fecha", "desc")
-          .limit(1)
-          .onSnapshot(s => {
-            let mostrar = false;
-            s.forEach(d => {
-                const data = d.data();
-                if(data.estado === 'CARGADO' && (!data.fotos || data.fotos.length === 0)) {
-                    mostrar = true;
-                }
-            });
-            document.getElementById('aviso-rechazo').style.display = mostrar ? 'block' : 'none';
-        });
+        } catch(e) { alert("Error de conexión"); }
     }
 
     function procesarFotos() {
         const files = document.getElementById('input-file').files;
-        document.getElementById('aviso-rechazo').style.display = 'none';
         Array.from(files).forEach(f => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -381,7 +341,7 @@
             alert("✅ REPORTE ENVIADO");
             listaFotosB64 = [];
             document.getElementById('contenedor-previa').innerHTML = "";
-        } catch(e) { alert("Error al enviar: " + e); }
+        } catch(e) { alert("Error al enviar"); }
         document.getElementById('cargando').style.display = 'none';
         document.getElementById('btn-final').style.display = 'block';
     }
