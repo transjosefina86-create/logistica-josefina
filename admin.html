@@ -9,11 +9,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --naranja: #ff6600; --oscuro: #222; --verde: #27ae60; --azul: #2980b9; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
         
+        /* LOGIN */
         #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:9999; display:flex; justify-content:center; align-items:center; }
         .card-login { background:white; padding:40px; border-radius:25px; text-align:center; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
 
+        /* PANEL PRINCIPAL */
         .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; display:none; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
         .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); }
@@ -27,15 +29,19 @@
         .btn-pdf { background: #e74c3c; }
         .btn-negro { background: var(--oscuro); }
         
-        /* ESTADO CLICKABLE */
         .badge { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; border: none; text-transform: uppercase; }
-        .bg-vacio { background: var(--verde); box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3); }
-        .bg-cargado { background: var(--naranja); box-shadow: 0 2px 5px rgba(255, 102, 0, 0.3); }
+        .bg-vacio { background: var(--verde); }
+        .bg-cargado { background: var(--naranja); }
 
+        /* MODAL DETALLES (OJITO) */
+        .modal-detalles { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:11000; }
+        .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:500px; position:relative; }
+
+        /* MODAL SCANNER GIGANTE */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
         .modal-box { background:white; padding:20px; border-radius:25px; width:95%; max-width:1100px; text-align:center; }
         
-        #canvas-pdf { width: 100%; max-height: 65vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
+        #canvas-pdf { width: 100%; max-height: 60vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
 
         .controles-scanner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
         .controles-scanner label { font-size: 11px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
@@ -50,7 +56,16 @@
         <div class="card-login">
             <div class="logo">La Josefina</div>
             <input type="password" id="pass-adm" placeholder="Clave Administrador" style="padding:15px; width:220px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
-            <button class="btn btn-negro" style="width:100%; height: 50px;" onclick="entrar()">INGRESAR</button>
+            <button class="btn btn-negro" style="width:100%;" onclick="entrar()">ENTRAR AL PANEL</button>
+        </div>
+    </div>
+
+    <div id="modal-info" class="modal-detalles">
+        <div class="detalles-box">
+            <h3 style="color:var(--naranja); margin-top:0;">Datos del Viaje</h3>
+            <div id="contenido-info" style="text-align:left; line-height:1.6; font-size:16px;"></div>
+            <br>
+            <button class="btn btn-negro" style="width:100%" onclick="cerrarInfo()">CERRAR</button>
         </div>
     </div>
 
@@ -58,18 +73,18 @@
         <div class="header">
             <div class="logo">La Josefina</div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-negro" onclick="verClaves()">CHOFERES</button>
+                <button class="btn btn-negro" onclick="verClaves()">GESTIONAR CHOFERES</button>
                 <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO</button>
-                <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">BORRAR SELECCIONADOS</button>
+                <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">ELIMINAR SELECCIONADOS</button>
             </div>
         </div>
         <table>
             <thead>
                 <tr>
                     <th><input type="checkbox" onclick="seleccionarTodo(this)"></th>
-                    <th>LLEGADA</th>
+                    <th>FECHA Y HORA LLEGADA</th>
                     <th>RECIBIDO</th>
-                    <th>ESTADO (Click para cambiar)</th>
+                    <th>ESTADO</th>
                     <th>CHOFER</th>
                     <th>TRANSPORTE</th>
                     <th>PATENTE</th>
@@ -82,25 +97,25 @@
 
     <div id="modal-pdf" class="modal">
         <div class="modal-box">
-            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Editor Uniforme</h3>
+            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Procesador de Imagen Lineal</h3>
             <canvas id="canvas-pdf"></canvas>
             <div class="controles-scanner">
                 <div>
-                    <label>BRILLO GENERAL</label>
-                    <input type="range" id="brillo" min="50" max="250" value="110" oninput="procesarFiltro()">
+                    <label>BRILLO LINEAL</label>
+                    <input type="range" id="brillo" min="-100" max="100" value="0" oninput="procesarFiltro()">
                 </div>
                 <div>
-                    <label>NITIDEZ DE LETRA</label>
-                    <input type="range" id="contraste" min="100" max="500" value="180" oninput="procesarFiltro()">
+                    <label>NITIDEZ (CONTRASTE)</label>
+                    <input type="range" id="contraste" min="1" max="3" step="0.1" value="1" oninput="procesarFiltro()">
                 </div>
                 <div>
-                    <label>ACLARECER PAPEL</label>
-                    <input type="range" id="exposicion" min="0" max="100" value="0" oninput="procesarFiltro()">
+                    <label>BLANQUEAR FONDO</label>
+                    <input type="range" id="umbral" min="0" max="255" value="0" oninput="procesarFiltro()">
                 </div>
             </div>
             <div class="footer-modal">
                 <button class="btn" style="background:#666; flex:1" onclick="cerrarModal()">CANCELAR</button>
-                <button class="btn" style="background:#c0392b; flex:1" onclick="rechazarFoto()">BORRAR</button>
+                <button class="btn" style="background:#c0392b; flex:1" onclick="rechazarFoto()">RECHAZAR</button>
                 <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">DESCARGAR PDF</button>
             </div>
         </div>
@@ -112,6 +127,7 @@
         const db = firebase.firestore();
         let imgObj = new Image();
         let reporteActual = null;
+        let originalPixels = null;
 
         function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); } }
 
@@ -132,7 +148,7 @@
                     
                     t.innerHTML += `<tr>
                         <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
-                        <td><b>${r.fecha.split(',')[1] || r.fecha} hs</b></td>
+                        <td><b>${r.fecha}</b></td>
                         <td style="color:#888;">${r.hora_servidor || '--:--'} hs</td>
                         <td><button class="badge ${claseEstado}" onclick="cambiarEstadoManual('${r.id}', '${r.estado}')">${r.estado}</button></td>
                         <td><b>${r.chofer}</b></td>
@@ -155,15 +171,31 @@
         function verDetalles(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                alert(`Transporte: ${d.transporte}\nCUIT: ${d.cuit_trans}\nChofer: ${d.chofer}\nPatentes: ${d.chasis} / ${d.acoplado}`);
+                const html = `
+                    <b>Transporte:</b> ${d.transporte}<br>
+                    <b>CUIT:</b> ${d.cuit_trans}<br><br>
+                    <b>Chofer:</b> ${d.chofer}<br>
+                    <b>CUIT Chof:</b> ${d.cuit_chofer || '---'}<br><br>
+                    <b>Patentes:</b> ${d.chasis} / ${d.acoplado}<br>
+                    <b>Fecha:</b> ${d.fecha}
+                `;
+                document.getElementById('contenido-info').innerHTML = html;
+                document.getElementById('modal-info').style.display = 'flex';
             });
         }
+        function cerrarInfo() { document.getElementById('modal-info').style.display = 'none'; }
 
         async function abrirEditor(id) {
             const doc = await db.collection("reportes").doc(id).get();
             reporteActual = {id, ...doc.data()};
             imgObj.src = reporteActual.fotos[0]; 
+            imgObj.crossOrigin = "Anonymous";
             imgObj.onload = () => { 
+                const canvas = document.getElementById('canvas-pdf');
+                const ctx = canvas.getContext('2d');
+                canvas.width = imgObj.width; canvas.height = imgObj.height;
+                ctx.drawImage(imgObj, 0, 0);
+                originalPixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 document.getElementById('modal-pdf').style.display='flex'; 
                 procesarFiltro(); 
             }
@@ -172,27 +204,33 @@
         function procesarFiltro() {
             const canvas = document.getElementById('canvas-pdf');
             const ctx = canvas.getContext('2d');
-            canvas.width = imgObj.width; canvas.height = imgObj.height;
-            
-            const b = document.getElementById('brillo').value;
-            const c = document.getElementById('contraste').value;
-            const e = document.getElementById('exposicion').value;
+            const imageData = ctx.createImageData(originalPixels);
+            const data = imageData.data;
+            const src = originalPixels.data;
 
-            // FILTRADO LINEAL (Sin redondel central)
-            // Se resetea el contexto para aplicar filtros puros
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            ctx.filter = `grayscale(1) brightness(${b}%) contrast(${c}%)`;
-            ctx.drawImage(imgObj, 0, 0);
-            
-            // ACLARECER PAPEL (Uniforme en toda la hoja)
-            if(e > 0) {
-                ctx.globalAlpha = e / 200;
-                ctx.globalCompositeOperation = "screen";
-                ctx.fillStyle = "white";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.globalCompositeOperation = "source-over";
-                ctx.globalAlpha = 1.0;
+            const b = parseInt(document.getElementById('brillo').value);
+            const c = parseFloat(document.getElementById('contraste').value);
+            const u = parseInt(document.getElementById('umbral').value);
+
+            // PROCESAMIENTO PÍXEL POR PÍXEL (Uniforme y perfecto)
+            for (let i = 0; i < src.length; i += 4) {
+                // Convertir a Gris
+                let avg = (src[i] + src[i+1] + src[i+2]) / 3;
+                
+                // Aplicar Brillo
+                avg += b;
+                
+                // Aplicar Contraste
+                avg = (avg - 128) * c + 128;
+
+                // Aplicar Blanqueado de fondo (Umbral)
+                if (avg > 255 - u) avg = 255;
+                if (avg < 0) avg = 0;
+
+                data[i] = data[i+1] = data[i+2] = avg;
+                data[i+3] = 255; // Opacidad total
             }
+            ctx.putImageData(imageData, 0, 0);
 
             document.getElementById('btn-descargar').onclick = () => {
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
@@ -216,6 +254,7 @@
     </script>
 </body>
 </html>
+
 
 
 
