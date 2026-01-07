@@ -133,11 +133,23 @@
         function cargarReportes() {
             db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snap => {
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
-                snap.forEach(doc => {
-                    const r = doc.data(); r.id = doc.id;
+                let lista = [];
+                snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
+
+                // ORDEN: Primero los VACÍO arriba, luego los CARGADO abajo.
+                lista.sort((a, b) => {
+                    if (a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
+                    if (a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
+                    return 0; // Dentro de cada grupo se mantiene el orden de fecha por el orderBy de Firebase
+                });
+
+                lista.forEach(r => {
                     const claseEstado = r.estado === 'VACÍO' ? 'bg-vacio' : 'bg-cargado';
                     const tel = diccChoferes[r.chofer]?.telefono || "";
-                    const ws = tel ? `<a class="btn-ws" target="_blank" href="https://wa.me/${tel}?text=Hola%20${r.chofer},%20hay%20un%20error%20en%20el%20ticket.">WS</a>` : "";
+                    // MENSAJE DE WHATSAPP MODIFICADO
+                    const msjWS = encodeURIComponent(`Hola ${r.chofer}, tu foto del último ticket ha sido rechazada, ¿me podrías mandar otra?`);
+                    const ws = tel ? `<a class="btn-ws" target="_blank" href="https://wa.me/${tel}?text=${msjWS}">WS</a>` : "";
+                    
                     t.innerHTML += `<tr>
                         <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
                         <td>${r.fecha}</td>
@@ -249,6 +261,7 @@
     </script>
 </body>
 </html>
+
 
 
 
