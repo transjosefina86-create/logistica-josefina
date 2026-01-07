@@ -31,12 +31,10 @@
         .bg-vacio { background: var(--verde); }
         .bg-cargado { background: var(--naranja); }
 
-        /* MODAL OJITO RENGLONES JUNTOS */
         .modal-detalles { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:11000; }
         .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:550px; text-align:left; }
         .linea-dato { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 15px; color: #333; }
 
-        /* MODAL FILTRO CAMSCANNER */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
         .modal-box { background:white; padding:20px; border-radius:25px; width:95%; max-width:1100px; text-align:center; }
         #canvas-pdf { width: 100%; max-height: 55vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
@@ -130,7 +128,6 @@
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
                 let lista = []; snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
                 
-                // ORDEN: VACÍOS primero
                 lista.sort((a,b) => {
                     if(a.estado === "VACÍO" && b.estado !== "VACÍO") return -1;
                     if(a.estado !== "VACÍO" && b.estado === "VACÍO") return 1;
@@ -164,7 +161,6 @@
         function verDetalles(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                // Renglones juntos para copiar fácil
                 document.getElementById('contenido-info').innerHTML = `
                     <div class="linea-dato"><b>TRANSPORTE:</b> ${d.transporte}</div>
                     <div class="linea-dato"><b>CUIT TRANS:</b> ${d.cuit_trans}</div>
@@ -196,29 +192,19 @@
             const canvas = document.getElementById('canvas-pdf');
             const ctx = canvas.getContext('2d');
             canvas.width = imgObj.width; canvas.height = imgObj.height;
-            
             const l = document.getElementById('limpieza').value;
             const c = document.getElementById('contraste').value;
             const n = document.getElementById('negro').value;
-
             ctx.clearRect(0,0,canvas.width,canvas.height);
-            
-            // Paso 1: Filtro Base (Escala de grises, brillo y alto contraste)
             ctx.filter = `grayscale(100%) brightness(${l}%) contrast(${c}%)`;
             ctx.drawImage(imgObj, 0, 0);
-
-            // Paso 2: Refuerzo de Negro (Efecto CamScanner real)
             if(n > 1) {
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
                 const tCtx = tempCanvas.getContext('2d');
                 tCtx.drawImage(canvas, 0, 0);
-
                 ctx.globalCompositeOperation = "multiply";
-                // Repetimos el dibujo para intensificar el negro sin tocar el blanco
-                for(let i=0; i < Math.floor(n); i++) {
-                    ctx.drawImage(tempCanvas, 0, 0);
-                }
+                for(let i=0; i < Math.floor(n); i++) { ctx.drawImage(tempCanvas, 0, 0); }
                 ctx.globalCompositeOperation = "source-over";
             }
 
@@ -226,21 +212,18 @@
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                
-                // ENCABEZADO CON DATOS EN EL PDF
                 pdf.setFontSize(11);
-                pdf.setTextColor(0, 0, 0);
                 pdf.text(`TRANSPORTE: ${reporteActual.transporte}`, 10, 10);
                 pdf.text(`CHOFER: ${reporteActual.chofer} | PATENTES: ${reporteActual.chasis} / ${reporteActual.acoplado}`, 10, 15);
                 pdf.text(`FECHA: ${reporteActual.fecha} | EQUIPO: ${reporteActual.equipo || 'Común'}`, 10, 20);
-                
                 pdf.addImage(imgData, 'JPEG', 5, 25, 200, 260); 
                 pdf.save(`TICKET_${reporteActual.chofer}.pdf`);
             };
         }
 
+        // MEJORA 1: Vaciamos fotos para que al chofer le salte el cartel de aviso
         function pedirFoto() { 
-            if(confirm("¿Pedir que manden la foto otra vez? No se borrarán los datos del horario.")) {
+            if(confirm("¿Pedir que manden la foto otra vez? Se borrarán las fotos actuales.")) {
                 db.collection("reportes").doc(reporteActual.id).update({ fotos: [] });
                 cerrarModal();
             }
@@ -249,10 +232,21 @@
         function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d => l += `${d.id}: ${d.data().clave}\n`); alert(l); }); }
         function nuevaClave() { const n = prompt("Nombre:"); const c = prompt("Clave:"); if(n && c) db.collection("accesos_choferes").doc(n).set({clave: c}); }
         function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
-        function borrarSels() { if(confirm("¿Borrar seleccionados?")) { document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); } }
+
+        // MEJORA 2: Ahora borra de Firebase físicamente para no ocupar espacio
+        function borrarSels() { 
+            if(confirm("¿Borrar definitivamente de Firebase los seleccionados?")) { 
+                document.querySelectorAll('.chk:checked').forEach(x => {
+                    db.collection("reportes").doc(x.dataset.id).delete()
+                    .then(() => console.log("Eliminado de Firebase"))
+                    .catch((e) => console.error("Error al borrar:", e));
+                }); 
+            } 
+        }
     </script>
 </body>
 </html>
+
 
 
 
