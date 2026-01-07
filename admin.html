@@ -8,40 +8,31 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --naranja: #ff6600; --oscuro: #222; --verde: #27ae60; --azul: #2980b9; }
+        :root { --naranja: #ff6600; --oscuro: #222; --verde: #27ae60; --azul: #2980b9; --rojo: #e74c3c; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
-        
         #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:9999; display:flex; justify-content:center; align-items:center; }
         .card-login { background:white; padding:40px; border-radius:25px; text-align:center; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
-
         .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; display:none; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
         .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); text-shadow: 1px 1px 0px #000; }
-
         table { width: 100%; border-collapse: collapse; }
         th { background: var(--oscuro); color: white; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        
         .btn { border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
         .btn-ojo { background: var(--azul); }
-        .btn-pdf { background: #e74c3c; }
+        .btn-pdf { background: var(--rojo); }
         .btn-negro { background: var(--oscuro); }
-        .btn-ws { background: #25d366; color: white; text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-left: 5px; }
-        
+        .btn-ws { background: #25d366; color: white; text-decoration: none; padding: 5px 8px; border-radius: 6px; font-size: 11px; margin-left: 5px; font-weight: bold; display: inline-block; }
         .badge { padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; border: none; text-transform: uppercase; width: 110px; text-align: center; }
         .bg-vacio { background: var(--verde); }
         .bg-cargado { background: var(--naranja); }
-
+        
+        /* MODALES */
         .modal-detalles { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:11000; }
-        .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:550px; text-align:left; }
-        .linea-dato { border-bottom: 1px solid #eee; padding: 8px 0; font-size: 15px; color: #333; }
-
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
-        .modal-box { background:white; padding:20px; border-radius:25px; width:95%; max-width:1100px; text-align:center; }
-        #canvas-pdf { width: 100%; max-height: 55vh; object-fit: contain; border: 2px solid #333; border-radius: 12px; background: #fff; margin-bottom: 10px; }
-        .controles-scanner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-        input[type=range] { width: 100%; accent-color: var(--naranja); }
-        .footer-modal { display: flex; gap: 10px; }
+        .detalles-box { background:white; padding:30px; border-radius:20px; width:90%; max-width:600px; text-align:left; max-height: 90vh; overflow-y: auto; position: relative; }
+        .linea-dato { border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px; color: #333; }
+        .input-edit { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; margin-top: 5px; font-size: 14px; box-sizing: border-box; }
+        .item-chofer { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 10px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -54,11 +45,30 @@
         </div>
     </div>
 
-    <div id="modal-info" class="modal-detalles">
+    <div id="modal-viaje" class="modal-detalles">
         <div class="detalles-box">
-            <h3 style="color:var(--naranja); margin-top:0;">Información del Viaje</h3>
-            <div id="contenido-info" style="user-select: all;"></div><br>
-            <button class="btn btn-negro" style="width:100%" onclick="cerrarInfo()">CERRAR</button>
+            <h3 style="color:var(--naranja); margin-top:0;">Editar Información del Viaje</h3>
+            <div id="cont-viaje"></div><br>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-negro" style="flex:1" onclick="cerrarVentana('modal-viaje')">CERRAR</button>
+                <button class="btn" style="background:var(--verde); flex:1" onclick="guardarCambiosViaje()">GUARDAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-choferes" class="modal-detalles">
+        <div class="detalles-box" style="max-width: 500px;">
+            <h3 style="color:var(--naranja); margin-top:0;">Gestión de Choferes</h3>
+            <div id="lista-choferes-cont" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px;"></div>
+            <hr>
+            <h4>Agregar Nuevo Chofer</h4>
+            <input type="text" id="nuevo-nombre" class="input-edit" placeholder="Nombre completo">
+            <input type="text" id="nueva-clave" class="input-edit" placeholder="Clave">
+            <input type="text" id="nuevo-tel" class="input-edit" placeholder="WhatsApp (Ej: 5493584123456)"><br><br>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-negro" style="flex:1" onclick="cerrarVentana('modal-choferes')">CERRAR</button>
+                <button class="btn" style="background:var(--verde); flex:1" onclick="agregarChofer()">AGREGAR</button>
+            </div>
         </div>
     </div>
 
@@ -66,8 +76,7 @@
         <div class="header">
             <div class="logo">La Josefina</div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-negro" onclick="verClaves()">CHOFERES</button>
-                <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO</button>
+                <button class="btn btn-negro" onclick="abrirGestionChoferes()">GESTIONAR CHOFERES</button>
                 <button class="btn btn-pdf" style="background:#444;" onclick="borrarSels()">BORRAR SELECCIONADOS</button>
             </div>
         </div>
@@ -79,7 +88,7 @@
                     <th>ESTADO</th>
                     <th>CHOFER</th>
                     <th>TRANSPORTE</th>
-                    <th>PATENTES (CH/AC)</th>
+                    <th>PATENTES</th>
                     <th>ACCIONES</th>
                 </tr>
             </thead>
@@ -87,124 +96,124 @@
         </table>
     </div>
 
-    <div id="modal-pdf" class="modal">
-        <div class="modal-box">
-            <h3 id="tit-chof" style="margin:0 0 10px 0; color:var(--naranja)">Procesador de Imagen Estilo CamScanner</h3>
-            <canvas id="canvas-pdf"></canvas>
-            <div class="controles-scanner">
-                <div><label style="font-size:11px; font-weight:bold;">LIMPIEZA</label><input type="range" id="limpieza" min="100" max="250" value="130" oninput="procesarFiltro()"></div>
-                <div><label style="font-size:11px; font-weight:bold;">NITIDEZ</label><input type="range" id="contraste" min="100" max="500" value="160" oninput="procesarFiltro()"></div>
-                <div><label style="font-size:11px; font-weight:bold;">FUERZA NEGRO</label><input type="range" id="negro" min="1" max="8" step="0.5" value="1" oninput="procesarFiltro()"></div>
-            </div>
-            <div class="footer-modal">
-                <button class="btn" style="background:#666; flex:1" onclick="cerrarModal()">CANCELAR</button>
-                <button class="btn" style="background:#f39c12; flex:1" onclick="pedirFoto()">PEDIR OTRA FOTO</button>
-                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">GENERAR PDF CON DATOS</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let imgObj = new Image();
-        let reporteActual = null;
-        let choferesData = {};
+        let reporteIdActual = null;
+        let diccChoferes = {};
 
         function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); syncChoferes(); } }
 
-        function syncChoferes() { db.collection("accesos_choferes").onSnapshot(s => { s.forEach(doc => { choferesData[doc.id] = doc.data(); }); }); }
+        function syncChoferes() { 
+            db.collection("accesos_choferes").onSnapshot(s => { 
+                diccChoferes = {};
+                s.forEach(doc => { diccChoferes[doc.id] = doc.data(); });
+                if(document.getElementById('modal-choferes').style.display === 'flex') dibujarListaChoferes();
+            }); 
+        }
 
         function cargarReportes() {
-            db.collection("reportes").onSnapshot(snap => {
+            db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snap => {
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
-                let lista = []; snap.forEach(doc => { let d = doc.data(); d.id = doc.id; lista.push(d); });
-                lista.sort((a,b) => (a.estado === "VACÍO" && b.estado !== "VACÍO") ? -1 : 1);
-
-                lista.forEach(r => {
-                    const tieneFotos = (r.fotos && r.fotos.length > 0);
+                snap.forEach(doc => {
+                    const r = doc.data(); r.id = doc.id;
                     const claseEstado = r.estado === 'VACÍO' ? 'bg-vacio' : 'bg-cargado';
-                    const tel = choferesData[r.chofer]?.telefono || "";
-                    const wsBtn = tel ? `<a class="btn-ws" target="_blank" href="https://wa.me/${tel}?text=Hola%20${r.chofer},%20la%20foto%20salio%20mal.%20Entra%20a%20la%20app%20y%20manda%20una%20nueva.">WS</a>` : "";
-
+                    const tel = diccChoferes[r.chofer]?.telefono || "";
+                    const ws = tel ? `<a class="btn-ws" target="_blank" href="https://wa.me/${tel}?text=Hola%20${r.chofer},%20hay%20un%20error%20en%20el%20ticket.">WS</a>` : "";
                     t.innerHTML += `<tr>
                         <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
-                        <td><b>${r.fecha}</b></td>
-                        <td><button class="badge ${claseEstado}" onclick="cambiarEstadoManual('${r.id}', '${r.estado}')">${r.estado}</button></td>
-                        <td><b>${r.chofer}</b> ${wsBtn}</td>
-                        <td>${r.transporte || '---'}</td>
-                        <td>${r.chasis || '---'} / ${r.acoplado || '---'}</td>
-                        <td>
-                            <button class="btn btn-ojo" onclick="verDetalles('${r.id}')">👁️</button>
-                            ${tieneFotos ? `<button class="btn btn-pdf" onclick="abrirEditor('${r.id}')">PDF</button>` : ''}
-                        </td>
+                        <td>${r.fecha}</td>
+                        <td><button class="badge ${claseEstado}" onclick="cambiarEstado('${r.id}','${r.estado}')">${r.estado}</button></td>
+                        <td><b>${r.chofer}</b> ${ws}</td>
+                        <td>${r.transporte || '--'}</td>
+                        <td>${r.chasis || '--'} / ${r.acoplado || '--'}</td>
+                        <td><button class="btn btn-ojo" onclick="verDetalles('${r.id}')">👁️</button></td>
                     </tr>`;
                 });
             });
         }
 
-        async function cambiarEstadoManual(id, estadoActual) {
-            await db.collection("reportes").doc(id).update({ estado: estadoActual === 'VACÍO' ? 'CARGADO' : 'VACÍO' });
-        }
-
+        // GESTIÓN DE VIAJES
         function verDetalles(id) {
+            reporteIdActual = id;
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                document.getElementById('contenido-info').innerHTML = `
-                    <div class="linea-dato"><b>TRANSPORTE:</b> ${d.transporte}</div>
-                    <div class="linea-dato"><b>CUIT TRANS:</b> ${d.cuit_trans}</div>
-                    <div class="linea-dato"><b>CHOFER:</b> ${d.chofer}</div>
-                    <div class="linea-dato"><b>PATENTES:</b> ${d.chasis} / ${d.acoplado}</div>
-                    <div class="linea-dato"><b>EQUIPO:</b> ${d.equipo || 'Común'}</div>
-                    <div class="linea-dato"><b>FECHA:</b> ${d.fecha}</div>
+                document.getElementById('cont-viaje').innerHTML = `
+                    <label>Transporte</label><input id="e-trans" class="input-edit" value="${d.transporte || ''}">
+                    <label>Patente Chasis</label><input id="e-ch" class="input-edit" value="${d.chasis || ''}">
+                    <label>Patente Acoplado</label><input id="e-ac" class="input-edit" value="${d.acoplado || ''}">
+                    <label>Fecha</label><input id="e-fecha" class="input-edit" value="${d.fecha || ''}">
                 `;
-                document.getElementById('modal-info').style.display = 'flex';
+                document.getElementById('modal-viaje').style.display = 'flex';
             });
         }
 
-        async function abrirEditor(id) {
-            const doc = await db.collection("reportes").doc(id).get();
-            reporteActual = {id, ...doc.data()};
-            imgObj.src = reporteActual.fotos[0]; 
-            imgObj.onload = () => { document.getElementById('modal-pdf').style.display='flex'; procesarFiltro(); }
+        async function guardarCambiosViaje() {
+            await db.collection("reportes").doc(reporteIdActual).update({
+                transporte: document.getElementById('e-trans').value,
+                chasis: document.getElementById('e-ch').value,
+                acoplado: document.getElementById('e-ac').value,
+                fecha: document.getElementById('e-fecha').value
+            });
+            cerrarVentana('modal-viaje');
         }
 
-        function procesarFiltro() {
-            const canvas = document.getElementById('canvas-pdf'); const ctx = canvas.getContext('2d');
-            canvas.width = imgObj.width; canvas.height = imgObj.height;
-            const l = document.getElementById('limpieza').value, c = document.getElementById('contraste').value, n = document.getElementById('negro').value;
-            ctx.filter = `grayscale(100%) brightness(${l}%) contrast(${c}%)`;
-            ctx.drawImage(imgObj, 0, 0);
-            if(n > 1) {
-                const temp = document.createElement('canvas'); temp.width = canvas.width; temp.height = canvas.height;
-                temp.getContext('2d').drawImage(canvas, 0, 0);
-                ctx.globalCompositeOperation = "multiply";
-                for(let i=0; i < Math.floor(n); i++) ctx.drawImage(temp, 0, 0);
-                ctx.globalCompositeOperation = "source-over";
+        // GESTIÓN DE CHOFERES (RECUADRO ESTILO OJO)
+        function abrirGestionChoferes() {
+            dibujarListaChoferes();
+            document.getElementById('modal-choferes').style.display = 'flex';
+        }
+
+        function dibujarListaChoferes() {
+            const cont = document.getElementById('lista-choferes-cont');
+            cont.innerHTML = "";
+            for (let id in diccChoferes) {
+                cont.innerHTML += `
+                    <div class="item-chofer">
+                        <div style="flex:1">
+                            <b>${id}</b><br>
+                            <small>Clave: ${diccChoferes[id].clave} | Tel: ${diccChoferes[id].telefono || '---'}</small>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn" style="background:var(--azul); padding:5px 10px;" onclick="cargarEdicionChofer('${id}')">✎</button>
+                            <button class="btn" style="background:var(--rojo); padding:5px 10px;" onclick="eliminarChofer('${id}')">✖</button>
+                        </div>
+                    </div>
+                `;
             }
-            document.getElementById('btn-descargar').onclick = () => {
-                const { jsPDF } = window.jspdf; const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.text(`TRANSPORTE: ${reporteActual.transporte} | CHOFER: ${reporteActual.chofer}`, 10, 10);
-                pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 5, 20, 200, 260); 
-                pdf.save(`TICKET_${reporteActual.chofer}.pdf`);
-            };
         }
 
-        function pedirFoto() { 
-            if(confirm("¿Rechazar foto?")) { db.collection("reportes").doc(reporteActual.id).update({ fotos: [] }); cerrarModal(); }
+        function agregarChofer() {
+            const n = document.getElementById('nuevo-nombre').value.trim();
+            const c = document.getElementById('nueva-clave').value.trim();
+            const t = document.getElementById('nuevo-tel').value.trim();
+            if(n && c) {
+                db.collection("accesos_choferes").doc(n).set({ clave: c, telefono: t });
+                document.getElementById('nuevo-nombre').value = ""; document.getElementById('nueva-clave').value = ""; document.getElementById('nuevo-tel').value = "";
+            } else { alert("Nombre y Clave son obligatorios"); }
         }
-        function cerrarModal() { document.getElementById('modal-pdf').style.display='none'; }
-        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d => l += `${d.id}: ${d.data().clave} (${d.data().telefono || 'Sin Tel'})\n`); alert(l); }); }
-        function nuevaClave() { 
-            const n = prompt("Nombre:"); const c = prompt("Clave:"); const t = prompt("Teléfono (549...):");
-            if(n && c) db.collection("accesos_choferes").doc(n).set({clave: c, telefono: t}); 
+
+        function cargarEdicionChofer(id) {
+            const c = diccChoferes[id];
+            document.getElementById('nuevo-nombre').value = id;
+            document.getElementById('nueva-clave').value = c.clave;
+            document.getElementById('nuevo-tel').value = c.telefono || "";
+            alert("Los datos se cargaron abajo para editar. Modificalos y pulsa AGREGAR (se sobrescribirá).");
         }
+
+        function eliminarChofer(id) {
+            if(confirm("¿Borrar chofer " + id + "?")) db.collection("accesos_choferes").doc(id).delete();
+        }
+
+        function cerrarVentana(id) { document.getElementById(id).style.display = 'none'; }
+        async function cambiarEstado(id, est) { await db.collection("reportes").doc(id).update({ estado: est === 'VACÍO' ? 'CARGADO' : 'VACÍO' }); }
         function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
-        function borrarSels() { if(confirm("¿Borrar permanentemente de Firebase?")) { document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); } }
+        function borrarSels() { if(confirm("¿Borrar seleccionados?")) { document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); } }
     </script>
 </body>
 </html>
+
 
 
 
