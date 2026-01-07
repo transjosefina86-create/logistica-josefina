@@ -102,7 +102,15 @@
         let reporteActual = null;
         let historicoPatentes = {};
 
-        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); } else { alert("Clave Incorrecta"); } }
+        function entrar() { 
+            if(document.getElementById('pass-adm').value === "1234") { 
+                document.getElementById('bloqueo').style.display='none'; 
+                document.getElementById('app').style.display='block'; 
+                cargarReportes(); 
+            } else { 
+                alert("Clave Incorrecta"); 
+            } 
+        }
 
         function cargarReportes() {
             db.collection("reportes").onSnapshot(snap => {
@@ -165,11 +173,16 @@
         async function abrirEditor(id) {
             const doc = await db.collection("reportes").doc(id).get();
             reporteActual = {id, ...doc.data()};
-            document.getElementById('nom-chof-pdf').innerText = "Ticket: " + reporteActual.chofer;
+            document.getElementById('nom-chof-pdf').innerText = `Ajuste de Ticket: ${reporteActual.chofer}`;
+            
+            // Reestablecer los valores de los sliders al abrir el editor
+            document.getElementById('brillo').value = "110";
+            document.getElementById('contraste').value = "180";
+
             imgObj.src = reporteActual.fotos[0]; 
             imgObj.onload = () => {
                 document.getElementById('modal-pdf').style.display='flex';
-                procesarFiltro();
+                procesarFiltro(); // Se aplica el filtro inicial automático
             }
         }
 
@@ -223,6 +236,38 @@
     </script>
 </body>
 </html>
+```http://googleusercontent.com/image_generation_content/1
+
+
+### ¿Qué funciones confirmadas tiene esta versión?
+
+* **Pantalla de Bloqueo con Clave:** Seguridad al iniciar el Administrador.
+* **Listado de Reportes:** Muestra todos los viajes de los choferes.
+* **Orden Cronológico:** "VACÍO" arriba, "CARGADO" abajo, siempre ordenados por la hora de llegada.
+* **Hora de Llegada (Chofer):** Muestra la hora que el chofer marcó en su celular.
+* **Hora de Recibido (Servidor):** Muestra la hora real en que el reporte ingresó al sistema, útil para detectar retrasos por falta de internet o manipulación de horario.
+* **Alerta de Cambio de Patente:** Avisa con un "⚠️ CAMBIO" en rojo si el chasis de un chofer es diferente al de su último reporte.
+* **Detalles Completos (Botón 👁️):** Al hacer clic, se muestra una alerta con toda la información del transporte, CUITs, chofer y patentes.
+* **Botón PDF Dinámico:** Solo aparece si hay fotos asociadas al reporte. Muestra la cantidad de fotos entre paréntesis (ej., "PDF (2)").
+* **Editor de PDF con Filtros:**
+    * Se abre automáticamente con un filtro preestablecido (Brillo 110%, Contraste 180%) para aclarar el ticket.
+    * Sliders de **Brillo (50-250%)** y **Nitidez/Contraste (100-450%)** para ajuste manual en tiempo real.
+    * **Descarga de PDF Multipágina:** Si hay varias fotos, se generan en un solo PDF con una foto por página, incluyendo un encabezado claro.
+    * **Botón "RECHAZAR FOTO":** Elimina el reporte completo de la base de datos, indicando al chofer que debe enviar uno nuevo.
+* **Gestión de Choferes:** Botones para ver las claves de los choferes, agregar nuevos usuarios y borrar existentes.
+* **Selección y Borrado Múltiple:** Checkboxes para seleccionar varios reportes y eliminarlos en lote.
+
+Con esto, el panel de Administrador está completo, robusto y con todas las herramientas de control y verificación que solicitaste.
+
+**Ahora sí, pegalo con confianza.** Luego, te sugiero que realices estas pruebas:
+
+1.  **Envío Normal:** Un chofer envía un reporte con internet.
+2.  **Envío con Fotos Múltiples:** Un chofer envía dos o tres fotos seguidas en el mismo reporte.
+3.  **Envío sin Internet:** Un chofer se pone en "Modo Avión", hace un reporte y luego desactiva el modo avión para ver cómo se registra la "Hora de Recibido".
+4.  **Rechazo de Foto:** Abrí un PDF y usá el botón "RECHAZAR FOTO" para ver cómo se elimina el reporte.
+
+¡Espero tu feedback después de las pruebas!
+
 
 
 
