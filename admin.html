@@ -11,7 +11,6 @@
         :root { --naranja: #ff6600; --oscuro: #222; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
         
-        /* BLOQUEO */
         #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:9999; display:flex; justify-content:center; align-items:center; }
         .card-login { background:white; padding:40px; border-radius:25px; text-align:center; box-shadow: 0 10px 50px rgba(0,0,0,0.5); }
 
@@ -20,33 +19,20 @@
         .logo { font-family: 'Brush Script MT', cursive; font-size: 38px; color: var(--naranja); }
 
         table { width: 100%; border-collapse: collapse; background: white; }
-        th { background: var(--naranja); color: white; padding: 12px; text-align: left; font-size: 14px; text-transform: uppercase; }
+        th { background: var(--naranja); color: white; padding: 12px; text-align: left; font-size: 14px; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
         
-        .btn { border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn { border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; }
         .btn-ojo { background: #3498db; }
-        .btn-pdf { background: #e74c3c; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .btn-pdf { background: #e74c3c; }
         .btn-negro { background: var(--oscuro); }
-        .alerta-patente { background: #ffeded; color: #c0392b; font-weight: bold; padding: 4px 8px; border-radius: 6px; border: 1px solid #f5c6cb; font-size: 11px; }
 
-        /* MODAL GIGANTE */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:10000; }
-        .modal-box { background:white; padding:20px; border-radius:25px; width:98%; max-width:900px; text-align:center; position: relative; }
+        .modal-box { background:white; padding:15px; border-radius:25px; width:98%; max-width:950px; text-align:center; }
         
-        #canvas-pdf { 
-            width: 100%; 
-            max-height: 70vh; /* Ocupa el 70% del alto de la pantalla */
-            object-fit: contain; 
-            border: 2px solid #333; 
-            border-radius: 12px; 
-            background: #000;
-        }
-
-        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f1f1f1; padding: 15px; border-radius: 15px; margin: 15px 0; }
-        .sliders label { font-size: 12px; font-weight: bold; color: #444; display: block; margin-bottom: 5px; }
-        
-        input[type=range] { width: 100%; cursor: pointer; }
-
+        #canvas-pdf { width: 100%; max-height: 75vh; border: 2px solid #333; border-radius: 12px; background: #000; }
+        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f1f1f1; padding: 15px; border-radius: 15px; margin: 10px 0; }
+        .sliders label { font-size: 11px; font-weight: bold; color: #444; }
         .controles-footer { display: flex; gap: 15px; justify-content: center; }
     </style>
 </head>
@@ -55,9 +41,8 @@
     <div id="bloqueo">
         <div class="card-login">
             <div class="logo">La Josefina</div>
-            <h3 style="margin-top:0">Panel Administrativo</h3>
-            <input type="password" id="pass-adm" placeholder="Clave de Acceso" style="padding:15px; width:220px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
-            <button class="btn btn-negro" style="width:100%; padding:18px; font-size:16px;" onclick="entrar()">ENTRAR AL SISTEMA</button>
+            <input type="password" id="pass-adm" placeholder="Clave" style="padding:15px; width:200px; border-radius:12px; border:2px solid #ddd; font-size: 18px; text-align:center;"><br><br>
+            <button class="btn btn-negro" style="width:100%;" onclick="entrar()">ENTRAR</button>
         </div>
     </div>
 
@@ -88,84 +73,53 @@
 
     <div id="modal-pdf" class="modal">
         <div class="modal-box">
-            <h2 id="nom-chof-pdf" style="margin:0 0 10px 0; color:var(--naranja); font-family: 'Segoe UI';">Editor de Ticket Pro</h2>
-            
             <canvas id="canvas-pdf"></canvas>
-            
             <div class="sliders">
                 <div>
-                    <label>AJUSTE DE BRILLO</label>
+                    <label>BRILLO</label>
                     <input type="range" id="brillo" min="50" max="250" value="110" oninput="procesarFiltro()">
                 </div>
                 <div>
-                    <label>NITIDEZ (CONTRASTE ALTO)</label>
+                    <label>NITIDEZ (MÁX 450%)</label>
                     <input type="range" id="contraste" min="100" max="450" value="180" oninput="procesarFiltro()">
                 </div>
             </div>
-
             <div class="controles-footer">
-                <button class="btn" style="background:#c0392b; flex:1" onclick="rechazarFoto()">✖ RECHAZAR</button>
-                <button class="btn btn-negro" style="flex:1" onclick="cerrarModal()">CANCELAR</button>
-                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">✔ DESCARGAR PDF</button>
+                <button class="btn" style="background:#c0392b; flex:1" onclick="rechazarFoto()">RECHAZAR</button>
+                <button class="btn btn-negro" style="flex:1" onclick="cerrarModal()">VOLVER</button>
+                <button class="btn btn-pdf" style="flex:2; font-size:18px;" id="btn-descargar">DESCARGAR PDF LIMPIO</button>
             </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE (Gabriel, asegurate de que tus claves sean estas)
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let imgObj = new Image();
         let reporteActual = null;
-        let historicoPatentes = {};
 
-        function entrar() { 
-            if(document.getElementById('pass-adm').value === "1234") { 
-                document.getElementById('bloqueo').style.display='none'; 
-                document.getElementById('app').style.display='block'; 
-                cargarReportes(); 
-            } else { alert("Clave Incorrecta"); } 
-        }
+        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarReportes(); } else { alert("Error"); } }
 
         function cargarReportes() {
             db.collection("reportes").onSnapshot(snap => {
                 const t = document.getElementById('tabla-body'); t.innerHTML = "";
                 let lista = []; snap.forEach(doc => lista.push({id: doc.id, ...doc.data()}));
-                
-                lista.sort((a,b) => {
-                    if(a.estado === "VACÍO" && b.estado === "CARGADO") return -1;
-                    if(a.estado === "CARGADO" && b.estado === "VACÍO") return 1;
-                    return new Date(a.fecha.replace(',','')) - new Date(b.fecha.replace(',',''));
-                });
+                lista.sort((a,b) => new Date(a.fecha.replace(',','')) - new Date(b.fecha.replace(',','')));
 
                 lista.forEach(r => {
-                    let alerta = "";
-                    if(historicoPatentes[r.chofer] && historicoPatentes[r.chofer] !== r.chasis) {
-                        alerta = " <span class='alerta-patente'>⚠️ CAMBIO</span>";
-                    }
-                    historicoPatentes[r.chofer] = r.chasis;
-
-                    if(!r.hora_servidor) {
-                        const h = new Date();
-                        const horaAct = h.getHours().toString().padStart(2,'0') + ":" + h.getMinutes().toString().padStart(2,'0');
-                        db.collection("reportes").doc(r.id).update({hora_servidor: horaAct});
-                    }
-
-                    // Lógica corregida para mostrar el botón PDF solo si hay fotos
                     const tieneFotos = (r.fotos && r.fotos.length > 0);
-
                     t.innerHTML += `<tr>
                         <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
-                        <td style="font-weight:bold;">${r.fecha.split(',')[1] || r.fecha} hs</td>
-                        <td style="color:#666">${r.hora_servidor || '--:--'} hs</td>
-                        <td style="color:${r.estado==='VACÍO'?'#27ae60':'#e67e22'}; font-weight:bold;">${r.estado}</td>
+                        <td>${r.fecha.split(',')[1] || r.fecha}</td>
+                        <td style="color:#888">${r.hora_servidor || '--:--'}</td>
+                        <td style="color:${r.estado==='VACÍO'?'green':'orange'}; font-weight:bold;">${r.estado}</td>
                         <td><b>${r.chofer}</b></td>
-                        <td>${r.chasis}${alerta}</td>
+                        <td>${r.chasis}</td>
                         <td>
                             <button class="btn btn-ojo" onclick="verDetalles('${r.id}')">👁️</button>
-                            ${tieneFotos ? `<button class="btn btn-pdf" onclick="abrirEditor('${r.id}')">PDF (${r.fotos.length})</button>` : ''}
+                            ${tieneFotos ? `<button class="btn btn-pdf" onclick="abrirEditor('${r.id}')">PDF</button>` : ''}
                         </td>
                     </tr>`;
                 });
@@ -175,66 +129,49 @@
         function verDetalles(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                alert(`DETALLES:\n\nTransporte: ${d.transporte}\nCUIT: ${d.cuit_trans}\nChofer: ${d.chofer}\nPatentes: ${d.chasis} / ${d.acoplado}\n\nLlegada: ${d.fecha}\nInternet: ${d.hora_servidor} hs`);
+                alert(`Transporte: ${d.transporte}\nCUIT: ${d.cuit_trans}\nChofer: ${d.chofer}\nPatentes: ${d.chasis} / ${d.acoplado}`);
             });
         }
 
         async function abrirEditor(id) {
             const doc = await db.collection("reportes").doc(id).get();
             reporteActual = {id, ...doc.data()};
-            document.getElementById('nom-chof-pdf').innerText = `Ticket: ${reporteActual.chofer}`;
-            
             imgObj.src = reporteActual.fotos[0]; 
-            imgObj.onload = () => {
-                document.getElementById('modal-pdf').style.display='flex';
-                procesarFiltro();
-            }
+            imgObj.onload = () => { document.getElementById('modal-pdf').style.display='flex'; procesarFiltro(); }
         }
 
         function procesarFiltro() {
             const canvas = document.getElementById('canvas-pdf');
             const ctx = canvas.getContext('2d');
-            
-            // Ajustar el canvas al tamaño real de la imagen para no perder calidad
-            canvas.width = imgObj.width; 
-            canvas.height = imgObj.height;
-            
-            const b = document.getElementById('brillo').value;
-            const c = document.getElementById('contraste').value;
-            
-            // FILTRO SCANNER PRO: Escala de grises + Brillo + Contraste agresivo
-            ctx.filter = `grayscale(1) brightness(${b}%) contrast(${c}%)`;
+            canvas.width = imgObj.width; canvas.height = imgObj.height;
+            ctx.filter = `grayscale(1) brightness(${document.getElementById('brillo').value}%) contrast(${document.getElementById('contraste').value}%)`;
             ctx.drawImage(imgObj, 0, 0);
 
             document.getElementById('btn-descargar').onclick = () => {
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 reporteActual.fotos.forEach((f, i) => {
                     if(i > 0) pdf.addPage();
-                    // Encabezado estético en el PDF
-                    pdf.setFillColor(255, 102, 0); pdf.rect(0, 0, 210, 15, 'F');
-                    pdf.setTextColor(255); pdf.setFontSize(14); pdf.text("LA JOSEFINA - COMPROBANTE DE CARGA", 10, 10);
-                    
-                    pdf.setTextColor(0); pdf.setFontSize(10);
-                    pdf.text(`CHOFER: ${reporteActual.chofer} | FECHA: ${reporteActual.fecha}`, 10, 22);
-                    
-                    // Imagen procesada con el filtro actual
-                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                    pdf.addImage(imgData, 'JPEG', 10, 30, 190, 250);
+                    // Letra bien chiquita arriba
+                    pdf.setFontSize(8);
+                    pdf.text(`${reporteActual.transporte} - Chofer: ${reporteActual.chofer} - ${reporteActual.fecha}`, 10, 7);
+                    // Foto ocupando casi toda la hoja (desde los 10mm hasta el final)
+                    pdf.addImage(imgData, 'JPEG', 5, 10, 200, 280); 
                 });
                 pdf.save(`Ticket_${reporteActual.chofer}.pdf`);
             };
         }
 
-        function rechazarFoto() { if(confirm("¿Eliminar este ticket y pedir uno nuevo al chofer?")) { db.collection("reportes").doc(reporteActual.id).delete(); cerrarModal(); } }
+        function rechazarFoto() { if(confirm("¿Borrar ticket?")) { db.collection("reportes").doc(reporteActual.id).delete(); cerrarModal(); } }
         function cerrarModal() { document.getElementById('modal-pdf').style.display='none'; }
-        
-        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l="CHOFERES:\n"; s.forEach(d => l += `• ${d.id}: ${d.data().clave}\n`); alert(l); }); }
+        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d => l += `${d.id}: ${d.data().clave}\n`); alert(l); }); }
         function nuevaClave() { const n = prompt("Nombre:"); const c = prompt("Clave:"); if(n && c) db.collection("accesos_choferes").doc(n.toUpperCase()).set({clave: c}); }
         function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
-        function borrarSels() { if(confirm("¿Borrar seleccionados?")) { document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); } }
+        function borrarSels() { if(confirm("¿Borrar?")) { document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); } }
     </script>
 </body>
 </html>
+
 
 
 
