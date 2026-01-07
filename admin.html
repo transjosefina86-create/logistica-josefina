@@ -3,204 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control La Josefina</title>
+    <title>Admin - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --naranja: #ff6600; --oscuro: #222; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; }
         
-        .main-card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 20px; }
-        .logo-admin { font-family: 'Brush Script MT', cursive; font-size: 35px; color: var(--naranja); }
+        #bloqueo { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--oscuro); z-index:2000; display:flex; justify-content:center; align-items:center; }
+        .card-login { background:white; padding:35px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        .main-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; display:none; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--naranja); padding-bottom: 15px; margin-bottom: 15px; }
+        .logo { font-family: 'Brush Script MT', cursive; font-size: 32px; color: var(--naranja); }
 
         table { width: 100%; border-collapse: collapse; }
-        th { background: var(--naranja); color: white; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-
-        .btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin: 2px; }
-        .btn-negro { background: var(--oscuro); }
-        .btn-pdf { background: #e74c3c; }
-        .btn-ojo { background: #3498db; }
+        th { background: var(--naranja); color: white; padding: 10px; text-align: left; font-size: 13px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
         
-        .alerta { color: #e74c3c; font-weight: bold; background: #ffeded; padding: 2px 5px; border-radius: 4px; }
+        .btn { border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-ojo { background: #3498db; }
+        .btn-pdf { background: #e74c3c; }
+        .btn-negro { background: var(--oscuro); }
+        .alerta { background: #ffeded; color: #e74c3c; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
 
-        /* Modales */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 500px; text-align: center; }
-        .info-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
-        canvas { max-width: 100%; border: 1px solid #ddd; margin-bottom: 15px; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:3000; }
+        .modal-box { background:white; padding:20px; border-radius:20px; width:95%; max-width:650px; text-align:center; }
+        canvas { max-width: 100%; height: 350px; border: 1px solid #ccc; border-radius: 10px; background: #eee; }
+        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 10px 0; }
     </style>
 </head>
 <body>
 
-    <div class="main-card" id="panel">
+    <div id="bloqueo">
+        <div class="card-login">
+            <h2 style="color:var(--naranja)">Control Administrativo</h2>
+            <input type="password" id="pass-adm" placeholder="Clave" style="padding:12px; width:180px; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;"><br>
+            <button class="btn btn-negro" style="width:100%" onclick="entrar()">ACCEDER</button>
+        </div>
+    </div>
+
+    <div class="main-card" id="app">
         <div class="header">
-            <div class="logo-admin">La Josefina <small style="font-size:12px; color:#666">Panel Control</small></div>
+            <div class="logo">La Josefina</div>
             <div>
                 <button class="btn btn-negro" onclick="verClaves()">CHOFERES</button>
                 <button class="btn btn-negro" onclick="nuevaClave()">+ NUEVO</button>
-                <button class="btn btn-negro" style="background:#c0392b" onclick="borrarSeleccionados()">BORRAR</button>
+                <button class="btn btn-pdf" style="background:#c0392b" onclick="borrarSels()">BORRAR SELECCIÓN</button>
             </div>
         </div>
-
         <table>
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="master-check" onclick="seleccionarTodo(this)"></th>
-                    <th>HORA</th>
+                    <th><input type="checkbox" id="check-todo" onclick="seleccionarTodo(this)"></th>
+                    <th>HORA LLEGADA</th>
                     <th>ESTADO</th>
                     <th>CHOFER</th>
-                    <th>PATENTES</th>
+                    <th>CHASIS</th>
                     <th>ACCIONES</th>
                 </tr>
             </thead>
-            <tbody id="tabla"></tbody>
+            <tbody id="tabla-body"></tbody>
         </table>
     </div>
 
-    <div id="modal-datos" class="modal">
-        <div class="modal-content">
-            <h3 style="color:var(--naranja)">Detalles del Viaje</h3>
-            <div id="contenido-datos"></div>
-            <button class="btn btn-negro" style="width:100%; margin-top:15px;" onclick="cerrarModales()">CERRAR</button>
-        </div>
-    </div>
-
     <div id="modal-pdf" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <h3>Generar Ticket PDF</h3>
+        <div class="modal-box">
+            <h3 id="titulo-pdf" style="margin:0 0 10px 0;">Ajustar Ticket</h3>
             <canvas id="canvas-pdf"></canvas>
-            <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:10px;">
-                <p style="margin:0 0 10px 0; font-weight:bold; color:#ff6600;">Ajustar Claridad:</p>
-                <label>Brillo: <input type="range" id="brillo" min="50" max="200" value="115" oninput="aplicarFiltroPdf()"></label><br><br>
-                <label>Contraste: <input type="range" id="contraste" min="100" max="350" value="180" oninput="aplicarFiltroPdf()"></label>
+            <div class="sliders">
+                <div><label>BRILLO</label><br><input type="range" id="brillo" min="50" max="250" value="110" oninput="procesar()"></div>
+                <div><label>NITIDEZ (CONTR)</label><br><input type="range" id="contraste" min="100" max="450" value="180" oninput="procesar()"></div>
             </div>
-            <button class="btn btn-pdf" id="descargar-final" style="width:100%; padding:15px; font-size:16px;">IMPRIMIR PDF</button>
-            <button class="btn btn-negro" style="width:100%; margin-top:10px;" onclick="cerrarModales()">CANCELAR</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-pdf" style="background:#c0392b; flex:1" onclick="rechazarFoto()">RECHAZAR / PEDIR OTRA</button>
+                <button class="btn btn-negro" style="flex:1" onclick="cerrar()">CERRAR</button>
+                <button class="btn btn-pdf" style="flex:2" id="btn-descargar">DESCARGAR PDF</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN (Pega la tuya aquí)
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let imgTemporal = new Image();
-        let datosActuales = {};
-        let ultimoViajePorChofer = {};
+        let imgCache = new Image();
+        let reporteActual = null;
+        let historicoPatentes = {};
 
-        function escucharReportes() {
+        function entrar() { if(document.getElementById('pass-adm').value === "1234") { document.getElementById('bloqueo').style.display='none'; document.getElementById('app').style.display='block'; cargarDatos(); } }
+
+        function cargarDatos() {
             db.collection("reportes").onSnapshot(snap => {
-                const t = document.getElementById('tabla'); t.innerHTML = "";
-                let reps = []; snap.forEach(doc => reps.push({id: doc.id, ...doc.data()}));
-
-                // ORDEN: Vacíos arriba, Cargados abajo. Por hora.
-                reps.sort((a, b) => {
-                    if (a.estado === "VACÍO" && b.estado === "CARGADO") return -1;
-                    if (a.estado === "CARGADO" && b.estado === "VACÍO") return 1;
+                const t = document.getElementById('tabla-body'); t.innerHTML = "";
+                let lista = []; snap.forEach(doc => lista.push({id: doc.id, ...doc.data()}));
+                
+                lista.sort((a,b) => {
+                    if(a.estado === "VACÍO" && b.estado === "CARGADO") return -1;
+                    if(a.estado === "CARGADO" && b.estado === "VACÍO") return 1;
                     return new Date(a.fecha.replace(',','')) - new Date(b.fecha.replace(',',''));
                 });
 
-                reps.forEach(r => {
-                    let alertaPatente = "";
-                    if(ultimoViajePorChofer[r.chofer] && (ultimoViajePorChofer[r.chofer].chasis !== r.chasis)) {
-                        alertaPatente = " <span class='alerta'>⚠️ CAMBIO</span>";
+                lista.forEach(r => {
+                    let aviso = "";
+                    if(historicoPatentes[r.chofer] && historicoPatentes[r.chofer] !== r.chasis) {
+                        aviso = " <span class='alerta'>⚠️ CAMBIO</span>";
                     }
-                    ultimoViajePorChofer[r.chofer] = r;
-
-                    // CONDICIÓN: Si NO hay foto, el botón PDF no se crea
-                    const botonPdf = r.foto ? `<button class="btn btn-pdf" onclick="abrirPdfEditor('${r.foto}','${r.chofer}','${r.fecha}')">PDF</button>` : '';
+                    historicoPatentes[r.chofer] = r.chasis;
 
                     t.innerHTML += `<tr>
-                        <td><input type="checkbox" class="chk-item" data-id="${r.id}"></td>
+                        <td><input type="checkbox" class="chk" data-id="${r.id}"></td>
                         <td>${r.fecha}</td>
-                        <td><button class="btn" style="background:${r.estado==='VACÍO'?'#27ae60':'#e67e22'}" onclick="cambiarEstado('${r.id}','${r.estado}')">${r.estado}</button></td>
+                        <td style="color:${r.estado==='VACÍO'?'green':'orange'}; font-weight:bold;">${r.estado}</td>
                         <td><b>${r.chofer}</b></td>
-                        <td>${r.chasis}${alertaPatente}</td>
+                        <td>${r.chasis}${aviso}</td>
                         <td>
-                            <button class="btn btn-ojo" onclick="verDatos('${r.id}')">👁️</button>
-                            ${botonPdf}
+                            <button class="btn btn-ojo" onclick="verInfo('${r.id}')">👁️</button>
+                            ${r.fotos && r.fotos.length > 0 ? `<button class="btn btn-pdf" onclick="abrirPdf('${r.id}')">PDF (${r.fotos.length})</button>` : ''}
                         </td>
                     </tr>`;
                 });
             });
         }
 
-        function verDatos(id) {
+        function verInfo(id) {
             db.collection("reportes").doc(id).get().then(doc => {
                 const d = doc.data();
-                document.getElementById('contenido-datos').innerHTML = `
-                    <div class="info-row"><span>Transporte:</span><b>${d.transporte || '-'}</b></div>
-                    <div class="info-row"><span>CUIT Trans:</span><b>${d.cuit_trans || '-'}</b></div>
-                    <div class="info-row"><span>Chofer:</span><b>${d.chofer}</b></div>
-                    <div class="info-row"><span>CUIT Chofer:</span><b>${d.cuit_chofer || '-'}</b></div>
-                    <div class="info-row"><span>Patente Chasis:</span><b>${d.chasis}</b></div>
-                    <div class="info-row"><span>Patente Acoplado:</span><b>${d.acoplado}</b></div>
-                    <div class="info-row"><span>Lugar:</span><b>${d.lugar_descarga}</b></div>
-                `;
-                document.getElementById('modal-datos').style.display='flex';
+                alert(`DETALLES:\n\nTransporte: ${d.transporte}\nCUIT: ${d.cuit_trans}\nChofer: ${d.chofer}\nCUIT Chof: ${d.cuit_chofer}\nPatentes: ${d.chasis} / ${d.acoplado}`);
             });
         }
 
-        function abrirPdfEditor(base64, chofer, fecha) {
-            datosActuales = { chofer, fecha };
-            imgTemporal.src = base64;
-            imgTemporal.onload = () => {
-                document.getElementById('modal-pdf').style.display = 'flex';
-                aplicarFiltroPdf();
-            };
+        async function abrirPdf(id) {
+            const doc = await db.collection("reportes").doc(id).get();
+            reporteActual = {id, ...doc.data()};
+            imgCache.src = reporteActual.fotos[0]; 
+            imgCache.onload = () => {
+                document.getElementById('modal-pdf').style.display='flex';
+                procesar();
+            }
         }
 
-        function aplicarFiltroPdf() {
+        function procesar() {
             const canvas = document.getElementById('canvas-pdf');
             const ctx = canvas.getContext('2d');
             const b = document.getElementById('brillo').value;
             const c = document.getElementById('contraste').value;
-            
-            canvas.width = imgTemporal.width;
-            canvas.height = imgTemporal.height;
+            canvas.width = imgCache.width; canvas.height = imgCache.height;
             ctx.filter = `grayscale(1) brightness(${b}%) contrast(${c}%)`;
-            ctx.drawImage(imgTemporal, 0, 0);
+            ctx.drawImage(imgCache, 0, 0);
 
-            document.getElementById('descargar-final').onclick = () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                doc.setFillColor(255,102,0); doc.rect(0,0,210,20,'F');
-                doc.setTextColor(255); doc.text("LA JOSEFINA - TICKET", 10, 13);
-                doc.setTextColor(0); doc.text(`Chofer: ${datosActuales.chofer} | Fecha: ${datosActuales.fecha}`, 10, 30);
-                doc.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 10, 40, 190, 240);
-                doc.save(`Ticket_${datosActuales.chofer}.pdf`);
+            document.getElementById('btn-descargar').onclick = () => {
+                const pdf = new jspdf.jsPDF();
+                reporteActual.fotos.forEach((f, i) => {
+                    if(i > 0) pdf.addPage();
+                    pdf.text(`LA JOSEFINA - ${reporteActual.chofer} - Ticket ${i+1}`, 10, 10);
+                    pdf.addImage(f, 'JPEG', 10, 20, 190, 240);
+                });
+                pdf.save(`Ticket_${reporteActual.chofer}.pdf`);
             };
         }
 
-        function cambiarEstado(id, est) { db.collection("reportes").doc(id).update({estado: est==='VACÍO'?'CARGADO':'VACÍO'}); }
-        function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
-        function verClaves() { 
-            db.collection("accesos_choferes").get().then(s => { 
-                let l="CHOFERES Y CLAVES:\n\n"; 
-                s.forEach(d=>l+=`• ${d.id}: ${d.data().clave}\n`); 
-                const b = prompt(l + "\nPara borrar un chofer escriba su nombre:");
-                if(b) { if(confirm("¿Borrar chofer?")) db.collection("accesos_choferes").doc(b.toUpperCase()).delete(); }
-            }); 
-        }
+        function rechazarFoto() { if(confirm("¿Borrar ticket y pedir uno nuevo?")) { db.collection("reportes").doc(reporteActual.id).delete(); cerrar(); } }
+        function cerrar() { document.getElementById('modal-pdf').style.display='none'; }
+        function verClaves() { db.collection("accesos_choferes").get().then(s => { let l=""; s.forEach(d=>l+=`${d.id}: ${d.data().clave}\n`); alert(l); }); }
         function nuevaClave() { const n=prompt("Nombre:"); const c=prompt("Clave:"); if(n&&c) db.collection("accesos_choferes").doc(n.toUpperCase()).set({clave:c}); }
-        
-        function seleccionarTodo(s) { document.querySelectorAll('.chk-item').forEach(x => x.checked = s.checked); }
-        function borrarSeleccionados() {
-            if(confirm("¿Borrar registros seleccionados?")) {
-                document.querySelectorAll('.chk-item:checked').forEach(x => {
-                    db.collection("reportes").doc(x.dataset.id).delete();
-                });
-            }
-        }
-
-        escucharReportes();
+        function seleccionarTodo(s) { document.querySelectorAll('.chk').forEach(x => x.checked = s.checked); }
+        function borrarSels() { if(confirm("¿Borrar seleccionados?")) document.querySelectorAll('.chk:checked').forEach(x => db.collection("reportes").doc(x.dataset.id).delete()); }
     </script>
 </body>
 </html>
+
 
 
 
