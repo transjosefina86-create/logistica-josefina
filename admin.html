@@ -38,6 +38,10 @@
         .btn-crear { background: var(--naranja); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-rojo { background: var(--rojo); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .btn-guardar { background: var(--verde); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        
+        /* Estilo tabla gestión choferes */
+        .tabla-gestion { width: 100%; margin-top: 15px; font-size: 13px; }
+        .tabla-gestion th { background: #666; }
     </style>
 </head>
 <body>
@@ -55,18 +59,32 @@
         </div>
 
         <div id="box-gestion" style="display:none; background:#f9f9f9; padding:20px; border-radius:12px; border:1px solid #ddd; margin-top:10px;">
+            <h3>NUEVO ACCESO</h3>
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px;">
-                <input type="text" id="u-nom" placeholder="Usuario">
-                <input type="text" id="u-pin" placeholder="PIN">
-                <input type="text" id="u-tel" placeholder="WhatsApp">
-                <button class="btn-crear" onclick="guardarChofer()">GUARDAR</button>
+                <input type="text" id="u-nom" placeholder="Usuario/Chofer">
+                <input type="text" id="u-pin" placeholder="PIN de Acceso">
+                <input type="text" id="u-tel" placeholder="WhatsApp (Ej: 549351...)">
+                <button class="btn-crear" onclick="guardarChofer()">REGISTRAR</button>
             </div>
+            <hr>
+            <h3>CHOFERES REGISTRADOS</h3>
+            <table class="tabla-gestion">
+                <thead>
+                    <tr>
+                        <th>CHOFER</th>
+                        <th>PIN</th>
+                        <th>TELÉFONO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-choferes-gestion"></tbody>
+            </table>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>HORA LLEGADA</th>
+                    <th>FECHA Y HORA</th>
                     <th>ESTADO</th>
                     <th>CHOFER</th>
                     <th>TRANSPORTE</th>
@@ -120,22 +138,19 @@
                 document.getElementById('contenido-principal').style.display = 'block';
                 limpiarReportesViejos();
                 cargarDatos();
+                cargarChoferes();
             } else { alert("PIN Incorrecto"); }
         }
 
         async function limpiarReportesViejos() {
             const ahora = new Date();
-            const limiteHoras = 48;
             const snap = await db.collection("reportes").where("estado", "==", "CARGADO").get();
-            
             snap.forEach(async (doc) => {
                 const data = doc.data();
                 if (data.fecha) {
                     const fechaReporte = new Date(data.fecha.split(', ').reverse().join(' '));
-                    const diferenciaHoras = (ahora - fechaReporte) / (1000 * 60 * 60);
-                    if (diferenciaHoras >= limiteHoras) {
-                        await db.collection("reportes").doc(doc.id).delete();
-                    }
+                    const dif = (ahora - fechaReporte) / (1000 * 60 * 60);
+                    if (dif >= 48) await db.collection("reportes").doc(doc.id).delete();
                 }
             });
         }
@@ -149,15 +164,15 @@
                 reportes.sort((a,b) => {
                     if (a.estado === 'CARGADO' && b.estado !== 'CARGADO') return 1;
                     if (a.estado !== 'CARGADO' && b.estado === 'CARGADO') return -1;
-                    let hA = a.fecha ? a.fecha.split(', ')[1] : '99:99';
-                    let hB = b.fecha ? b.fecha.split(', ')[1] : '99:99';
+                    let hA = a.fecha || '99/99/9999, 99:99';
+                    let hB = b.fecha || '99/99/9999, 99:99';
                     return hA.localeCompare(hB);
                 });
 
                 reportes.forEach(d => {
                     const cl = d.estado === 'VACÍO' ? 'txt-vacio' : 'txt-cargado';
                     l.innerHTML += `<tr>
-                        <td>${d.fecha ? d.fecha.split(', ')[1] : ''}</td>
+                        <td>${d.fecha || '-'}</td>
                         <td><select onchange="cambiarEstado('${d.id}',this.value)" class="${cl}" style="border:none;background:none;font-weight:bold;"><option value="VACÍO" ${d.estado=='VACÍO'?'selected':''}>VACÍO</option><option value="CARGADO" ${d.estado=='CARGADO'?'selected':''}>CARGADO</option></select></td>
                         <td><b>${d.chofer_nombre || ''}</b></td>
                         <td>${d.transporte || ''}</td>
@@ -167,6 +182,31 @@
                     </tr>`;
                 });
             });
+        }
+
+        function cargarChoferes() {
+            db.collection("accesos_choferes").onSnapshot(snap => {
+                const l = document.getElementById('lista-choferes-gestion'); l.innerHTML = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    l.innerHTML += `<tr>
+                        <td>${doc.id.toUpperCase()}</td>
+                        <td>${d.clave}</td>
+                        <td>${d.telefono}</td>
+                        <td><button class="btn-rojo" onclick="borrarChofer('${doc.id}')">X</button></td>
+                    </tr>`;
+                });
+            });
+        }
+
+        async function borrarChofer(id) { if(confirm("¿Quitar acceso a este chofer?")) await db.collection("accesos_choferes").doc(id).delete(); }
+
+        async function guardarChofer() {
+            const u = document.getElementById('u-nom').value.toLowerCase(), p = document.getElementById('u-pin').value, t = document.getElementById('u-tel').value;
+            if(u && p && t) {
+                await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
+                document.getElementById('u-nom').value = ""; document.getElementById('u-pin').value = ""; document.getElementById('u-tel').value = "";
+            }
         }
 
         async function verD(id) {
@@ -184,22 +224,11 @@
         }
 
         async function guardarEdicion() {
-            const up = {
-                transporte: document.getElementById('ed-trans').value,
-                cuit_trans: document.getElementById('ed-cuit').value,
-                chofer_nombre: document.getElementById('ed-nom').value,
-                chofer_cuil: document.getElementById('ed-cuil').value,
-                chasis: document.getElementById('ed-cha').value,
-                acoplado: document.getElementById('ed-aco').value,
-                equipo: document.getElementById('ed-equi').value
-            };
-            await db.collection("reportes").doc(idEditando).update(up);
-            cerrarModales();
+            const up = { transporte: document.getElementById('ed-trans').value, cuit_trans: document.getElementById('ed-cuit').value, chofer_nombre: document.getElementById('ed-nom').value, chofer_cuil: document.getElementById('ed-cuil').value, chasis: document.getElementById('ed-cha').value, acoplado: document.getElementById('ed-aco').value, equipo: document.getElementById('ed-equi').value };
+            await db.collection("reportes").doc(idEditando).update(up); cerrarModales();
         }
 
-        async function eliminarReporte(id) {
-            if(confirm("¿Borrar reporte definitivamente?")) { await db.collection("reportes").doc(id).delete(); }
-        }
+        async function eliminarReporte(id) { if(confirm("¿Borrar reporte definitivamente?")) await db.collection("reportes").doc(id).delete(); }
 
         async function verP(id) {
             const doc = await db.collection("reportes").doc(id).get(); actual = {id: doc.id, ...doc.data()};
@@ -209,9 +238,8 @@
         }
 
         function aplicarScanner() {
-            const b = document.getElementById('brillo').value, c = document.getElementById('contraste').value,
-                  l = document.getElementById('limpieza').value, n = document.getElementById('negros').value,
-                  g = document.getElementById('gama').value, ni = document.getElementById('nitidez').value;
+            const b = document.getElementById('brillo').value, c = document.getElementById('contraste').value, l = document.getElementById('limpieza').value, n = document.getElementById('negros').value, g = document.getElementById('gama').value, ni = document.getElementById('nitidez').value;
+            // Lógica reparada: se concatenan todos los filtros correctamente
             document.getElementById('img-ticket').style.filter = `grayscale(100%) brightness(${b}%) contrast(${c}%) brightness(${100+parseInt(l)}%) saturate(${ni}%) contrast(${100+parseInt(n)}%) sepia(${g-100}%)`;
         }
 
@@ -225,11 +253,8 @@
             imgObj.src = img.src;
             imgObj.onload = () => {
                 canvas.width = imgObj.width; canvas.height = imgObj.height;
-                const ctx = canvas.getContext('2d');
-                ctx.filter = img.style.filter;
-                ctx.drawImage(imgObj, 0, 0);
-                doc.setFontSize(8);
-                doc.text(`${actual.transporte} - ${actual.chofer_nombre}`, 10, 8);
+                const ctx = canvas.getContext('2d'); ctx.filter = img.style.filter; ctx.drawImage(imgObj, 0, 0);
+                doc.setFontSize(8); doc.text(`${actual.transporte} - ${actual.chofer_nombre}`, 10, 8);
                 doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 5, 12, 200, 275);
                 doc.save(`TICKET_${actual.chofer_nombre}.pdf`);
             };
@@ -237,20 +262,16 @@
 
         async function pedirReenvio() {
             const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
-            const msg = `Hola ${actual.chofer_nombre}, necesito que me reenvíes la foto de las ${actual.fecha.split(', ')[1]}.`;
-            window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=${encodeURIComponent(msg)}`, '_blank');
+            window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=${encodeURIComponent('Hola, reenvíame la foto del ticket por favor.')}`, '_blank');
         }
 
         function cambiarEstado(id, n) { db.collection("reportes").doc(id).update({ estado: n }); }
         function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
         function toggleGestion() { const b = document.getElementById('box-gestion'); b.style.display = b.style.display==='none'?'block':'none'; }
-        async function guardarChofer() {
-            const u = document.getElementById('u-nom').value.toLowerCase(), p = document.getElementById('u-pin').value, t = document.getElementById('u-tel').value;
-            if(u && p && t) await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
-        }
     </script>
 </body>
 </html>
+
 
 
 
