@@ -8,9 +8,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --naranja: #ff6600; --oscuro: #1a1a1a; }
-        body { font-family: 'Segoe UI', sans-serif; background: #ffffff; margin: 0; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #ffffff; margin: 0; padding: 0; }
         
-        /* LOGIN ESTÉTICO TRANSPORTE LA JOSEFINA */
+        /* LOGIN REFORZADO */
         #login-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: var(--oscuro); display: flex; flex-direction: column; 
@@ -19,16 +19,16 @@
         .logo-login { 
             font-size: 45px; font-weight: 900; color: var(--naranja); 
             text-shadow: 3px 3px 0px #000, -3px -3px 0px #000, 3px -3px 0px #000, -3px 3px 0px #000;
-            margin-bottom: 30px; letter-spacing: -2px; text-align: center; line-height: 1;
+            margin-bottom: 30px; text-align: center; line-height: 1;
         }
         .input-login { padding: 15px; font-size: 20px; border-radius: 12px; border: none; text-align: center; width: 220px; margin-bottom: 20px; }
 
-        /* CONTENIDO PRINCIPAL OCULTO INICIALMENTE */
-        #contenido-principal { display: none; }
+        /* CONTENIDO */
+        #contenido-principal { display: none; padding: 20px; }
 
         .header { background: #333; color: white; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 4px solid var(--naranja); }
         
-        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
         th { background: #444; color: white; font-size: 11px; text-transform: uppercase; }
         
@@ -43,8 +43,8 @@
         .ficha-bloque label { font-size: 9px; color: #888; font-weight: bold; display: block; text-transform: uppercase; }
         .ficha-bloque span { font-size: 15px; font-weight: bold; color: #333; }
 
-        #visor-foto { background: #333; padding: 20px; border-radius: 10px; text-align: center; }
-        #img-ticket { max-width: 100%; }
+        #visor-foto { background: #333; padding: 20px; border-radius: 10px; text-align: center; min-height: 200px; }
+        #img-ticket { max-width: 100%; height: auto; }
 
         .btn-crear { background: var(--naranja); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-ojo { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 18px; }
@@ -54,8 +54,8 @@
 
     <div id="login-overlay">
         <div class="logo-login">TRANSPORTE<br>LA JOSEFINA</div>
-        <input type="password" id="pin-input" class="input-login" placeholder="PIN DE ACCESO">
-        <button class="btn-crear" style="padding: 15px 40px; font-size: 18px;" onclick="verificarLogin()">ENTRAR AL PANEL</button>
+        <input type="password" id="pin-input" class="input-login" placeholder="PIN DE ACCESO" onkeypress="if(event.key==='Enter') verificarLogin()">
+        <button class="btn-crear" style="padding: 15px 40px; font-size: 18px;" onclick="verificarLogin()">INGRESAR</button>
     </div>
 
     <div id="contenido-principal">
@@ -65,7 +65,6 @@
         </div>
 
         <div id="box-gestion" style="display:none; background:#f9f9f9; padding:20px; border-radius:12px; margin-bottom:20px; border:1px solid #ddd;">
-            <h3>Alta de Choferes</h3>
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px;">
                 <input type="text" id="u-nom" placeholder="Usuario">
                 <input type="text" id="u-pin" placeholder="PIN">
@@ -92,7 +91,7 @@
 
     <div id="modalDatos" class="modal">
         <div class="modal-content">
-            <span style="float:right; cursor:pointer; font-weight:bold; font-size:20px;" onclick="cerrarModales()">✖</span>
+            <span style="float:right; cursor:pointer; font-weight:bold; font-size:24px;" onclick="cerrarModales()">✖</span>
             <h3 style="margin-top:0; border-bottom: 2px solid var(--naranja);">FICHA DEL VIAJE</h3>
             <div id="ficha-mini" class="ficha-mini"></div>
         </div>
@@ -100,7 +99,7 @@
 
     <div id="modalPDF" class="modal">
         <div class="modal-content" style="max-width: 750px;">
-            <span style="float:right; cursor:pointer; font-weight:bold; font-size:20px;" onclick="cerrarModales()">✖</span>
+            <span style="float:right; cursor:pointer; font-weight:bold; font-size:24px;" onclick="cerrarModales()">✖</span>
             <h3>VISOR DE TICKET</h3>
             <div style="display:flex; gap:20px; background:#eee; padding:10px; border-radius:10px; margin-bottom:10px;">
                 <div>Brillo <input type="range" id="brillo" min="50" max="250" value="100" oninput="aplicarScanner()"></div>
@@ -115,7 +114,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE (ASEGURATE QUE ESTA SEA TU CLAVE CORRECTA)
+        // FIREBASE
         const firebaseConfig = { 
             apiKey: "AIzaSyC...", 
             authDomain: "control-logistica-2026.firebaseapp.com", 
@@ -132,9 +131,7 @@
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('contenido-principal').style.display = 'block';
                 cargarDatos();
-            } else {
-                alert("PIN Incorrecto");
-            }
+            } else { alert("PIN Incorrecto"); }
         }
 
         function cargarDatos() {
@@ -144,27 +141,32 @@
                 let reportes = [];
                 snap.forEach(doc => { reportes.push({id: doc.id, ...doc.data()}); });
 
+                // ORDEN: Vacío arriba (por hora), Cargado abajo
                 reportes.sort((a, b) => {
                     const estA = (a.estado === 'VACÍO') ? 0 : 1;
                     const estB = (b.estado === 'VACÍO') ? 0 : 1;
                     if (estA !== estB) return estA - estB;
-                    return new Date(a.fecha.split(', ').reverse().join(' ')) - new Date(b.fecha.split(', ').reverse().join(' '));
+                    let fechaA = a.fecha ? new Date(a.fecha.split(', ').reverse().join(' ')) : new Date(0);
+                    let fechaB = b.fecha ? new Date(b.fecha.split(', ').reverse().join(' ')) : new Date(0);
+                    return fechaA - fechaB;
                 });
 
                 reportes.forEach(d => {
                     const claseEstado = d.estado === 'VACÍO' ? 'txt-vacio' : 'txt-cargado';
-                    let btnPdf = (d.fotos && d.fotos.length > 0) ? `<button class="btn-crear" style="padding:5px 10px;" onclick="verP('${d.id}')">PDF</button>` : "-";
+                    const tieneFoto = (d.fotos && d.fotos.length > 0);
+                    let btnPdf = tieneFoto ? `<button class="btn-crear" style="padding:5px 10px;" onclick="verP('${d.id}')">PDF</button>` : "-";
+                    
                     l.innerHTML += `
                         <tr>
-                            <td>${d.fecha}</td>
+                            <td>${d.fecha || 'Sin fecha'}</td>
                             <td>
                                 <select onchange="cambiarEstado('${d.id}', this.value)" class="${claseEstado}" style="border:none; background:none; cursor:pointer;">
                                     <option value="VACÍO" ${d.estado === 'VACÍO' ? 'selected' : ''}>VACÍO</option>
                                     <option value="CARGADO" ${d.estado === 'CARGADO' ? 'selected' : ''}>CARGADO</option>
                                 </select>
                             </td>
-                            <td><b>${d.chofer_nombre}</b></td>
-                            <td>${d.transporte}</td>
+                            <td><b>${d.chofer_nombre || 'S/N'}</b></td>
+                            <td>${d.transporte || 'S/T'}</td>
                             <td><button class="btn-ojo" onclick="verD('${d.id}')">👁️</button></td>
                             <td>${btnPdf}</td>
                         </tr>`;
@@ -176,11 +178,11 @@
             const doc = await db.collection("reportes").doc(id).get(); 
             const d = doc.data();
             document.getElementById('ficha-mini').innerHTML = `
-                <div class="ficha-bloque"><label>Empresa</label><span>${d.transporte}</span><br><label>CUIT</label><span>${d.cuit_trans || '-'}</span></div>
-                <div class="ficha-bloque"><label>Chofer</label><span>${d.chofer_nombre}</span><br><label>CUIL</label><span>${d.chofer_cuil || '-'}</span></div>
-                <div class="ficha-bloque"><label>Chasis</label><span>${d.chasis}</span></div>
-                <div class="ficha-bloque"><label>Acoplado</label><span>${d.acoplado}</span></div>
-                <div class="ficha-bloque"><label>Tipo</label><span>${d.equipo}</span></div>`;
+                <div class="ficha-bloque"><label>Empresa</label><span>${d.transporte || '-'}</span><br><label>CUIT</label><span>${d.cuit_trans || '-'}</span></div>
+                <div class="ficha-bloque"><label>Chofer</label><span>${d.chofer_nombre || '-'}</span><br><label>CUIL</label><span>${d.chofer_cuil || '-'}</span></div>
+                <div class="ficha-bloque"><label>Chasis</label><span>${d.chasis || '-'}</span></div>
+                <div class="ficha-bloque"><label>Acoplado</label><span>${d.acoplado || '-'}</span></div>
+                <div class="ficha-bloque"><label>Tipo</label><span>${d.equipo || '-'}</span></div>`;
             document.getElementById('modalDatos').style.display = 'block';
         }
 
@@ -203,6 +205,7 @@
             const img = document.getElementById('img-ticket');
             const canvas = document.createElement('canvas');
             const imgObj = new Image();
+            imgObj.crossOrigin = "anonymous";
             imgObj.src = img.src;
             imgObj.onload = () => {
                 canvas.width = imgObj.width; canvas.height = imgObj.height;
@@ -218,7 +221,7 @@
 
         async function pedirReenvio() {
             const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
-            const hora = actual.fecha.split(', ')[1] || actual.fecha;
+            const hora = actual.fecha ? actual.fecha.split(', ')[1] : '';
             const msg = `Hola ${actual.chofer_nombre}, necesito que me reenvíes la imagen que me pasaste a las ${hora}.`;
             window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=${encodeURIComponent(msg)}`, '_blank');
         }
@@ -236,6 +239,7 @@
     </script>
 </body>
 </html>
+
 
 
 
