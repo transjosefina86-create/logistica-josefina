@@ -2,93 +2,108 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Control - La Josefina</title>
+    <title>Panel Administrativo - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .seccion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h2 { color: #ff6600; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .header { background: #333; color: white; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         
-        /* GESTIÓN SUPERIOR */
-        .grid-gestion { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; margin-bottom: 20px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-        .btn-crear { background: #ff6600; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        /* CUADRO DE GESTIÓN (SE OCULTA/MUESTRA) */
+        .box-gestion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-crear { background: #ff6600; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* TABLAS */
-        table { width: 100%; border-collapse: collapse; }
+        /* TABLA PRINCIPAL */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #333; color: white; font-size: 13px; }
+        th { background: #444; color: white; font-size: 13px; text-transform: uppercase; }
         
-        .btn-ojo { background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-        .btn-pdf-ver { background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        /* BOTONES DE ACCIÓN */
+        .btn-ojo { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        .btn-pdf { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* ESTADOS CRUCIALES */
-        .badge { padding: 6px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .status-reclamo { background: #ffc107; color: #000; } /* Amarillo: Pediste foto */
-        .status-reenviado { background: #28a745; color: #fff; } /* Verde: El chofer cumplió */
-        .alerta-cambio { background: #dc3545; color: white; padding: 2px 5px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
-
         /* MODALES */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; max-width: 800px; border-radius: 15px; position: relative; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 10px; }
-        .info-item b { color: #ff6600; font-size: 11px; display: block; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        .modal-content { background: white; margin: 2% auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 15px; position: relative; }
         
-        #visor-pdf { text-align: center; margin-top: 20px; background: #444; padding: 20px; border-radius: 10px; }
-        #visor-pdf img { max-width: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        /* HERRAMIENTAS DE IMAGEN (NITIDEZ/BRILLO) */
+        .controles-foto { background: #eee; padding: 15px; border-radius: 10px; display: flex; gap: 20px; margin-bottom: 15px; justify-content: center; }
+        .control-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; font-weight: bold; }
+        
+        #visor-foto { background: #333; padding: 20px; border-radius: 10px; text-align: center; overflow: hidden; }
+        #img-ticket { max-width: 100%; transition: 0.3s; }
+
+        .badge { padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .reclamo { background: #ffc107; color: black; }
+        .reenvio { background: #28a745; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="seccion">
-        <h2>GESTIÓN DE CHOFERES</h2>
-        <div class="grid-gestion">
+    <div class="header">
+        <h2>LA JOSEFINA - PANEL ADMIN</h2>
+        <button class="btn-crear" onclick="toggleGestion()">⚙️ GESTIONAR CHOFERES</button>
+    </div>
+
+    <div id="box-gestion" class="box-gestion" style="display:none;">
+        <h3>ALTA DE CHOFERES</h3>
+        <div class="grid-inputs">
             <input type="text" id="u-nom" placeholder="Usuario">
             <input type="text" id="u-pin" placeholder="PIN">
             <input type="text" id="u-tel" placeholder="WhatsApp">
-            <button class="btn-crear" onclick="crearAcceso()">+ AGREGAR</button>
+            <button class="btn-crear" onclick="guardarChofer()">GUARDAR</button>
         </div>
-        <table id="tabla-choferes">
+        <table style="margin-top:15px;">
             <thead><tr><th>Usuario</th><th>PIN</th><th>WhatsApp</th><th>Acción</th></tr></thead>
-            <tbody id="body-choferes"></tbody>
+            <tbody id="lista-choferes"></tbody>
         </table>
     </div>
 
     <div class="seccion">
-        <h2>LISTADO DE REPORTES</h2>
         <table>
             <thead>
                 <tr>
                     <th>Fecha</th>
                     <th>Chofer</th>
                     <th>Transporte</th>
-                    <th>Control</th>
+                    <th>Datos</th>
                     <th>Estado</th>
                     <th>Ticket</th>
                 </tr>
             </thead>
-            <tbody id="body-reportes"></tbody>
+            <tbody id="lista-reportes"></tbody>
         </table>
     </div>
 
-    <div id="modalOjo" class="modal">
+    <div id="modalDatos" class="modal">
         <div class="modal-content" style="max-width: 500px;">
             <span style="float:right; cursor:pointer;" onclick="cerrarModales()">✖</span>
-            <h3>CONTROL DE DATOS CARGADOS</h3>
-            <div id="detalle-ojo" class="info-grid"></div>
+            <h3>DATOS DEL TRANSPORTE</h3>
+            <div id="info-chofer" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
         </div>
     </div>
 
     <div id="modalPDF" class="modal">
         <div class="modal-content">
             <span style="float:right; cursor:pointer;" onclick="cerrarModales()">✖</span>
-            <h3>VISOR DE TICKET / PDF</h3>
-            <div id="visor-pdf"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn-crear" style="flex:1; background:#007bff;" onclick="descargarPDF()">📥 DESCARGAR PDF</button>
-                <button class="btn-crear" style="flex:1; background:#dc3545;" onclick="reclamarFoto()">⚠️ RECLAMAR FOTO (WHATSAPP)</button>
+            <h3>EDICIÓN Y DESCARGA DE TICKET</h3>
+            
+            <div class="controles-foto">
+                <div class="control-item">Brillo <input type="range" id="brillo" min="50" max="200" value="100" oninput="aplicarFiltros()"></div>
+                <div class="control-item">Contraste <input type="range" id="contraste" min="50" max="200" value="100" oninput="aplicarFiltros()"></div>
+                <div class="control-item">Nitidez (Saturación) <input type="range" id="saturacion" min="0" max="200" value="100" oninput="aplicarFiltros()"></div>
+            </div>
+
+            <div id="visor-foto">
+                <img id="img-ticket" src="">
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-pdf" style="flex:1; padding:15px;" onclick="descargarPDF()">📥 GUARDAR PDF</button>
+                <button class="btn-crear" style="flex:1; background:#dc3545;" onclick="pedirReenvio()">⚠️ RECLAMAR NUEVA FOTO</button>
             </div>
         </div>
     </div>
@@ -99,8 +114,9 @@
         const db = firebase.firestore();
         let actual = null, idAct = "";
 
-        // GESTION CHOFERES
-        async function crearAcceso() {
+        function toggleGestion() { const box = document.getElementById('box-gestion'); box.style.display = box.style.display === 'none' ? 'block' : 'none'; }
+
+        async function guardarChofer() {
             const u = document.getElementById('u-nom').value.toLowerCase();
             const p = document.getElementById('u-pin').value;
             const t = document.getElementById('u-tel').value;
@@ -108,98 +124,75 @@
         }
 
         db.collection("accesos_choferes").onSnapshot(snap => {
-            const b = document.getElementById('body-choferes'); b.innerHTML = "";
-            snap.forEach(doc => {
-                b.innerHTML += `<tr><td>${doc.id}</td><td>${doc.data().clave}</td><td>${doc.data().telefono}</td><td><button onclick="borrarAcceso('${doc.id}')">Eliminar</button></td></tr>`;
-            });
+            const l = document.getElementById('lista-choferes'); l.innerHTML = "";
+            snap.forEach(doc => { l.innerHTML += `<tr><td>${doc.id}</td><td>${doc.data().clave}</td><td>${doc.data().telefono}</td><td><button onclick="borrarC('${doc.id}')">❌</button></td></tr>`; });
         });
+        async function borrarC(id) { if(confirm("¿Borrar?")) await db.collection("accesos_choferes").doc(id).delete(); }
 
-        async function borrarAcceso(id) { if(confirm("¿Eliminar?")) await db.collection("accesos_choferes").doc(id).delete(); }
-
-        // REPORTES Y LÓGICA DE ESTADOS
         db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snap => {
-            const b = document.getElementById('body-reportes'); b.innerHTML = "";
+            const l = document.getElementById('lista-reportes'); l.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                let clase = "";
-                let texto = d.estado;
-
-                if(d.estado === "PIDIENDO REENVÍO") {
-                    clase = "status-reclamo";
-                    texto = "FOTO RECLAMADA";
-                } else if(d.reenviada) {
-                    clase = "status-reenviado";
-                    texto = "FOTO REENVIADA";
-                }
-
-                b.innerHTML += `
-                    <tr>
-                        <td>${d.fecha}</td>
-                        <td>${d.chofer_nombre}</td>
-                        <td>${d.transporte}</td>
-                        <td><button class="btn-ojo" onclick="verOjo('${doc.id}')">👁️ DATOS</button></td>
-                        <td><span class="badge ${clase}">${texto}</span></td>
-                        <td><button class="btn-pdf-ver" onclick="verPDF('${doc.id}')">📄 PDF</button></td>
-                    </tr>`;
+                let badge = d.estado === "PIDIENDO REENVÍO" ? `<span class="badge reclamo">RECLAMADA</span>` : (d.reenviada ? `<span class="badge reenvio">REENVIADA</span>` : `<span>${d.estado}</span>`);
+                l.innerHTML += `<tr><td>${d.fecha}</td><td>${d.chofer_nombre}</td><td>${d.transporte}</td><td><button class="btn-ojo" onclick="verD('${doc.id}')">👁️</button></td><td>${badge}</td><td><button class="btn-pdf" onclick="verP('${doc.id}')">📄 PDF</button></td></tr>`;
             });
         });
 
-        async function verOjo(id) {
-            const doc = await db.collection("reportes").doc(id).get();
-            const d = doc.data();
-            // Aquí podrías comparar con un "perfil maestro" si lo tuvieras, 
-            // por ahora mostramos todo lo que el chofer cargó en este reporte.
-            document.getElementById('detalle-ojo').innerHTML = `
-                <div class="info-item"><b>TRANSPORTE:</b> ${d.transporte}</div>
-                <div class="info-item"><b>CUIT:</b> ${d.cuit_trans}</div>
-                <div class="info-item"><b>CHOFER:</b> ${d.chofer_nombre}</div>
-                <div class="info-item"><b>CUIL:</b> ${d.chofer_cuil}</div>
-                <div class="info-item"><b>CHASIS:</b> ${d.chasis}</div>
-                <div class="info-item"><b>ACOPLADO:</b> ${d.acoplado}</div>
-                <div class="info-item"><b>EQUIPO:</b> ${d.equipo}</div>`;
-            document.getElementById('modalOjo').style.display = "block";
+        async function verD(id) {
+            const doc = await db.collection("reportes").doc(id).get(); const d = doc.data();
+            document.getElementById('info-chofer').innerHTML = `<b>Transporte:</b><span>${d.transporte}</span><b>Chofer:</b><span>${d.chofer_nombre}</span><b>Chasis:</b><span>${d.chasis}</span><b>Acoplado:</b><span>${d.acoplado}</span>`;
+            document.getElementById('modalDatos').style.display = 'block';
         }
 
-        async function verPDF(id) {
+        async function verP(id) {
             idAct = id; const doc = await db.collection("reportes").doc(id).get(); actual = doc.data();
-            const visor = document.getElementById('visor-pdf');
-            visor.innerHTML = actual.fotos && actual.fotos.length > 0 ? 
-                `<img src="${actual.fotos[0]}" id="img-ticket">` : 
-                `<p style="color:white">⚠️ FOTO ELIMINADA - ESPERANDO REENVÍO</p>`;
-            document.getElementById('modalPDF').style.display = "block";
+            const img = document.getElementById('img-ticket');
+            img.src = actual.fotos && actual.fotos.length > 0 ? actual.fotos[0] : "";
+            document.getElementById('modalPDF').style.display = 'block';
+            resetFiltros();
         }
 
-        async function reclamarFoto() {
-            if(!confirm("¿Reclamar nueva foto? Se borrará la actual.")) return;
-            const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
-            const tel = cDoc.exists ? cDoc.data().telefono : "";
-            
-            // Borramos foto y cambiamos estado
-            await db.collection("reportes").doc(idAct).update({ 
-                fotos: [], 
-                estado: "PIDIENDO REENVÍO", 
-                reenviada: false 
-            });
+        function aplicarFiltros() {
+            const b = document.getElementById('brillo').value;
+            const c = document.getElementById('contraste').value;
+            const s = document.getElementById('saturacion').value;
+            document.getElementById('img-ticket').style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
+        }
 
-            window.open(`https://api.whatsapp.com/send?phone=${tel}&text=Hola ${actual.chofer_nombre}, la foto de ${actual.transporte} no es legible. Por favor enviá una nueva desde la App.`, '_blank');
+        function resetFiltros() { 
+            document.getElementById('brillo').value = 100; document.getElementById('contraste').value = 100; 
+            document.getElementById('saturacion').value = 100; aplicarFiltros(); 
+        }
+
+        async function pedirReenvio() {
+            if(!confirm("¿Rechazar y pedir otra?")) return;
+            const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
+            await db.collection("reportes").doc(idAct).update({ fotos: [], estado: "PIDIENDO REENVÍO", reenviada: false });
+            window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=Hola ${actual.chofer_nombre}, por favor reenvía la foto de ${actual.transporte}.`, '_blank');
             cerrarModales();
         }
 
         function descargarPDF() {
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             const img = document.getElementById('img-ticket');
-            doc.text(`TICKET: ${actual.transporte}`, 10, 10);
-            if(img) doc.addImage(img.src, 'JPEG', 10, 20, 180, 160);
-            doc.save(`Ticket_${actual.chofer_nombre}.pdf`);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const imgObj = new Image();
+            imgObj.src = img.src;
+            imgObj.onload = () => {
+                canvas.width = imgObj.width; canvas.height = imgObj.height;
+                ctx.filter = img.style.filter;
+                ctx.drawImage(imgObj, 0, 0);
+                doc.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 10, 20, 180, 160);
+                doc.save(`Ticket_${actual.chofer_nombre}.pdf`);
+            };
         }
 
-        function cerrarModales() { 
-            document.getElementById('modalOjo').style.display = "none"; 
-            document.getElementById('modalPDF').style.display = "none"; 
-        }
+        function cerrarModales() { document.getElementById('modalDatos').style.display = 'none'; document.getElementById('modalPDF').style.display = 'none'; }
     </script>
 </body>
 </html>
+
 
 
 
