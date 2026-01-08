@@ -9,36 +9,24 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         .header { background: #333; color: white; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        /* CUADRO DE GESTIÓN (SE OCULTA/MUESTRA) */
         .box-gestion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .grid-inputs { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; }
-        input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
         .btn-crear { background: #ff6600; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
-        /* TABLA PRINCIPAL */
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; margin-top: 10px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #444; color: white; font-size: 13px; text-transform: uppercase; }
-        
-        /* BOTONES DE ACCIÓN */
-        .btn-ojo { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-        .btn-pdf { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        
-        /* MODALES */
+        th { background: #444; color: white; font-size: 12px; text-transform: uppercase; }
+        .btn-ojo { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-pdf { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
         .modal-content { background: white; margin: 2% auto; padding: 20px; width: 90%; max-width: 800px; border-radius: 15px; position: relative; }
-        
-        /* HERRAMIENTAS DE IMAGEN (NITIDEZ/BRILLO) */
         .controles-foto { background: #eee; padding: 15px; border-radius: 10px; display: flex; gap: 20px; margin-bottom: 15px; justify-content: center; }
-        .control-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; font-weight: bold; }
-        
-        #visor-foto { background: #333; padding: 20px; border-radius: 10px; text-align: center; overflow: hidden; }
+        #visor-foto { background: #333; padding: 20px; border-radius: 10px; text-align: center; }
         #img-ticket { max-width: 100%; transition: 0.3s; }
-
-        .badge { padding: 5px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        .badge { padding: 4px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; }
         .reclamo { background: #ffc107; color: black; }
         .reenvio { background: #28a745; color: white; }
+        .sel-estado { font-weight: bold; border: none; background: #f0f2f5; cursor: pointer; padding: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -53,7 +41,7 @@
         <div class="grid-inputs">
             <input type="text" id="u-nom" placeholder="Usuario">
             <input type="text" id="u-pin" placeholder="PIN">
-            <input type="text" id="u-tel" placeholder="WhatsApp">
+            <input type="text" id="u-tel" placeholder="WhatsApp (549...)">
             <button class="btn-crear" onclick="guardarChofer()">GUARDAR</button>
         </div>
         <table style="margin-top:15px;">
@@ -66,11 +54,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Fecha</th>
+                    <th>Fecha / Hora - Estado</th>
                     <th>Chofer</th>
                     <th>Transporte</th>
                     <th>Datos</th>
-                    <th>Estado</th>
+                    <th>Aviso / Acción</th>
                     <th>Ticket</th>
                 </tr>
             </thead>
@@ -89,18 +77,12 @@
     <div id="modalPDF" class="modal">
         <div class="modal-content">
             <span style="float:right; cursor:pointer;" onclick="cerrarModales()">✖</span>
-            <h3>EDICIÓN Y DESCARGA DE TICKET</h3>
-            
+            <h3>VISOR DE TICKET</h3>
             <div class="controles-foto">
-                <div class="control-item">Brillo <input type="range" id="brillo" min="50" max="200" value="100" oninput="aplicarFiltros()"></div>
-                <div class="control-item">Contraste <input type="range" id="contraste" min="50" max="200" value="100" oninput="aplicarFiltros()"></div>
-                <div class="control-item">Nitidez (Saturación) <input type="range" id="saturacion" min="0" max="200" value="100" oninput="aplicarFiltros()"></div>
+                <div>Brillo <input type="range" id="brillo" min="50" max="200" value="100" oninput="aplicarFiltros()"></div>
+                <div>Contraste <input type="range" id="contraste" min="50" max="200" value="100" oninput="aplicarFiltros()"></div>
             </div>
-
-            <div id="visor-foto">
-                <img id="img-ticket" src="">
-            </div>
-
+            <div id="visor-foto"><img id="img-ticket" src=""></div>
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button class="btn-pdf" style="flex:1; padding:15px;" onclick="descargarPDF()">📥 GUARDAR PDF</button>
                 <button class="btn-crear" style="flex:1; background:#dc3545;" onclick="pedirReenvio()">⚠️ RECLAMAR NUEVA FOTO</button>
@@ -114,7 +96,7 @@
         const db = firebase.firestore();
         let actual = null, idAct = "";
 
-        function toggleGestion() { const box = document.getElementById('box-gestion'); box.style.display = box.style.display === 'none' ? 'block' : 'none'; }
+        function toggleGestion() { const b = document.getElementById('box-gestion'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; }
 
         async function guardarChofer() {
             const u = document.getElementById('u-nom').value.toLowerCase();
@@ -133,10 +115,37 @@
             const l = document.getElementById('lista-reportes'); l.innerHTML = "";
             snap.forEach(doc => {
                 const d = doc.data();
-                let badge = d.estado === "PIDIENDO REENVÍO" ? `<span class="badge reclamo">RECLAMADA</span>` : (d.reenviada ? `<span class="badge reenvio">REENVIADA</span>` : `<span>${d.estado}</span>`);
-                l.innerHTML += `<tr><td>${d.fecha}</td><td>${d.chofer_nombre}</td><td>${d.transporte}</td><td><button class="btn-ojo" onclick="verD('${doc.id}')">👁️</button></td><td>${badge}</td><td><button class="btn-pdf" onclick="verP('${doc.id}')">📄 PDF</button></td></tr>`;
+                const id = doc.id;
+                
+                // Lógica de avisos
+                let aviso = "";
+                if(d.estado === "PIDIENDO REENVÍO") aviso = `<span class="badge reclamo">PIDIENDO REENVÍO</span>`;
+                else if(d.reenviada) aviso = `<span class="badge reenvio">FOTO REENVIADA</span>`;
+                
+                // Botón PDF solo si hay fotos
+                let btnPdf = (d.fotos && d.fotos.length > 0) ? `<button class="btn-pdf" onclick="verP('${id}')">📄 PDF</button>` : "";
+
+                l.innerHTML += `
+                    <tr>
+                        <td>
+                            <div style="font-size:11px;">${d.fecha}</div>
+                            <select class="sel-estado" onchange="cambiarEstado('${id}', this.value)">
+                                <option value="VACÍO" ${d.estado === 'VACÍO' ? 'selected' : ''}>VACÍO</option>
+                                <option value="CARGADO" ${d.estado === 'CARGADO' || d.estado === 'FOTO REENVIADA' ? 'selected' : ''}>CARGADO</option>
+                            </select>
+                        </td>
+                        <td><b>${d.chofer_nombre}</b></td>
+                        <td>${d.transporte}</td>
+                        <td><button class="btn-ojo" onclick="verD('${id}')">👁️</button></td>
+                        <td>${aviso}</td>
+                        <td>${btnPdf}</td>
+                    </tr>`;
             });
         });
+
+        async function cambiarEstado(id, nuevo) {
+            await db.collection("reportes").doc(id).update({ estado: nuevo });
+        }
 
         async function verD(id) {
             const doc = await db.collection("reportes").doc(id).get(); const d = doc.data();
@@ -147,7 +156,7 @@
         async function verP(id) {
             idAct = id; const doc = await db.collection("reportes").doc(id).get(); actual = doc.data();
             const img = document.getElementById('img-ticket');
-            img.src = actual.fotos && actual.fotos.length > 0 ? actual.fotos[0] : "";
+            img.src = actual.fotos[0];
             document.getElementById('modalPDF').style.display = 'block';
             resetFiltros();
         }
@@ -155,20 +164,16 @@
         function aplicarFiltros() {
             const b = document.getElementById('brillo').value;
             const c = document.getElementById('contraste').value;
-            const s = document.getElementById('saturacion').value;
-            document.getElementById('img-ticket').style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
+            document.getElementById('img-ticket').style.filter = `brightness(${b}%) contrast(${c}%)`;
         }
 
-        function resetFiltros() { 
-            document.getElementById('brillo').value = 100; document.getElementById('contraste').value = 100; 
-            document.getElementById('saturacion').value = 100; aplicarFiltros(); 
-        }
+        function resetFiltros() { document.getElementById('brillo').value = 100; document.getElementById('contraste').value = 100; aplicarFiltros(); }
 
         async function pedirReenvio() {
             if(!confirm("¿Rechazar y pedir otra?")) return;
             const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
             await db.collection("reportes").doc(idAct).update({ fotos: [], estado: "PIDIENDO REENVÍO", reenviada: false });
-            window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=Hola ${actual.chofer_nombre}, por favor reenvía la foto de ${actual.transporte}.`, '_blank');
+            window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=Hola ${actual.chofer_nombre}, reenvía la foto de ${actual.transporte} por favor.`, '_blank');
             cerrarModales();
         }
 
@@ -176,11 +181,11 @@
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             const img = document.getElementById('img-ticket');
             const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
             const imgObj = new Image();
             imgObj.src = img.src;
             imgObj.onload = () => {
                 canvas.width = imgObj.width; canvas.height = imgObj.height;
+                const ctx = canvas.getContext('2d');
                 ctx.filter = img.style.filter;
                 ctx.drawImage(imgObj, 0, 0);
                 doc.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 10, 20, 180, 160);
@@ -192,6 +197,7 @@
     </script>
 </body>
 </html>
+
 
 
 
