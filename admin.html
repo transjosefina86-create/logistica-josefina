@@ -209,6 +209,19 @@
 
         .btn-rojo:hover { background: #c82333; }
 
+        /* BOTÓN ELIMINAR SELECCIONADOS */
+        #btn-borrar-multi {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            background: var(--rojo);
+            box-shadow: 0 10px 30px rgba(220, 53, 69, 0.5);
+            padding: 18px 30px;
+            font-size: 14px;
+        }
+
         /* MODALES DISEÑO COMPLETO */
         .modal {
             display: none;
@@ -350,6 +363,12 @@
             background: #218838;
             transform: scale(1.01);
         }
+
+        .check-item {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -408,6 +427,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 30px;"><input type="checkbox" id="check-all" onclick="toggleSeleccionarTodos(this.checked)"></th>
                         <th>FECHA Y HORA REGISTRO</th>
                         <th>ESTADO CARGA</th>
                         <th>NOMBRE CHOFER</th>
@@ -421,6 +441,8 @@
             </table>
         </div>
     </div>
+
+    <button id="btn-borrar-multi" class="btn-crear" onclick="eliminarVarios()">🗑️ ELIMINAR VIAJES SELECCIONADOS</button>
 
     <div id="modalDatos" class="modal">
         <div class="modal-content">
@@ -447,8 +469,7 @@
                 <div class="control-group">LIMPIEZA HOJA <input type="range" id="limpieza" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
                 <div class="control-group">INTENSIDAD COLOR <input type="range" id="tinta" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
             </div>
-            <div id="visor-foto">
-                </div>
+            <div id="visor-foto"></div>
             <div style="display:flex; gap:20px; margin-top:30px;">
                 <button class="btn-guardar-master" onclick="descargarPDF()" style="flex:2; margin-top:0;">📥 DESCARGAR PDF FORMATO A4</button>
                 <button class="btn-guardar-master" onclick="pedirReenvio()" style="background:var(--verde); flex:1; margin-top:0; display:flex; align-items:center; justify-content:center; gap:10px;">
@@ -528,6 +549,7 @@
                         : '---';
 
                     l.innerHTML += `<tr>
+                        <td><input type="checkbox" class="check-item" value="${d.id}" onclick="actualizarBotonMulti()"></td>
                         <td><span style="background:#eee; padding:5px 10px; border-radius:5px; font-weight:bold; font-size:12px;">${d.fecha}</span></td>
                         <td>
                             <select onchange="cambiarEstado('${d.id}',this.value)" class="${cl}">
@@ -542,7 +564,30 @@
                         <td><button class="btn-rojo" onclick="eliminarReporte('${d.id}')">🗑️</button></td>
                     </tr>`;
                 });
+                document.getElementById('check-all').checked = false;
+                actualizarBotonMulti();
             });
+        }
+
+        // LÓGICA DE SELECCIÓN MÚLTIPLE
+        function toggleSeleccionarTodos(val) {
+            document.querySelectorAll('.check-item').forEach(c => c.checked = val);
+            actualizarBotonMulti();
+        }
+
+        function actualizarBotonMulti() {
+            const seleccionados = document.querySelectorAll('.check-item:checked').length;
+            const btn = document.getElementById('btn-borrar-multi');
+            btn.style.display = seleccionados > 1 ? 'block' : 'none';
+        }
+
+        async function eliminarVarios() {
+            const checks = document.querySelectorAll('.check-item:checked');
+            if(confirm(`¿Estás seguro de eliminar los ${checks.length} viajes seleccionados?`)) {
+                for(let c of checks) {
+                    await db.collection("reportes").doc(c.value).delete();
+                }
+            }
         }
 
         function aplicarScanner() {
@@ -556,7 +601,6 @@
             actual = {id: doc.id, ...doc.data()};
             const v = document.getElementById('visor-foto');
             v.innerHTML = "";
-            
             const list = Array.isArray(actual.fotos) ? actual.fotos : [actual.fotos];
             list.forEach(src => {
                 const img = document.createElement('img');
@@ -564,7 +608,6 @@
                 img.className = 'img-ticket-render';
                 v.appendChild(img);
             });
-
             document.getElementById('modalPDF').style.display = 'block';
             document.getElementById('brillo').value = 100; document.getElementById('contraste').value = 100; document.getElementById('limpieza').value = 0; document.getElementById('tinta').value = 0;
             setTimeout(aplicarScanner, 100);
@@ -596,7 +639,6 @@
                 acoplado: document.getElementById('ed-aco').value, 
                 equipo: document.getElementById('ed-equi').value 
             };
-
             if(file) {
                 const reader = new FileReader();
                 reader.onloadend = async () => {
@@ -650,7 +692,6 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             const imgs = document.querySelectorAll('.img-ticket-render');
-            
             imgs.forEach((img, i) => {
                 const canvas = document.createElement('canvas');
                 const imgObj = new Image();
@@ -672,6 +713,7 @@
     </script>
 </body>
 </html>
+
 
 
 
