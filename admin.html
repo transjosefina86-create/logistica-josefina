@@ -2,133 +2,337 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Administrativo - La Josefina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - Transporte La Josefina</title>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
-        :root { --naranja: #ff6600; --oscuro: #1a1a1a; --rojo: #dc3545; --verde: #28a745; }
-        body { font-family: 'Segoe UI', sans-serif; background: #ffffff; margin: 0; padding: 0; }
-        
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--oscuro); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .logo-login { font-size: 45px; font-weight: 900; color: var(--naranja); text-shadow: 2px 2px 0px #000; text-align: center; margin-bottom: 30px; }
-        .input-login { padding: 15px; font-size: 20px; border-radius: 12px; border: none; text-align: center; width: 220px; margin-bottom: 20px; }
+        :root {
+            --naranja: #ff6600;
+            --oscuro: #1a1a1a;
+            --gris-fondo: #f4f4f4;
+            --rojo: #dc3545;
+            --verde: #28a745;
+            --azul: #007bff;
+        }
 
-        #contenido-principal { display: none; padding: 20px; }
-        .header { background: #333; color: white; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #444; color: white; font-size: 11px; text-transform: uppercase; }
-        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gris-fondo);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* LOGIN OVERLAY COMPLETO */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--oscuro);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .logo-login {
+            font-size: 50px;
+            font-weight: 900;
+            color: var(--naranja);
+            text-shadow: 3px 3px 0px #000;
+            text-align: center;
+            line-height: 1;
+            margin-bottom: 40px;
+        }
+
+        .input-login {
+            padding: 18px;
+            font-size: 22px;
+            border-radius: 15px;
+            border: none;
+            text-align: center;
+            width: 250px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* ESTRUCTURA PRINCIPAL */
+        #contenido-principal {
+            display: none;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: #333;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 5px solid var(--naranja);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* TABLAS ROBUSTAS */
+        .tabla-contenedor {
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin-top: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #444;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        tr:hover { background-color: #f9f9f9; }
+
         .txt-vacio { color: var(--verde) !important; font-weight: 900; }
         .txt-cargado { color: var(--rojo) !important; font-weight: 900; }
 
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); overflow-y: auto; }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; max-width: 800px; border-radius: 15px; }
-        
-        .ficha-edit { background: #fdfdfd; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
-        .ficha-edit label { color: var(--naranja); font-size: 11px; font-weight: 900; text-transform: uppercase; display: block; margin-top: 10px; }
-        .ficha-edit input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-weight: bold; box-sizing: border-box; }
+        /* BOTONES DETALLADOS */
+        .btn-crear {
+            background: var(--naranja);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
 
-        .visor-controles { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f0f0f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; font-weight: bold; }
-        #visor-foto { background: #222; padding: 10px; border-radius: 10px; text-align: center; min-height: 450px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #img-ticket { max-width: 100%; max-height: 600px; }
+        .btn-crear:hover { transform: scale(1.05); background: #e65c00; }
 
-        .btn-crear { background: var(--naranja); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-rojo { background: var(--rojo); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-guardar { background: var(--verde); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        .btn-rojo { background: var(--rojo); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
         
-        .tabla-gestion { width: 100%; margin-top: 15px; font-size: 13px; }
-        .tabla-gestion th { background: #666; }
+        /* MODALES COMPLETOS */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 2% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .ficha-edit {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: #f9f9f9;
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
+
+        .ficha-edit div { display: flex; flex-direction: column; }
+
+        .ficha-edit label {
+            color: var(--naranja);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .ficha-edit input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* VISOR PDF REPARADO */
+        .visor-controles {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            background: #eee;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .control-group { display: flex; flex-direction: column; font-weight: bold; font-size: 13px; }
+
+        #visor-foto {
+            background: #222;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #img-ticket {
+            max-width: 100%;
+            max-height: 650px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* GESTIÓN DE ACCESOS */
+        #box-gestion {
+            display: none;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid var(--naranja);
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
     <div id="login-overlay">
         <div class="logo-login">TRANSPORTE<br>LA JOSEFINA</div>
-        <input type="password" id="pin-input" class="input-login" placeholder="PIN" onkeypress="if(event.key==='Enter') verificarLogin()">
-        <button class="btn-crear" onclick="verificarLogin()">INGRESAR</button>
+        <input type="password" id="pin-input" class="input-login" placeholder="PIN DE ACCESO" onkeypress="if(event.key==='Enter') verificarLogin()">
+        <button class="btn-crear" onclick="verificarLogin()">INGRESAR AL PANEL</button>
     </div>
 
     <div id="contenido-principal">
         <div class="header">
-            <h2 style="margin:0">PANEL CONTROL - LA JOSEFINA</h2>
-            <button class="btn-crear" onclick="toggleGestion()">⚙️ ACCESOS</button>
+            <h2 style="margin:0; letter-spacing: 2px;">LOGÍSTICA - PANEL ADMINISTRATIVO</h2>
+            <button class="btn-crear" onclick="toggleGestion()">⚙️ GESTIONAR ACCESOS</button>
         </div>
 
-        <div id="box-gestion" style="display:none; background:#f9f9f9; padding:20px; border-radius:12px; border:1px solid #ddd; margin-top:10px;">
-            <h3>NUEVO ACCESO</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px;">
-                <input type="text" id="u-nom" placeholder="Chofer">
-                <input type="text" id="u-pin" placeholder="PIN">
-                <input type="text" id="u-tel" placeholder="WhatsApp">
+        <div id="box-gestion">
+            <h3 style="margin-top:0">REGISTRAR NUEVO TRANSPORTE / CHOFER</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px;">
+                <input type="text" id="u-nom" placeholder="Nombre Chofer" style="padding:10px; border-radius:5px; border:1px solid #ccc;">
+                <input type="text" id="u-pin" placeholder="PIN de Acceso" style="padding:10px; border-radius:5px; border:1px solid #ccc;">
+                <input type="text" id="u-tel" placeholder="WhatsApp (Ej: 549...)" style="padding:10px; border-radius:5px; border:1px solid #ccc;">
                 <button class="btn-crear" onclick="guardarChofer()">REGISTRAR</button>
             </div>
-            <table class="tabla-gestion">
-                <thead><tr><th>CHOFER</th><th>PIN</th><th>TEL</th><th>ACCIÓN</th></tr></thead>
-                <tbody id="lista-choferes-gestion"></tbody>
-            </table>
+            <div class="tabla-contenedor">
+                <table class="tabla-gestion">
+                    <thead>
+                        <tr>
+                            <th>CHOFER</th>
+                            <th>PIN ASIGNADO</th>
+                            <th>TELÉFONO WHATSAPP</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-choferes-gestion"></tbody>
+                </table>
+            </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>FECHA Y HORA</th>
-                    <th>ESTADO</th>
-                    <th>CHOFER</th>
-                    <th>TRANSPORTE</th>
-                    <th>EDITAR</th>
-                    <th>TICKET</th>
-                    <th>BORRAR</th>
-                </tr>
-            </thead>
-            <tbody id="lista-reportes"></tbody>
-        </table>
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>FECHA Y HORA</th>
+                        <th>ESTADO DE CARGA</th>
+                        <th>CHOFER</th>
+                        <th>EMPRESA TRANSPORTE</th>
+                        <th>CORREGIR</th>
+                        <th>VISUALIZAR TICKET</th>
+                        <th>ELIMINAR</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-reportes"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="modalDatos" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <span style="float:right; cursor:pointer; font-size:28px; font-weight:bold;" onclick="cerrarModales()">×</span>
-            <h3 style="border-bottom: 2px solid var(--naranja);">CORREGIR DATOS DEL VIAJE</h3>
-            <div id="ficha-edit" class="ficha-edit"></div>
-            <button class="btn-guardar" onclick="guardarEdicion()">✅ GUARDAR Y ACTUALIZAR</button>
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer; font-size:35px; font-weight:bold; color:red;" onclick="cerrarModales()">×</span>
+            <h3 style="border-bottom: 3px solid var(--naranja); padding-bottom:10px;">EDICIÓN INTEGRAL DE REPORTE</h3>
+            <div id="ficha-edit" class="ficha-edit">
+                </div>
+            <button class="btn-guardar" onclick="guardarEdicion()">✅ GUARDAR CAMBIOS Y ACTUALIZAR BASE DE DATOS</button>
         </div>
     </div>
 
     <div id="modalPDF" class="modal">
         <div class="modal-content">
-            <span style="float:right; cursor:pointer; font-size:28px; font-weight:bold;" onclick="cerrarModales()">×</span>
-            <h3>PROCESAMIENTO DE TICKET</h3>
+            <span style="float:right; cursor:pointer; font-size:35px; font-weight:bold; color:red;" onclick="cerrarModales()">×</span>
+            <h3>PROCESAMIENTO DE IMAGEN PARA PDF</h3>
             <div class="visor-controles">
-                <div>BRILLO <input type="range" id="brillo" min="50" max="250" value="100" oninput="aplicarScanner()"></div>
-                <div>CONTRASTE <input type="range" id="contraste" min="50" max="300" value="100" oninput="aplicarScanner()"></div>
-                <div>HOJA BLANCA <input type="range" id="limpieza" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
-                <div>COLOR/TINTA <input type="range" id="tinta" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
+                <div class="control-group">BRILLO <input type="range" id="brillo" min="50" max="250" value="100" oninput="aplicarScanner()"></div>
+                <div class="control-group">CONTRASTE <input type="range" id="contraste" min="50" max="350" value="100" oninput="aplicarScanner()"></div>
+                <div class="control-group">HOJA BLANCA (LIMPIEZA) <input type="range" id="limpieza" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
+                <div class="control-group">COLOR / TINTA <input type="range" id="tinta" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
             </div>
             <div id="visor-foto"><img id="img-ticket" src=""></div>
-            <button class="btn-guardar" onclick="descargarPDF()">📥 DESCARGAR PDF A4</button>
+            <div style="display:flex; gap:15px; margin-top:20px;">
+                <button class="btn-guardar" onclick="descargarPDF()" style="flex:2">📥 GENERAR Y DESCARGAR PDF A4</button>
+                <button class="btn-guardar" onclick="pedirReenvio()" style="background:var(--azul); flex:1">💬 RECLAMAR POR WHATSAPP</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         let actual = null, idEditando = "";
 
-        // MEJORA: Recordar PIN
+        // PERSISTENCIA DE LOGIN
         window.onload = () => {
-            if(localStorage.getItem('pin_josefina') === "1234") {
+            if(localStorage.getItem('admin_josefina_auth') === "validado_1234") {
                 ingresarAlSistema();
             }
         };
 
         function verificarLogin() {
-            if(document.getElementById('pin-input').value === "1234") {
-                localStorage.setItem('pin_josefina', "1234");
+            const p = document.getElementById('pin-input').value;
+            if(p === "1234") {
+                localStorage.setItem('admin_josefina_auth', "validado_1234");
                 ingresarAlSistema();
-            } else { alert("PIN Incorrecto"); }
+            } else { alert("PIN de acceso incorrecto"); }
         }
 
         function ingresarAlSistema() {
@@ -139,6 +343,7 @@
             cargarChoferes();
         }
 
+        // FUNCIÓN DE LIMPIEZA AUTOMÁTICA (48 HORAS)
         async function limpiarReportesViejos() {
             const ahora = new Date();
             const snap = await db.collection("reportes").where("estado", "==", "CARGADO").get();
@@ -146,56 +351,70 @@
                 const data = doc.data();
                 if (data.fecha) {
                     const [f, h] = data.fecha.split(', ');
-                    const fechaISO = f.split('/').reverse().join('-') + 'T' + h;
-                    const fechaRep = new Date(fechaISO);
-                    if ((ahora - fechaRep) / (1000 * 60 * 60) >= 48) await db.collection("reportes").doc(doc.id).delete();
+                    const fISO = f.split('/').reverse().join('-') + 'T' + h;
+                    const fRep = new Date(fISO);
+                    if ((ahora - fRep) / (1000 * 60 * 60) >= 48) await db.collection("reportes").doc(doc.id).delete();
                 }
             });
         }
 
+        // CARGA DE DATOS CON ORDEN DE PRIORIDAD (VACÍOS ARRIBA)
         function cargarDatos() {
             db.collection("reportes").onSnapshot(snap => {
-                const l = document.getElementById('lista-reportes'); l.innerHTML = "";
+                const l = document.getElementById('lista-reportes'); 
+                l.innerHTML = "";
                 let reportes = [];
                 snap.forEach(doc => reportes.push({id: doc.id, ...doc.data()}));
                 
-                reportes.sort((a,b) => (b.fecha || '').localeCompare(a.fecha || ''));
+                // Lógica de ordenamiento solicitada
+                reportes.sort((a,b) => {
+                    if (a.estado === 'VACÍO' && b.estado === 'CARGADO') return -1;
+                    if (a.estado === 'CARGADO' && b.estado === 'VACÍO') return 1;
+                    // Dentro del mismo estado, por fecha/hora
+                    return (a.fecha || '').localeCompare(b.fecha || '');
+                });
 
                 reportes.forEach(d => {
                     const cl = d.estado === 'VACÍO' ? 'txt-vacio' : 'txt-cargado';
                     l.innerHTML += `<tr>
                         <td><b>${d.fecha || '-'}</b></td>
-                        <td><select onchange="cambiarEstado('${d.id}',this.value)" class="${cl}" style="border:none;background:none;font-weight:bold;"><option value="VACÍO" ${d.estado=='VACÍO'?'selected':''}>VACÍO</option><option value="CARGADO" ${d.estado=='CARGADO'?'selected':''}>CARGADO</option></select></td>
+                        <td>
+                            <select onchange="cambiarEstado('${d.id}',this.value)" class="${cl}" style="padding:5px; border-radius:5px; font-weight:bold;">
+                                <option value="VACÍO" ${d.estado=='VACÍO'?'selected':''}>VACÍO</option>
+                                <option value="CARGADO" ${d.estado=='CARGADO'?'selected':''}>CARGADO</option>
+                            </select>
+                        </td>
                         <td>${d.chofer_nombre || ''}</td>
                         <td>${d.transporte || ''}</td>
-                        <td><button class="btn-crear" onclick="verD('${d.id}')">👁️</button></td>
-                        <td>${d.fotos ? `<button class="btn-crear" style="background:#444" onclick="verP('${d.id}')">📄</button>` : '-'}</td>
+                        <td><button class="btn-crear" style="padding:5px 10px" onclick="verD('${d.id}')">👁️ EDITAR</button></td>
+                        <td>${d.fotos ? `<button class="btn-crear" style="background:#444; padding:5px 10px" onclick="verP('${d.id}')">📄 TICKET</button>` : '-'}</td>
                         <td><button class="btn-rojo" onclick="eliminarReporte('${d.id}')">🗑️</button></td>
                     </tr>`;
                 });
             });
         }
 
+        // MOTOR DE FILTROS PDF (4 OPCIONES)
         function aplicarScanner() {
             const b = document.getElementById('brillo').value;
             const c = document.getElementById('contraste').value;
             const l = document.getElementById('limpieza').value;
             const t = document.getElementById('tinta').value;
-            
-            // Lógica simplificada de 4 opciones para evitar errores
             document.getElementById('img-ticket').style.filter = `
-                grayscale(100%)
-                brightness(${b}%)
-                contrast(${c}%)
-                brightness(${100 + parseInt(l)}%)
+                grayscale(100%) 
+                brightness(${b}%) 
+                contrast(${c}%) 
+                brightness(${100 + parseInt(l)}%) 
                 saturate(${100 + parseInt(t)}%)
             `;
         }
 
         async function verP(id) {
-            const doc = await db.collection("reportes").doc(id).get(); actual = {id: doc.id, ...doc.data()};
+            const doc = await db.collection("reportes").doc(id).get(); 
+            actual = {id: doc.id, ...doc.data()};
             document.getElementById('img-ticket').src = actual.fotos[0];
             document.getElementById('modalPDF').style.display = 'block';
+            // Reset de filtros al abrir
             document.getElementById('brillo').value = 100;
             document.getElementById('contraste').value = 100;
             document.getElementById('limpieza').value = 0;
@@ -203,45 +422,76 @@
             aplicarScanner();
         }
 
+        // EDICIÓN DE TODOS LOS CAMPOS (SIN RECORTES)
         async function verD(id) {
             idEditando = id;
-            const doc = await db.collection("reportes").doc(id).get(); const d = doc.data();
+            const doc = await db.collection("reportes").doc(id).get();
+            const d = doc.data();
             document.getElementById('ficha-edit').innerHTML = `
-                <label>Transporte</label><input type="text" id="ed-trans" value="${d.transporte || ''}">
-                <label>CUIT Empresa</label><input type="text" id="ed-cuit" value="${d.cuit_trans || ''}">
-                <label>Chofer</label><input type="text" id="ed-nom" value="${d.chofer_nombre || ''}">
-                <label>CUIL Chofer</label><input type="text" id="ed-cuil" value="${d.chofer_cuil || ''}">
-                <label>Patente Chasis</label><input type="text" id="ed-cha" value="${d.chasis || ''}">
-                <label>Patente Acoplado</label><input type="text" id="ed-aco" value="${d.acoplado || ''}">
-                <label>Tipo de Equipo</label><input type="text" id="ed-equi" value="${d.equipo || ''}">`;
+                <div><label>Transporte</label><input type="text" id="ed-trans" value="${d.transporte || ''}"></div>
+                <div><label>CUIT Empresa</label><input type="text" id="ed-cuit" value="${d.cuit_trans || ''}"></div>
+                <div><label>Chofer</label><input type="text" id="ed-nom" value="${d.chofer_nombre || ''}"></div>
+                <div><label>CUIL Chofer</label><input type="text" id="ed-cuil" value="${d.chofer_cuil || ''}"></div>
+                <div><label>Patente Chasis</label><input type="text" id="ed-cha" value="${d.chasis || ''}"></div>
+                <div><label>Patente Acoplado</label><input type="text" id="ed-aco" value="${d.acoplado || ''}"></div>
+                <div style="grid-column: span 2"><label>Tipo de Equipo</label><input type="text" id="ed-equi" value="${d.equipo || ''}"></div>`;
             document.getElementById('modalDatos').style.display = 'block';
         }
 
         async function guardarEdicion() {
-            const up = { transporte: document.getElementById('ed-trans').value, cuit_trans: document.getElementById('ed-cuit').value, chofer_nombre: document.getElementById('ed-nom').value, chofer_cuil: document.getElementById('ed-cuil').value, chasis: document.getElementById('ed-cha').value, acoplado: document.getElementById('ed-aco').value, equipo: document.getElementById('ed-equi').value };
-            await db.collection("reportes").doc(idEditando).update(up); cerrarModales();
+            const up = {
+                transporte: document.getElementById('ed-trans').value,
+                cuit_trans: document.getElementById('ed-cuit').value,
+                chofer_nombre: document.getElementById('ed-nom').value,
+                chofer_cuil: document.getElementById('ed-cuil').value,
+                chasis: document.getElementById('ed-cha').value,
+                acoplado: document.getElementById('ed-aco').value,
+                equipo: document.getElementById('ed-equi').value
+            };
+            await db.collection("reportes").doc(idEditando).update(up);
+            cerrarModales();
         }
 
+        // GESTIÓN DE ACCESOS
         function cargarChoferes() {
             db.collection("accesos_choferes").onSnapshot(snap => {
-                const l = document.getElementById('lista-choferes-gestion'); l.innerHTML = "";
+                const l = document.getElementById('lista-choferes-gestion'); 
+                l.innerHTML = "";
                 snap.forEach(doc => {
                     const d = doc.data();
-                    l.innerHTML += `<tr><td>${doc.id.toUpperCase()}</td><td>${d.clave}</td><td>${d.telefono}</td><td><button class="btn-rojo" onclick="borrarChofer('${doc.id}')">X</button></td></tr>`;
+                    l.innerHTML += `<tr>
+                        <td><b>${doc.id.toUpperCase()}</b></td>
+                        <td>${d.clave}</td>
+                        <td>${d.telefono}</td>
+                        <td><button class="btn-rojo" onclick="borrarChofer('${doc.id}')">ELIMINAR ACCESO</button></td>
+                    </tr>`;
                 });
             });
         }
 
         async function guardarChofer() {
-            const u = document.getElementById('u-nom').value.toLowerCase(), p = document.getElementById('u-pin').value, t = document.getElementById('u-tel').value;
-            if(u && p && t) { await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t }); }
+            const u = document.getElementById('u-nom').value.toLowerCase();
+            const p = document.getElementById('u-pin').value;
+            const t = document.getElementById('u-tel').value;
+            if(u && p && t) {
+                await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
+                document.getElementById('u-nom').value = ""; document.getElementById('u-pin').value = ""; document.getElementById('u-tel').value = "";
+            } else { alert("Complete todos los campos del nuevo acceso"); }
         }
 
-        async function borrarChofer(id) { if(confirm("¿Eliminar?")) await db.collection("accesos_choferes").doc(id).delete(); }
-        async function eliminarReporte(id) { if(confirm("¿Borrar definitivamente?")) await db.collection("reportes").doc(id).delete(); }
+        async function borrarChofer(id) { if(confirm("¿Quitar acceso a este chofer?")) await db.collection("accesos_choferes").doc(id).delete(); }
+        async function eliminarReporte(id) { if(confirm("¿Borrar este reporte permanentemente?")) await db.collection("reportes").doc(id).delete(); }
         function cambiarEstado(id, n) { db.collection("reportes").doc(id).update({ estado: n }); }
         function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
         function toggleGestion() { const b = document.getElementById('box-gestion'); b.style.display = b.style.display==='none'?'block':'none'; }
+
+        async function pedirReenvio() {
+            const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
+            if(cDoc.exists) {
+                const tel = cDoc.data().telefono;
+                window.open(`https://api.whatsapp.com/send?phone=${tel}&text=Hola, la foto del ticket que enviaste no se ve bien. ¿Podrías enviarla de nuevo? Gracias.`, '_blank');
+            } else { alert("No se encontró el teléfono del chofer"); }
+        }
 
         function descargarPDF() {
             const { jsPDF } = window.jspdf;
@@ -253,14 +503,19 @@
             imgObj.src = img.src;
             imgObj.onload = () => {
                 canvas.width = imgObj.width; canvas.height = imgObj.height;
-                const ctx = canvas.getContext('2d'); ctx.filter = img.style.filter; ctx.drawImage(imgObj, 0, 0);
-                doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 5, 12, 200, 275);
+                const ctx = canvas.getContext('2d');
+                ctx.filter = img.style.filter;
+                ctx.drawImage(imgObj, 0, 0);
+                doc.setFontSize(10);
+                doc.text(`TICKET DE CARGA - ${actual.transporte} - CHOFER: ${actual.chofer_nombre}`, 10, 10);
+                doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 5, 15, 200, 270);
                 doc.save(`TICKET_${actual.chofer_nombre}.pdf`);
             };
         }
     </script>
 </body>
 </html>
+
 
 
 
