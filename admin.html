@@ -2,207 +2,205 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Administrativo - La Josefina</title>
+    <title>Panel de Control - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1200px; margin: auto; }
-        .header { background: #333; color: white; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; font-weight: 900; letter-spacing: 1px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .seccion { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #ff6600; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
-        .seccion { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .seccion h2 { color: #ff6600; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; font-size: 20px; }
-
-        /* GESTION DE CHOFERES */
-        .form-alta { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 15px; margin-bottom: 20px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #ff6600; }
-        .btn-crear { background: #ff6600; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        .btn-crear:hover { background: #e65c00; }
+        /* GESTIÓN SUPERIOR */
+        .grid-gestion { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 10px; margin-bottom: 20px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-crear { background: #ff6600; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
         /* TABLAS */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; color: #666; text-transform: uppercase; font-size: 12px; font-weight: 800; }
-        .btn-ojo { background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        .btn-pdf { background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn-borrar { background: #dc3545; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; }
-
-        /* ESTADOS */
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .espera { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .vacio { background: #e2e3e5; color: #383d41; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #333; color: white; font-size: 13px; }
+        
+        .btn-ojo { background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-pdf-ver { background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        /* ESTADOS CRUCIALES */
+        .badge { padding: 6px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-reclamo { background: #ffc107; color: #000; } /* Amarillo: Pediste foto */
+        .status-reenviado { background: #28a745; color: #fff; } /* Verde: El chofer cumplió */
+        .alerta-cambio { background: #dc3545; color: white; padding: 2px 5px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
 
         /* MODALES */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
-        .modal-content { background: white; margin: 2% auto; padding: 30px; width: 90%; max-width: 850px; border-radius: 15px; position: relative; }
-        .close { position: absolute; right: 25px; top: 20px; font-size: 30px; cursor: pointer; color: #999; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; max-width: 800px; border-radius: 15px; position: relative; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 10px; }
+        .info-item b { color: #ff6600; font-size: 11px; display: block; }
         
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f9f9f9; padding: 20px; border-radius: 10px; border: 1px solid #eee; }
-        .info-item b { color: #ff6600; display: block; font-size: 11px; margin-bottom: 4px; }
-        .info-item span { font-size: 16px; font-weight: 600; }
-
-        #visor-pdf { text-align: center; margin-top: 25px; background: #525659; padding: 25px; border-radius: 12px; min-height: 300px; display: flex; align-items: center; justify-content: center; }
-        #visor-pdf img { max-width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); filter: contrast(1.1); }
-
-        .btn-whatsapp { background: #25d366; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; flex: 1; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-descargar { background: #007bff; color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; flex: 1; cursor: pointer; font-size: 16px; }
+        #visor-pdf { text-align: center; margin-top: 20px; background: #444; padding: 20px; border-radius: 10px; }
+        #visor-pdf img { max-width: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Control Logística - La Josefina</h1>
-        <div id="reloj" style="font-family: monospace; font-size: 18px; font-weight: bold;"></div>
-    </div>
-
     <div class="seccion">
-        <h2>GESTIÓN DE ACCESOS (CHOFERES)</h2>
-        <div class="form-alta">
-            <input type="text" id="nuevo-user" placeholder="Usuario (Ej: juan.perez)">
-            <input type="text" id="nuevo-pin" placeholder="Contraseña / PIN">
-            <input type="text" id="nuevo-tel" placeholder="WhatsApp (Ej: 54911...)">
-            <button class="btn-crear" onclick="crearChofer()">+ CREAR ACCESO</button>
+        <h2>GESTIÓN DE CHOFERES</h2>
+        <div class="grid-gestion">
+            <input type="text" id="u-nom" placeholder="Usuario">
+            <input type="text" id="u-pin" placeholder="PIN">
+            <input type="text" id="u-tel" placeholder="WhatsApp">
+            <button class="btn-crear" onclick="crearAcceso()">+ AGREGAR</button>
         </div>
-        <table>
+        <table id="tabla-choferes">
             <thead><tr><th>Usuario</th><th>PIN</th><th>WhatsApp</th><th>Acción</th></tr></thead>
-            <tbody id="tabla-accesos"></tbody>
+            <tbody id="body-choferes"></tbody>
         </table>
     </div>
 
     <div class="seccion">
-        <h2>REPORTES RECIBIDOS</h2>
+        <h2>LISTADO DE REPORTES</h2>
         <table>
             <thead>
                 <tr>
                     <th>Fecha</th>
                     <th>Chofer</th>
                     <th>Transporte</th>
-                    <th>Datos Camión</th>
+                    <th>Control</th>
                     <th>Estado</th>
-                    <th>Acción PDF</th>
+                    <th>Ticket</th>
                 </tr>
             </thead>
-            <tbody id="tabla-reportes"></tbody>
+            <tbody id="body-reportes"></tbody>
         </table>
     </div>
-</div>
 
-<div id="modalOjo" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
-        <span class="close" onclick="cerrarModales()">&times;</span>
-        <h2 style="color:#333">CONTROL DE DATOS</h2>
-        <div class="info-grid" id="detalle-ojo"></div>
-    </div>
-</div>
-
-<div id="modalPDF" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="cerrarModales()">&times;</span>
-        <h2 style="color:#333">VISOR DE TICKET / PDF</h2>
-        <div id="visor-pdf"></div>
-        <div style="display:flex; gap:15px; margin-top:25px;">
-            <button class="btn-descargar" onclick="descargarFinal()">📥 DESCARGAR PDF</button>
-            <button class="btn-whatsapp" onclick="pedirReenvio()">⚠️ RECHAZAR FOTO (WHATSAPP)</button>
+    <div id="modalOjo" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span style="float:right; cursor:pointer;" onclick="cerrarModales()">✖</span>
+            <h3>CONTROL DE DATOS CARGADOS</h3>
+            <div id="detalle-ojo" class="info-grid"></div>
         </div>
     </div>
-</div>
 
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <div id="modalPDF" class="modal">
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer;" onclick="cerrarModales()">✖</span>
+            <h3>VISOR DE TICKET / PDF</h3>
+            <div id="visor-pdf"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-crear" style="flex:1; background:#007bff;" onclick="descargarPDF()">📥 DESCARGAR PDF</button>
+                <button class="btn-crear" style="flex:1; background:#dc3545;" onclick="reclamarFoto()">⚠️ RECLAMAR FOTO (WHATSAPP)</button>
+            </div>
+        </div>
+    </div>
 
-    let actual = null, idAct = "";
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        let actual = null, idAct = "";
 
-    // GESTIÓN DE CHOFERES
-    async function crearChofer() {
-        const u = document.getElementById('nuevo-user').value.trim().toLowerCase();
-        const p = document.getElementById('nuevo-pin').value.trim();
-        const t = document.getElementById('nuevo-tel').value.trim();
-        if(!u || !p || !t) return alert("Completa todos los datos");
-        await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
-        alert("Chofer creado correctamente");
-    }
+        // GESTION CHOFERES
+        async function crearAcceso() {
+            const u = document.getElementById('u-nom').value.toLowerCase();
+            const p = document.getElementById('u-pin').value;
+            const t = document.getElementById('u-tel').value;
+            if(u && p && t) await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
+        }
 
-    db.collection("accesos_choferes").onSnapshot(snap => {
-        const t = document.getElementById('tabla-accesos'); t.innerHTML = "";
-        snap.forEach(doc => {
-            t.innerHTML += `<tr><td>${doc.id}</td><td>${doc.data().clave}</td><td>${doc.data().telefono}</td><td><button class="btn-borrar" onclick="borrarChofer('${doc.id}')">Eliminar</button></td></tr>`;
+        db.collection("accesos_choferes").onSnapshot(snap => {
+            const b = document.getElementById('body-choferes'); b.innerHTML = "";
+            snap.forEach(doc => {
+                b.innerHTML += `<tr><td>${doc.id}</td><td>${doc.data().clave}</td><td>${doc.data().telefono}</td><td><button onclick="borrarAcceso('${doc.id}')">Eliminar</button></td></tr>`;
+            });
         });
-    });
-    async function borrarChofer(id) { if(confirm("¿Borrar este acceso?")) await db.collection("accesos_choferes").doc(id).delete(); }
 
-    // TABLA DE REPORTES
-    db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snap => {
-        const t = document.getElementById('tabla-reportes'); t.innerHTML = "";
-        snap.forEach(doc => {
+        async function borrarAcceso(id) { if(confirm("¿Eliminar?")) await db.collection("accesos_choferes").doc(id).delete(); }
+
+        // REPORTES Y LÓGICA DE ESTADOS
+        db.collection("reportes").orderBy("fecha", "desc").onSnapshot(snap => {
+            const b = document.getElementById('body-reportes'); b.innerHTML = "";
+            snap.forEach(doc => {
+                const d = doc.data();
+                let clase = "";
+                let texto = d.estado;
+
+                if(d.estado === "PIDIENDO REENVÍO") {
+                    clase = "status-reclamo";
+                    texto = "FOTO RECLAMADA";
+                } else if(d.reenviada) {
+                    clase = "status-reenviado";
+                    texto = "FOTO REENVIADA";
+                }
+
+                b.innerHTML += `
+                    <tr>
+                        <td>${d.fecha}</td>
+                        <td>${d.chofer_nombre}</td>
+                        <td>${d.transporte}</td>
+                        <td><button class="btn-ojo" onclick="verOjo('${doc.id}')">👁️ DATOS</button></td>
+                        <td><span class="badge ${clase}">${texto}</span></td>
+                        <td><button class="btn-pdf-ver" onclick="verPDF('${doc.id}')">📄 PDF</button></td>
+                    </tr>`;
+            });
+        });
+
+        async function verOjo(id) {
+            const doc = await db.collection("reportes").doc(id).get();
             const d = doc.data();
-            let st = d.estado === "PIDIENDO REENVÍO" ? "espera" : (d.reenviada ? "ok" : (d.estado === "CARGADO" ? "ok" : "vacio"));
-            let textoEstado = d.estado === "PIDIENDO REENVÍO" ? "RECLAMADA" : (d.reenviada ? "FOTO NUEVA" : d.estado);
+            // Aquí podrías comparar con un "perfil maestro" si lo tuvieras, 
+            // por ahora mostramos todo lo que el chofer cargó en este reporte.
+            document.getElementById('detalle-ojo').innerHTML = `
+                <div class="info-item"><b>TRANSPORTE:</b> ${d.transporte}</div>
+                <div class="info-item"><b>CUIT:</b> ${d.cuit_trans}</div>
+                <div class="info-item"><b>CHOFER:</b> ${d.chofer_nombre}</div>
+                <div class="info-item"><b>CUIL:</b> ${d.chofer_cuil}</div>
+                <div class="info-item"><b>CHASIS:</b> ${d.chasis}</div>
+                <div class="info-item"><b>ACOPLADO:</b> ${d.acoplado}</div>
+                <div class="info-item"><b>EQUIPO:</b> ${d.equipo}</div>`;
+            document.getElementById('modalOjo').style.display = "block";
+        }
+
+        async function verPDF(id) {
+            idAct = id; const doc = await db.collection("reportes").doc(id).get(); actual = doc.data();
+            const visor = document.getElementById('visor-pdf');
+            visor.innerHTML = actual.fotos && actual.fotos.length > 0 ? 
+                `<img src="${actual.fotos[0]}" id="img-ticket">` : 
+                `<p style="color:white">⚠️ FOTO ELIMINADA - ESPERANDO REENVÍO</p>`;
+            document.getElementById('modalPDF').style.display = "block";
+        }
+
+        async function reclamarFoto() {
+            if(!confirm("¿Reclamar nueva foto? Se borrará la actual.")) return;
+            const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
+            const tel = cDoc.exists ? cDoc.data().telefono : "";
             
-            t.innerHTML += `
-                <tr>
-                    <td>${d.fecha}</td>
-                    <td style="font-weight:bold">${d.chofer_nombre}</td>
-                    <td>${d.transporte}</td>
-                    <td><button class="btn-ojo" onclick="verOjo('${doc.id}')">👁️ CONTROL</button></td>
-                    <td><span class="badge ${st}">${textoEstado}</span></td>
-                    <td><button class="btn-pdf" onclick="verPDF('${doc.id}')">📄 VER TICKET</button></td>
-                </tr>`;
-        });
-    });
+            // Borramos foto y cambiamos estado
+            await db.collection("reportes").doc(idAct).update({ 
+                fotos: [], 
+                estado: "PIDIENDO REENVÍO", 
+                reenviada: false 
+            });
 
-    async function verOjo(id) {
-        const doc = await db.collection("reportes").doc(id).get();
-        const d = doc.data();
-        document.getElementById('detalle-ojo').innerHTML = `
-            <div class="info-item"><b>TRANSPORTE:</b> <span>${d.transporte}</span></div><div class="info-item"><b>CUIT:</b> <span>${d.cuit_trans}</span></div>
-            <div class="info-item"><b>CHOFER:</b> <span>${d.chofer_nombre}</span></div><div class="info-item"><b>CUIL:</b> <span>${d.chofer_cuil}</span></div>
-            <div class="info-item"><b>CHASIS:</b> <span>${d.chasis}</span></div><div class="info-item"><b>ACOPLADO:</b> <span>${d.acoplado}</span></div>
-            <div class="info-item"><b>EQUIPO:</b> <span>${d.equipo}</span></div><div class="info-item"><b>TIPO:</b> <span>${d.estado}</span></div>`;
-        document.getElementById('modalOjo').style.display = "block";
-    }
+            window.open(`https://api.whatsapp.com/send?phone=${tel}&text=Hola ${actual.chofer_nombre}, la foto de ${actual.transporte} no es legible. Por favor enviá una nueva desde la App.`, '_blank');
+            cerrarModales();
+        }
 
-    async function verPDF(id) {
-        idAct = id; const doc = await db.collection("reportes").doc(id).get(); actual = doc.data();
-        const visor = document.getElementById('visor-pdf');
-        visor.innerHTML = actual.fotos && actual.fotos.length > 0 ? `<img src="${actual.fotos[0]}" id="img-render">` : `<p style="color:white; font-size:18px; font-weight:bold;">⚠️ FOTO BORRADA - ESPERANDO REENVÍO</p>`;
-        document.getElementById('modalPDF').style.display = "block";
-    }
+        function descargarPDF() {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            const img = document.getElementById('img-ticket');
+            doc.text(`TICKET: ${actual.transporte}`, 10, 10);
+            if(img) doc.addImage(img.src, 'JPEG', 10, 20, 180, 160);
+            doc.save(`Ticket_${actual.chofer_nombre}.pdf`);
+        }
 
-    async function pedirReenvio() {
-        if(!confirm("¿Reclamar nueva foto? Se borrará el PDF actual y se notificará por WhatsApp.")) return;
-        const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
-        const tel = cDoc.exists ? cDoc.data().telefono : "";
-        
-        await db.collection("reportes").doc(idAct).update({ fotos: [], estado: "PIDIENDO REENVÍO", reenviada: false });
-        
-        const msj = `Hola ${actual.chofer_nombre}, la foto de ${actual.transporte} salió mal. Por favor enviá una nueva por la App.`;
-        window.open(`https://api.whatsapp.com/send?phone=${tel}&text=${encodeURIComponent(msj)}`, '_blank');
-        cerrarModales();
-    }
-
-    function descargarFinal() {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        const img = document.getElementById('img-render');
-        if(!img) return alert("No hay imagen para descargar");
-        doc.setFontSize(20); doc.text("REPORTE LA JOSEFINA", 10, 20);
-        doc.setFontSize(12); doc.text(`Chofer: ${actual.chofer_nombre} | Transporte: ${actual.transporte}`, 10, 30);
-        doc.addImage(img.src, 'JPEG', 10, 40, 185, 160);
-        doc.save(`Ticket_${actual.chofer_nombre}.pdf`);
-    }
-
-    function cerrarModales() { document.getElementById('modalOjo').style.display = "none"; document.getElementById('modalPDF').style.display = "none"; }
-    setInterval(() => { document.getElementById('reloj').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
+        function cerrarModales() { 
+            document.getElementById('modalOjo').style.display = "none"; 
+            document.getElementById('modalPDF').style.display = "none"; 
+        }
+    </script>
 </body>
 </html>
+
 
 
 
