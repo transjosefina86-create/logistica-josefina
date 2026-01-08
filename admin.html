@@ -2,44 +2,46 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Administrativo - Transporte La Josefina</title>
+    <title>Panel Administrativo - La Josefina</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --naranja: #ff6600; --oscuro: #1a1a1a; }
-        body { font-family: 'Segoe UI', sans-serif; background: #ffffff; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #ffffff; margin: 0; padding: 0; overflow-x: hidden; }
         
         /* LOGIN */
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--oscuro); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .logo-login { font-size: 45px; font-weight: 900; color: var(--naranja); text-shadow: 2px 2px 0px #000; text-align: center; margin-bottom: 30px; }
-        .input-login { padding: 15px; font-size: 20px; border-radius: 12px; border: none; text-align: center; width: 220px; margin-bottom: 20px; }
+        .logo-login { font-size: 40px; font-weight: 900; color: var(--naranja); text-shadow: 2px 2px 0px #000; text-align: center; margin-bottom: 25px; }
+        .input-login { padding: 12px; font-size: 18px; border-radius: 10px; border: none; text-align: center; width: 200px; margin-bottom: 15px; }
 
-        #contenido-principal { display: none; padding: 20px; }
-        .header { background: #333; color: white; padding: 15px 25px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); }
+        #contenido-principal { display: none; padding: 15px; }
+        .header { background: #333; color: white; padding: 10px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--naranja); }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #444; color: white; font-size: 11px; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #444; color: white; text-transform: uppercase; }
         
         .txt-vacio { color: #28a745 !important; font-weight: 900; }
         .txt-cargado { color: #dc3545 !important; font-weight: 900; }
 
-        /* MODALES */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; max-width: 500px; border-radius: 15px; }
+        /* MODALES OPTIMIZADOS */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(3px); overflow-y: auto; }
+        .modal-content { background: white; margin: 20px auto; padding: 15px; width: 95%; max-width: 450px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
         
-        /* OJITO: FICHA UNIFICADA */
-        .ficha-unica { background: #fdfdfd; padding: 20px; border: 1px solid #ddd; border-radius: 10px; line-height: 1.8; }
-        .ficha-unica b { color: var(--naranja); font-size: 11px; text-transform: uppercase; display: inline-block; width: 140px; }
-        .ficha-unica span { font-size: 15px; font-weight: bold; color: #333; }
+        /* FICHA OJITO */
+        .ficha-unica { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .ficha-unica div { margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .ficha-unica b { color: var(--naranja); font-size: 10px; text-transform: uppercase; display: block; }
 
-        /* VISOR PDF RECARGADO */
-        .visor-controles { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f0f0f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; font-weight: bold; }
-        #visor-foto { background: #222; padding: 10px; border-radius: 10px; text-align: center; overflow: hidden; }
-        #img-ticket { max-width: 100%; height: auto; }
+        /* VISOR PDF COMPACTO */
+        .visor-controles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f0f0f0; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 11px; }
+        #visor-foto { background: #000; padding: 5px; border-radius: 5px; text-align: center; max-height: 350px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        #img-ticket { max-width: 100%; max-height: 340px; object-fit: contain; }
 
-        .btn-crear { background: var(--naranja); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-crear { background: var(--naranja); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-pdf { background: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; flex: 1; font-weight: bold; }
+        .btn-wsp { background: #dc3545; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; flex: 1; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -47,33 +49,32 @@
     <div id="login-overlay">
         <div class="logo-login">TRANSPORTE<br>LA JOSEFINA</div>
         <input type="password" id="pin-input" class="input-login" placeholder="PIN" onkeypress="if(event.key==='Enter') verificarLogin()">
-        <button class="btn-crear" onclick="verificarLogin()">INGRESAR</button>
+        <button class="btn-crear" onclick="verificarLogin()">ENTRAR</button>
     </div>
 
     <div id="contenido-principal">
         <div class="header">
-            <h2 style="margin:0">PANEL CONTROL</h2>
-            <button class="btn-crear" onclick="toggleGestion()">⚙️ GESTIÓN</button>
+            <h3 style="margin:0">LOGÍSTICA LA JOSEFINA</h3>
+            <button class="btn-crear" onclick="toggleGestion()">⚙️ ACCESOS</button>
         </div>
 
-        <div id="box-gestion" style="display:none; background:#f9f9f9; padding:20px; border-radius:12px; border:1px solid #ddd; margin-top:10px;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px;">
+        <div id="box-gestion" style="display:none; background:#f9f9f9; padding:15px; border-radius:10px; border:1px solid #ddd; margin-top:10px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 8px;">
                 <input type="text" id="u-nom" placeholder="Usuario">
                 <input type="text" id="u-pin" placeholder="PIN">
-                <input type="text" id="u-tel" placeholder="WhatsApp">
-                <button class="btn-crear" onclick="guardarChofer()">GUARDAR</button>
+                <input type="text" id="u-tel" placeholder="Teléfono">
+                <button class="btn-crear" onclick="guardarChofer()" style="grid-column: span 3;">GUARDAR NUEVO CHOFER</button>
             </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>FECHA / HORA</th>
+                    <th>HORA</th>
                     <th>ESTADO</th>
                     <th>CHOFER</th>
-                    <th>TRANSPORTE</th>
                     <th>DATOS</th>
-                    <th>TICKET</th>
+                    <th>PDF</th>
                 </tr>
             </thead>
             <tbody id="lista-reportes"></tbody>
@@ -82,29 +83,29 @@
 
     <div id="modalDatos" class="modal">
         <div class="modal-content">
-            <span style="float:right; cursor:pointer; font-size:28px;" onclick="cerrarModales()">×</span>
-            <h3 style="border-bottom: 2px solid var(--naranja);">DATOS CARGADOS</h3>
+            <span style="float:right; cursor:pointer; font-size:25px; font-weight:bold;" onclick="cerrarModales()">×</span>
+            <h3 style="margin-top:0; color:var(--naranja)">DATOS DEL VIAJE</h3>
             <div id="ficha-unica" class="ficha-unica"></div>
         </div>
     </div>
 
     <div id="modalPDF" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <span style="float:right; cursor:pointer; font-size:28px;" onclick="cerrarModales()">×</span>
-            <h3>EDITOR DE TICKET PARA PDF</h3>
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer; font-size:25px; font-weight:bold;" onclick="cerrarModales()">×</span>
+            <h4 style="margin:0 0 10px 0">AJUSTE DE NITIDEZ Y TICKET</h4>
             
             <div class="visor-controles">
-                <div>BRILLO <input type="range" id="brillo" min="50" max="250" value="100" oninput="aplicarScanner()" style="width:100%"></div>
-                <div>CONTRASTE <input type="range" id="contraste" min="50" max="300" value="140" oninput="aplicarScanner()" style="width:100%"></div>
-                <div>NITIDEZ <input type="range" id="nitidez" min="0" max="200" value="100" oninput="aplicarScanner()" style="width:100%"></div>
-                <div>EXPOSICIÓN <input type="range" id="expo" min="50" max="200" value="100" oninput="aplicarScanner()" style="width:100%"></div>
+                <div>BRILLO <input type="range" id="brillo" min="30" max="200" value="100" oninput="aplicarScanner()" style="width:100%"></div>
+                <div>CONTRASTE <input type="range" id="contraste" min="100" max="400" value="150" oninput="aplicarScanner()" style="width:100%"></div>
+                <div>OSCURECER LETRA <input type="range" id="negros" min="0" max="100" value="0" oninput="aplicarScanner()" style="width:100%"></div>
+                <div>LIMPIEZA FONDO <input type="range" id="limpieza" min="0" max="100" value="0" oninput="aplicarScanner()" style="width:100%"></div>
             </div>
 
             <div id="visor-foto"><img id="img-ticket" src=""></div>
 
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn-crear" style="background:#28a745; flex:1" onclick="descargarPDF()">📥 DESCARGAR A4</button>
-                <button class="btn-crear" style="background:#dc3545; flex:1" onclick="pedirReenvio()">⚠️ WHATSAPP RECLAMO</button>
+            <div style="display:flex; gap:8px; margin-top:15px;">
+                <button class="btn-pdf" onclick="descargarPDF()">📥 BAJAR PDF A4</button>
+                <button class="btn-wsp" onclick="pedirReenvio()">⚠️ RECLAMAR</button>
             </div>
         </div>
     </div>
@@ -113,7 +114,7 @@
         const firebaseConfig = { apiKey: "AIzaSyC...", authDomain: "control-logistica-2026.firebaseapp.com", projectId: "control-logistica-2026", appId: "1:389274295324:web:04467597157833633e467d" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        let actual = null, idAct = "";
+        let actual = null;
 
         function verificarLogin() {
             if(document.getElementById('pin-input').value === "1234") {
@@ -133,13 +134,13 @@
 
                 reportes.forEach(d => {
                     const cl = d.estado === 'VACÍO' ? 'txt-vacio' : 'txt-cargado';
+                    const horaCorta = d.fecha ? d.fecha.split(', ')[1] : '--:--';
                     l.innerHTML += `<tr>
-                        <td>${d.fecha || ''}</td>
-                        <td><select onchange="cambiarEstado('${d.id}',this.value)" class="${cl}"><option value="VACÍO" ${d.estado=='VACÍO'?'selected':''}>VACÍO</option><option value="CARGADO" ${d.estado=='CARGADO'?'selected':''}>CARGADO</option></select></td>
-                        <td><b>${d.chofer_nombre || ''}</b></td>
-                        <td>${d.transporte || ''}</td>
-                        <td><button onclick="verD('${d.id}')">👁️</button></td>
-                        <td>${d.fotos? `<button onclick="verP('${d.id}')">📄 PDF</button>` : '-'}</td>
+                        <td>${horaCorta}</td>
+                        <td><select onchange="cambiarEstado('${d.id}',this.value)" class="${cl}" style="border:none;background:none;font-weight:bold;"><option value="VACÍO" ${d.estado=='VACÍO'?'selected':''}>VACÍO</option><option value="CARGADO" ${d.estado=='CARGADO'?'selected':''}>CARGADO</option></select></td>
+                        <td>${d.chofer_nombre || ''}</td>
+                        <td><button class="btn-crear" style="padding:4px 8px" onclick="verD('${d.id}')">👁️</button></td>
+                        <td>${d.fotos ? `<button class="btn-crear" style="padding:4px 8px;background:#444" onclick="verP('${d.id}')">📄</button>` : '-'}</td>
                     </tr>`;
                 });
             });
@@ -148,20 +149,17 @@
         async function verD(id) {
             const doc = await db.collection("reportes").doc(id).get(); const d = doc.data();
             document.getElementById('ficha-unica').innerHTML = `
-                <div><b>Transporte:</b> <span>${d.transporte}</span></div>
-                <div><b>CUIT Empresa:</b> <span>${d.cuit_trans}</span></div>
-                <hr>
-                <div><b>Chofer:</b> <span>${d.chofer_nombre}</span></div>
-                <div><b>CUIL Chofer:</b> <span>${d.chofer_cuil}</span></div>
-                <hr>
-                <div><b>Patente Chasis:</b> <span>${d.chasis}</span></div>
-                <div><b>Patente Acoplado:</b> <span>${d.acoplado}</span></div>
-                <div><b>Tipo Equipo:</b> <span>${d.equipo}</span></div>`;
+                <div><b>Empresa</b> <span>${d.transporte}</span></div>
+                <div><b>CUIT</b> <span>${d.cuit_trans}</span></div>
+                <div><b>Chofer</b> <span>${d.chofer_nombre}</span></div>
+                <div><b>CUIL</b> <span>${d.chofer_cuil}</span></div>
+                <div><b>Patentes</b> <span>${d.chasis} / ${d.acoplado}</span></div>
+                <div><b>Unidad</b> <span>${d.equipo}</span></div>`;
             document.getElementById('modalDatos').style.display = 'block';
         }
 
         async function verP(id) {
-            idAct = id; const doc = await db.collection("reportes").doc(id).get(); actual = doc.data();
+            const doc = await db.collection("reportes").doc(id).get(); actual = {id: doc.id, ...doc.data()};
             document.getElementById('img-ticket').src = actual.fotos[0];
             document.getElementById('modalPDF').style.display = 'block';
             aplicarScanner();
@@ -170,9 +168,10 @@
         function aplicarScanner() {
             const b = document.getElementById('brillo').value;
             const c = document.getElementById('contraste').value;
-            const n = document.getElementById('nitidez').value;
-            const e = document.getElementById('expo').value;
-            document.getElementById('img-ticket').style.filter = `brightness(${b}%) contrast(${c}%) saturate(${n}%) brightness(${e}%) grayscale(100%)`;
+            const n = document.getElementById('negros').value;
+            const l = document.getElementById('limpieza').value;
+            // Filtro avanzado: Grayscale + Contraste Extremo + Inversión de negros para resaltar letras
+            document.getElementById('img-ticket').style.filter = `grayscale(100%) brightness(${b}%) contrast(${c}%) opacity(${100-n/2}%)`;
         }
 
         function descargarPDF() {
@@ -197,16 +196,23 @@
 
         async function pedirReenvio() {
             const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
-            const msg = `Hola ${actual.chofer_nombre}, necesito que reenvíes la foto de las ${actual.fecha.split(', ')[1]}. No se ve bien.`;
+            const msg = `Hola ${actual.chofer_nombre}, reenvía la foto de las ${actual.fecha.split(', ')[1]}. No es legible.`;
             window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function cambiarEstado(id, n) { db.collection("reportes").doc(id).update({ estado: n }); }
         function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
         function toggleGestion() { const b = document.getElementById('box-gestion'); b.style.display = b.style.display==='none'?'block':'none'; }
+        async function guardarChofer() {
+            const u = document.getElementById('u-nom').value.toLowerCase();
+            const p = document.getElementById('u-pin').value;
+            const t = document.getElementById('u-tel').value;
+            if(u && p && t) await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
+        }
     </script>
 </body>
 </html>
+
 
 
 
