@@ -33,7 +33,7 @@
 
         .visor-controles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #f0f0f0; padding: 15px; border-radius: 10px; margin-bottom: 15px; font-size: 11px; font-weight: bold; }
         #visor-foto { background: #222; padding: 10px; border-radius: 10px; text-align: center; min-height: 450px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        #img-ticket { max-width: 100%; max-height: 600px; transition: filter 0.2s; }
+        #img-ticket { max-width: 100%; max-height: 600px; transition: filter 0.1s; }
 
         .btn-crear { background: var(--naranja); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-rojo { background: var(--rojo); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -108,18 +108,19 @@
     <div id="modalPDF" class="modal">
         <div class="modal-content">
             <span style="float:right; cursor:pointer; font-size:28px; font-weight:bold;" onclick="cerrarModales()">×</span>
-            <h3>PROCESAMIENTO DE TICKET (MOTOR REPARADO)</h3>
+            <h3>PROCESAMIENTO DE TICKET</h3>
             <div class="visor-controles">
-                <div>BRILLO <input type="range" id="brillo" min="50" max="200" value="100" oninput="aplicarScanner()"></div>
-                <div>CONTRASTE <input type="range" id="contraste" min="50" max="300" value="100" oninput="aplicarScanner()"></div>
+                <div>BRILLO <input type="range" id="brillo" min="50" max="250" value="100" oninput="aplicarScanner()"></div>
+                <div>CONTRASTE <input type="range" id="contraste" min="50" max="400" value="100" oninput="aplicarScanner()"></div>
                 <div>LIMPIEZA <input type="range" id="limpieza" min="0" max="100" value="0" oninput="aplicarScanner()"></div>
-                <div>NITIDEZ <input type="range" id="nitidez" min="100" max="200" value="100" oninput="aplicarScanner()"></div>
-                <div>GAMA <input type="range" id="gama" min="80" max="120" value="100" oninput="aplicarScanner()"></div>
-                <button onclick="resetFiltros()" style="font-size:10px; cursor:pointer">🔄 RESET</button>
+                <div>NITIDEZ <input type="range" id="nitidez" min="100" max="300" value="100" oninput="aplicarScanner()"></div>
+                <div>GAMA <input type="range" id="gama" min="80" max="150" value="100" oninput="aplicarScanner()"></div>
+                <button onclick="resetFiltros()" style="font-size:10px; cursor:pointer; height:30px; margin-top:15px">🔄 RESET</button>
             </div>
             <div id="visor-foto"><img id="img-ticket" src=""></div>
             <div style="display:flex; gap:15px; margin-top:20px;">
                 <button style="background:var(--verde); color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; flex:1;" onclick="descargarPDF()">📥 BAJAR PDF A4</button>
+                <button style="background:var(--rojo); color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; flex:1;" onclick="pedirReenvio()">⚠️ RECLAMAR FOTO</button>
             </div>
         </div>
     </div>
@@ -134,9 +135,24 @@
             if(document.getElementById('pin-input').value === "1234") {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('contenido-principal').style.display = 'block';
+                limpiarReportesViejos();
                 cargarDatos();
                 cargarChoferes();
             } else { alert("PIN Incorrecto"); }
+        }
+
+        async function limpiarReportesViejos() {
+            const ahora = new Date();
+            const snap = await db.collection("reportes").where("estado", "==", "CARGADO").get();
+            snap.forEach(async (doc) => {
+                const data = doc.data();
+                if (data.fecha) {
+                    const partes = data.fecha.split(', ');
+                    const fechaFormateada = partes[0].split('/').reverse().join('-') + 'T' + partes[1];
+                    const fechaReporte = new Date(fechaFormateada);
+                    if ((ahora - fechaReporte) / (1000 * 60 * 60) >= 48) await db.collection("reportes").doc(doc.id).delete();
+                }
+            });
         }
 
         function cargarDatos() {
@@ -172,15 +188,15 @@
             const l = document.getElementById('limpieza').value;
             const n = document.getElementById('nitidez').value;
             const g = document.getElementById('gama').value;
-
-            // Motor corregido: se utiliza un orden lógico de filtros para evitar que la imagen se rompa
+            
+            // Motor de filtros reconstruido para evitar saturación y trabas
             document.getElementById('img-ticket').style.filter = `
-                grayscale(1) 
-                brightness(${b}%) 
-                contrast(${c}%) 
-                opacity(${100 - (l/2)}%)
+                grayscale(100%)
+                brightness(${b}%)
+                contrast(${c}%)
+                brightness(${100 + parseInt(l)}%)
                 saturate(${n}%)
-                brightness(${100 + (l/4)}%)
+                sepia(${g - 100}%)
             `;
         }
 
@@ -189,6 +205,7 @@
             document.getElementById('contraste').value = 100;
             document.getElementById('limpieza').value = 0;
             document.getElementById('nitidez').value = 100;
+            document.getElementById('gama').value = 100;
             aplicarScanner();
         }
 
@@ -200,7 +217,34 @@
             resetFiltros();
         }
 
-        // --- FUNCIONES DE GESTIÓN (MANTENIDAS) ---
+        async function verD(id) {
+            idEditando = id;
+            const doc = await db.collection("reportes").doc(id).get(); const d = doc.data();
+            document.getElementById('ficha-edit').innerHTML = `
+                <label>Transporte</label><input type="text" id="ed-trans" value="${d.transporte || ''}">
+                <label>CUIT Empresa</label><input type="text" id="ed-cuit" value="${d.cuit_trans || ''}">
+                <label>Chofer</label><input type="text" id="ed-nom" value="${d.chofer_nombre || ''}">
+                <label>CUIL Chofer</label><input type="text" id="ed-cuil" value="${d.chofer_cuil || ''}">
+                <label>Patente Chasis</label><input type="text" id="ed-cha" value="${d.chasis || ''}">
+                <label>Patente Acoplado</label><input type="text" id="ed-aco" value="${d.acoplado || ''}">
+                <label>Tipo de Equipo</label><input type="text" id="ed-equi" value="${d.equipo || ''}">`;
+            document.getElementById('modalDatos').style.display = 'block';
+        }
+
+        async function guardarEdicion() {
+            const up = { 
+                transporte: document.getElementById('ed-trans').value,
+                cuit_trans: document.getElementById('ed-cuit').value,
+                chofer_nombre: document.getElementById('ed-nom').value,
+                chofer_cuil: document.getElementById('ed-cuil').value,
+                chasis: document.getElementById('ed-cha').value,
+                acoplado: document.getElementById('ed-aco').value,
+                equipo: document.getElementById('ed-equi').value
+            };
+            await db.collection("reportes").doc(idEditando).update(up);
+            cerrarModales();
+        }
+
         function cargarChoferes() {
             db.collection("accesos_choferes").onSnapshot(snap => {
                 const l = document.getElementById('lista-choferes-gestion'); l.innerHTML = "";
@@ -210,25 +254,22 @@
                 });
             });
         }
+
         async function guardarChofer() {
             const u = document.getElementById('u-nom').value.toLowerCase(), p = document.getElementById('u-pin').value, t = document.getElementById('u-tel').value;
-            if(u && p && t) { await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t }); }
+            if(u && p && t) await db.collection("accesos_choferes").doc(u).set({ clave: p, telefono: t });
         }
-        async function borrarChofer(id) { if(confirm("¿Quitar acceso?")) await db.collection("accesos_choferes").doc(id).delete(); }
-        async function verD(id) {
-            idEditando = id;
-            const doc = await db.collection("reportes").doc(id).get(); const d = doc.data();
-            document.getElementById('ficha-edit').innerHTML = `<label>Transporte</label><input type="text" id="ed-trans" value="${d.transporte}"><label>Chofer</label><input type="text" id="ed-nom" value="${d.chofer_nombre}"><label>Patente Chasis</label><input type="text" id="ed-cha" value="${d.chasis}"><label>Patente Acoplado</label><input type="text" id="ed-aco" value="${d.acoplado}">`;
-            document.getElementById('modalDatos').style.display = 'block';
-        }
-        async function guardarEdicion() {
-            const up = { transporte: document.getElementById('ed-trans').value, chofer_nombre: document.getElementById('ed-nom').value, chasis: document.getElementById('ed-cha').value, acoplado: document.getElementById('ed-aco').value };
-            await db.collection("reportes").doc(idEditando).update(up); cerrarModales();
-        }
+
+        async function borrarChofer(id) { if(confirm("¿Eliminar acceso?")) await db.collection("accesos_choferes").doc(id).delete(); }
         async function eliminarReporte(id) { if(confirm("¿Borrar definitivamente?")) await db.collection("reportes").doc(id).delete(); }
         function cambiarEstado(id, n) { db.collection("reportes").doc(id).update({ estado: n }); }
         function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
         function toggleGestion() { const b = document.getElementById('box-gestion'); b.style.display = b.style.display==='none'?'block':'none'; }
+
+        async function pedirReenvio() {
+            const cDoc = await db.collection("accesos_choferes").doc(actual.chofer).get();
+            if(cDoc.exists) window.open(`https://api.whatsapp.com/send?phone=${cDoc.data().telefono}&text=Hola, reenvíame la foto del ticket por favor.`, '_blank');
+        }
 
         function descargarPDF() {
             const { jsPDF } = window.jspdf;
@@ -241,6 +282,7 @@
             imgObj.onload = () => {
                 canvas.width = imgObj.width; canvas.height = imgObj.height;
                 const ctx = canvas.getContext('2d'); ctx.filter = img.style.filter; ctx.drawImage(imgObj, 0, 0);
+                doc.setFontSize(8); doc.text(`${actual.transporte} - ${actual.chofer_nombre}`, 10, 8);
                 doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 5, 12, 200, 275);
                 doc.save(`TICKET_${actual.chofer_nombre}.pdf`);
             };
@@ -248,6 +290,7 @@
     </script>
 </body>
 </html>
+
 
 
 
