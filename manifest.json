@@ -2,7 +2,7 @@
   "name": "La Josefina - Sistema de Choferes",
   "short_name": "La Josefina",
   "description": "Sistema de Control de Carga y Reporte de Camiones",
-  "start_url": índice.html,
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ff6600",
